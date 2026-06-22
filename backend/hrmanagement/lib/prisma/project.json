@@ -1,0 +1,16 @@
+{
+  "name": "@hrmanagement/prisma",
+  "sourceRoot": "lib/prisma/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "lib/prisma/dist",
+        "main": "lib/prisma/src/index.ts",
+        "tsConfig": "lib/prisma/tsconfig.lib.json"
+      }
+    }
+  }
+}

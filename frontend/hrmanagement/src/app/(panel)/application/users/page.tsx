@@ -68,6 +68,7 @@ const page = () => {
                             <th>Pozisyon</th>
                             <th>Kayıt tarihi</th>
                             <th>Action</th>
+                            <th>Ülke</th>
                           </tr>
                         </thead>
                         <tbody>

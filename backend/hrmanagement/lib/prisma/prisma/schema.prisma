@@ -1,0 +1,121 @@
+  // This is your Prisma schema file,
+  // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+  // Get a free hosted Postgres database in seconds: `npx create-db`
+
+
+  datasource db {
+    provider = "mongodb" 
+    url      = env("DATABASE_URL")
+  }
+
+
+  generator client {
+    provider = "prisma-client-js"
+  }
+
+
+  model users {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+    email String @unique
+    password String?
+    signupdate DateTime @default(now())
+    role String?
+    staff staff?
+    createdJobs jobs[] @relation("CreatorJob")
+    responsibleJobs jobs[] @relation("ResponsibleJob")
+  }
+
+   model staff {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+    email String @unique
+    position String?
+    phone_number String?
+    country String?
+    city  String?
+    county String?
+    address String?
+    postcode String?
+    university String?
+    unidepartment String?
+    unifaculty  String?
+    graduatedate DateTime
+    githublink  String?
+    linkedinlink String?
+    abilities   String?
+    selfbio    String?
+    birthdate DateTime
+    signupdate DateTime @default(now())
+    departmentId String
+    department department @relation(fields: [departmentId],references:[id])
+    userId String? @unique
+    user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  }
+
+
+    model jobapplication {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+    email String @unique
+    position String?
+    phone_number String?
+    country String?
+    city  String?
+    county String?
+    address String?
+    postcode String?
+    university String?
+    unidepartment String?
+    unifaculty  String?
+    graduatedate DateTime
+    githublink  String?
+    linkedinlink String?
+    abilities   String?
+    selfbio    String?
+    birthdate DateTime
+    agreeterms Boolean @default(false)
+    appdate DateTime @default(now())  
+    ipadress String?
+    staffapproved Boolean @default(false)
+    managerapproved Boolean @default(false)
+    jobId String? @unique
+    job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+    
+  }
+
+  model department {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String?
+    staff staff[]
+    addingdate DateTime @default(now())
+  }
+
+model jobs {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    jobtitle String
+    jobrequirements String
+    jobnotes  String
+    department String
+    position String
+    mounthlywage    Int?
+    weeklypayment   Int?
+    dailypayment    Int?
+    createdate  DateTime @default(now())
+    expiredate  DateTime
+    responsibleUserId String?
+    responsibleUser   users? @relation("ResponsibleJob",fields: [responsibleUserId], references: [id], onDelete: SetNull)
+    createdByUserId  String
+    createdByUser   users @relation("CreatorJob",fields: [createdByUserId], references: [id])
+    applications jobapplication[]
+}
+
+model settings {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    themecolor String?
+    timezone String?
+    language String?
+    sitetitle String?
+    sitedesc String?
+}

@@ -1,0 +1,43 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/api-gateway-e2e"
+    },
+    {
+      "path": "./apps/api-gateway"
+    },
+    {
+      "path": "./apps/auth-service-e2e"
+    },
+    {
+      "path": "./apps/auth-service"
+    },
+    {
+      "path": "./apps/staff-service-e2e"
+    },
+    {
+      "path": "./apps/staff-service"
+    },
+    {
+      "path": "./apps/management-service-e2e"
+    },
+    {
+      "path": "./apps/management-service"
+    },
+    {
+      "path": "./apps/job-service-e2e"
+    },
+    {
+      "path": "./apps/job-service"
+    },
+    {
+      "path": "./lib/error-handler"
+    },
+    {
+      "path": "./lib/prisma"
+    }
+  ]
+}

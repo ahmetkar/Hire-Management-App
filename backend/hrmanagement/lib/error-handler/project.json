@@ -1,0 +1,16 @@
+{
+  "name": "@hrmanagement/error-handler",
+  "sourceRoot": "lib/error-handler/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "lib/error-handler/dist",
+        "main": "lib/error-handler/src/index.ts",
+        "tsConfig": "lib/error-handler/tsconfig.lib.json"
+      }
+    }
+  }
+}
