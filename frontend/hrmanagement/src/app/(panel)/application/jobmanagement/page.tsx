@@ -24,7 +24,7 @@ const page = () => {
       status:"pending"
     },
     {
-      id:"565",
+      id:"561",
       namesurname:"Ahmet Kar",
       jobtitle:"Bilgisayar Mühendisi",
       graduteyear:"2024",
@@ -40,7 +40,7 @@ const page = () => {
       status:"pending"
     },
     {
-      id:"565",
+      id:"564",
       namesurname:"Ahmet Kar",
       jobtitle:"Bilgisayar Mühendisi",
       graduteyear:"2024",
@@ -56,7 +56,7 @@ const page = () => {
       status:"pending"
     },
     {
-      id:"565",
+      id:"563",
       namesurname:"Ahmet Kar",
       jobtitle:"Bilgisayar Mühendisi",
       graduteyear:"2024",
@@ -92,7 +92,7 @@ const page = () => {
                               <select className="custom-select mr-sm-2" id="inlineFormCustomSelectPref1">
                                 <option value="">...</option>
                                 <option value="1">12</option>
-                                <option value="2" selected>32</option>
+                                <option value="2" defaultValue={""}>32</option>
                                 <option value="3">64</option>
                                 <option value="3">128</option>
                               </select>
@@ -100,7 +100,7 @@ const page = () => {
                              <div className="form-group col-auto ml-3">
                                 <label className="my-1 mr-2 sr-only" htmlFor="inlineFormCustomSelectPref">Status</label>
                                 <select className="custom-select my-1 mr-sm-2" id="inlineFormCustomSelectPref">
-                                  <option selected>Choose...</option>
+                                  <option defaultValue={""}>Choose...</option>
                                   <option value="1">Yeni Başvuru</option>
                                   <option value="2">Yönetici Onayı Bekliyor</option>
                                   <option value="3">Onaylanan</option>
@@ -109,7 +109,7 @@ const page = () => {
                               </div>
                             <div className="form-group col-auto">
                               <label htmlFor="search" className="sr-only">Search</label>
-                              <input type="text" className="form-control" id="search1" value="" placeholder="Search" />
+                              <input type="text" className="form-control" id="search1" placeholder={"isim,soyisim veya başka detay .."} />
                             </div>
                           </div>
                         </form>

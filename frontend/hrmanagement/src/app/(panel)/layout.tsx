@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import Script from "next/script";
+import Topbar from "../components/Topbar";
+import Aside from "../components/Aside";
 
 
 const geistSans = Geist({
@@ -30,164 +32,11 @@ export default function Layout({
   
   <div>
     <div className="wrapper">
-      <nav className="topnav navbar navbar-light">
-        <button type="button" className="navbar-toggler text-muted mt-2 p-0 mr-3 collapseSidebar">
-          <i className="fe fe-menu navbar-toggler-icon"></i>
-        </button>
-        <form className="form-inline mr-auto searchform text-muted">
-          <input className="form-control mr-sm-2 bg-transparent border-0 pl-4 text-muted" type="search" placeholder="Type something..." aria-label="Search" />
-        </form>
-        <ul className="nav">
-          <li className="nav-item">
-            <a className="nav-link text-muted my-2" href="#" id="modeSwitcher" data-mode="light">
-              <i className="fe fe-sun fe-16"></i>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link text-muted my-2" href="./#" data-toggle="modal" data-target=".modal-shortcut">
-              <span className="fe fe-grid fe-16"></span>
-            </a>
-          </li>
-          <li className="nav-item nav-notif">
-            <a className="nav-link text-muted my-2" href="./#" data-toggle="modal" data-target=".modal-notif">
-              <span className="fe fe-bell fe-16"></span>
-              <span className="dot dot-md bg-success"></span>
-            </a>
-          </li>
-          <li className="nav-item dropdown">
-            <a className="nav-link dropdown-toggle text-muted pr-0" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <span className="avatar avatar-sm mt-2">
-                <img src="./assets/avatars/face-1.jpg" alt="..." className="avatar-img rounded-circle" />
-              </span>
-            </a>
-            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-              <a className="dropdown-item" href="#">Profile</a>
-              <a className="dropdown-item" href="#">Settings</a>
-              <a className="dropdown-item" href="#">Activities</a>
-            </div>
-          </li>
-        </ul>
-      </nav>
       
-      <aside className="sidebar-left border-right bg-white shadow" id="leftSidebar" data-simplebar>
-        <a href="#" className="btn collapseSidebar toggle-btn d-lg-none text-muted ml-2 mt-3" data-toggle="toggle">
-          <i className="fe fe-x"><span className="sr-only"></span></i>
-        </a>
-        <nav className="vertnav navbar navbar-light">
-         
-          <div className="w-100 mb-4 d-flex">
-            <a className="navbar-brand mx-auto mt-2 flex-fill text-center" href="./index.html">
-              <svg version="1.1" id="logo" className="navbar-brand-img brand-sm" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 120 120" xmlSpace="preserve">
-                <g>
-                  <polygon className="st0" points="78,105 15,105 24,87 87,87 	" />
-                  <polygon className="st0" points="96,69 33,69 42,51 105,51 	" />
-                  <polygon className="st0" points="78,33 15,33 24,15 87,15 	" />
-                </g>
-              </svg>
-            </a>
-          </div>
-          <ul className="navbar-nav flex-fill w-100 mb-2">
-            <li className="nav-item dropdown">
-             <Link data-toggle="collapse" aria-expanded="false" className="nav-link" href="/application/">
-                <i className="fe fe-home fe-16"></i>
-                <span className="ml-3 item-text">Ana Sayfa</span><span className="sr-only">(current)</span></Link>
-              
-            </li>
-          </ul>
-          <p className="text-muted nav-heading mt-4 mb-1">
-            <span>İşe Alım&Personel Yönetimi</span>
-          </p>
-          <ul className="navbar-nav flex-fill w-100 mb-2">
-            <li className="nav-item dropdown">
-              <a href="#ui-elements" data-toggle="collapse" aria-expanded="false" className="dropdown-toggle nav-link">
-                <i className="fe fe-file-text fe-16"></i>
-                <span className="ml-3 item-text">İş Başvuruları</span>
-              </a>
-              <ul className="collapse list-unstyled pl-4 w-100" id="ui-elements">
-                <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/jobmanagement"><span className="ml-1 item-text">İş Başvurularını Görüntüle</span>
-
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/jobmanagement/approved"><span className="ml-1 item-text">Onaylananları Yönet</span></Link>
-                </li>
-                
-              </ul>
-            </li>
-            
-           
-
-
-            <li className="nav-item dropdown">
-              <a href="#forms" data-toggle="collapse" aria-expanded="false" className="dropdown-toggle nav-link">
-                <i className="fe fe-users fe-16"></i>
-                <span className="ml-3 item-text">Personel Yönetimi</span>
-              </a>
-              <ul className="collapse list-unstyled pl-4 w-100" id="forms">
-                <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/staff/addstaff/"><span className="ml-1 item-text">Personel Ekle</span></Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/staff/"><span className="ml-1 item-text">Personelleri Görüntüle</span></Link>
-                </li>
-            
-              </ul>
-            </li>
-
-          </ul>
-          <p className="text-muted nav-heading mt-4 mb-1">
-            <span>Depertman Yönetimi</span>
-          </p>
-          <ul className="navbar-nav flex-fill w-100 mb-2">
-            <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/department/">
-                <i className="fe fe-briefcase fe-16"></i>
-                <span className="ml-3 item-text">Depertmanları Görüntüle</span>
-              </Link>
-            </li>
-
-            <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/department/addepartment">
-                <i className="fe fe-folder-plus fe-16"></i>
-                <span className="ml-3 item-text">Depertman Ekle</span>
-              </Link>
-            </li>
-            
-          </ul>
-          <p className="text-muted nav-heading mt-4 mb-1">
-            <span>Hesap&Ayarlar</span>
-          </p>
-          <ul className="navbar-nav flex-fill w-100 mb-2">
-             <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/settings/">
-                <i className="fe fe-settings fe-16"></i>
-                <span className="ml-3 item-text">Ayarlar</span>
-              </Link>
-            </li>
-
-             <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/users/">
-                <i className="fe fe-user fe-16"></i>
-                <span className="ml-3 item-text">Kullanıcılar</span>
-              </Link>
-            </li>
-
-             <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/settings/myprofile">
-                <i className="fe fe-sidebar fe-16"></i>
-                <span className="ml-3 item-text">Profilim</span>
-              </Link>
-            </li>
-          </ul>
-          
-          <div className="btn-box w-100 mt-4 mb-1">
-            <a href="https://themeforest.net/item/tinydash-bootstrap-html-admin-dashboard-template/27511269" target="_blank" className="btn mb-2 btn-danger btn-lg btn-block">
-              <i className="fe fe-log-out fe-12 mx-2"></i><span className="small">Çıkış Yap</span>
-            </a>
-          </div>
-        </nav>
-      </aside>
+      <Topbar></Topbar>
+      
+      <Aside></Aside>
+      
       <main role="main" className="main-content">
        <div className="container-fluid">
         {children}
