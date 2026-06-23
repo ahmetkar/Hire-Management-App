@@ -1,11 +1,165 @@
 
 import { Request,Response,NextFunction } from "express";
-import { validateRegistirationData } from "../helpers/auth.helper";
+import { validateEmailData, validateRegistirationData } from "../helpers/auth.helper";
 import { AuthError, JsonWebTokenError, ValidationError } from "@hrmanagement/error-handler";
 import bcrypt  from "bcryptjs"
 import {prisma}  from "@hrmanagement/prisma"
 import jwt from "jsonwebtoken"
 import { setCookie } from "../util/setCookie";
+
+
+
+export const getUsers = async (req:Request,res:Response,next:NextFunction) => {
+            
+            const role = req.query.email ? String(req.query.email) : undefined;
+
+            try {
+                if(role!=undefined){
+                    
+                    const users = await prisma.users.findMany({where:{
+                        role:role
+                    } })
+                    if(users){
+                        res.status(201).json({
+                        success:true,
+                        message:"Users found !",
+                        data: users
+                        });
+                    }else {
+                        res.status(404).json({
+                        success:false,
+                        message:"Users not found !",
+                        data:[]
+                        });
+                    }
+                }else {
+                    const users = await prisma.users.findMany();
+                    if(users){
+                        res.status(201).json({
+                        success:true,
+                        message:"Users found !",
+                        data: users
+                        });
+                    }else {
+                        res.status(404).json({
+                        success:false,
+                        message:"No users found !",
+                        data:[]
+                        });
+                    }
+                }
+
+            }catch(error){
+                return next(error);
+            }
+}
+
+
+
+export const getUser = async (req:Request,res:Response,next:NextFunction) => {
+            
+            const email = req.params.email ? String(req.params.email) : undefined;
+            
+
+            try {
+                if(email!=undefined){
+                 validateEmailData(email);
+                const user = await prisma.users.findUnique({where:{email:email}})
+
+                if(user){
+                     res.status(201).json({
+                        success:true,
+                        message:"User found !",
+                        data: user
+                        });
+                }else {
+                     res.status(404).json({
+                        success:false,
+                        message:"User not found !",
+                        data:[]
+                        });
+                }
+            }
+            }catch(error){
+                return next(error);
+            }
+}
+
+
+export const userUpdate = async (req:Request,res:Response,next:NextFunction) => {
+
+    try {
+    const {name,email,password,role} = req.body
+
+    const existingUser = await prisma.users.findUnique({where:{email:email}})
+
+    if(!existingUser){
+            return next(new ValidationError("User does not exists with that email"))
+    }
+
+    const newhashedPassword = await bcrypt.hash(password,10)
+
+    const user = await prisma.users.update({
+        where:{email:email},
+        data:{name:name,email:email,password:newhashedPassword,role:role}
+    })
+
+    if(user){
+         res.status(201).json({
+                        success:true,
+                        message:"User updated successfully !",
+                        data: user
+                        });
+            }
+
+    }catch(error){
+        return next(error);
+    }
+    
+}
+
+
+export const userDelete = async (req:Request,res:Response,next:NextFunction) => {
+
+    try {
+        const id = req.params.id ? String(req.params.id) : undefined;
+
+        if(id!=undefined){
+
+        const existingUser = await prisma.users.findUnique({where:{id:id}})
+
+        if(!existingUser){
+                return next(new ValidationError("User does not exists"))
+        }else {
+            const deleted = await prisma.users.delete({
+                where:{id:id}
+            })
+            if(deleted){
+                   res.status(201).json({
+                        success:true,
+                        message:"User deleted successfully !"
+                        });
+            
+            }else {
+                res.status(201).json({
+                        success:false,
+                        message:"User not deleted !"
+                        });
+            }
+        }
+        }else {
+            res.status(404).json({
+                        success:false,
+                        message:"Id Parameter not given !"
+                        });
+        }
+
+    }catch(error){
+        return next(error);
+    }
+
+}
+
 
 
 export const userRegister = async (req:Request,res:Response,next:NextFunction) => {

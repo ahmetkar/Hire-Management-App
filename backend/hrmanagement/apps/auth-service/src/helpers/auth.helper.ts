@@ -16,6 +16,16 @@ en az 1 özel karakter
 const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/g;
 
 
+
+export const validateEmailData = (email: string) => {
+
+    
+    if(!emailRegex.test(email)){
+        return new ValidationError(`Invalid email format`)
+    }
+    return true;
+}
+
 export const validateRegistirationData = (data: any) => {
     const {name,email,password,role} = data;
     
