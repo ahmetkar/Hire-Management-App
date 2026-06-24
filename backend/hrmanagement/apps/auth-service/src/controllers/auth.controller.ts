@@ -26,11 +26,7 @@ export const getUsers = async (req:Request,res:Response,next:NextFunction) => {
                         data: users
                         });
                     }else {
-                        res.status(404).json({
-                        success:false,
-                        message:"Users not found !",
-                        data:[]
-                        });
+                        return next(new ValidationError("No Users Found"))
                     }
                 }else {
                     const users = await prisma.users.findMany();
@@ -41,11 +37,7 @@ export const getUsers = async (req:Request,res:Response,next:NextFunction) => {
                         data: users
                         });
                     }else {
-                        res.status(404).json({
-                        success:false,
-                        message:"No users found !",
-                        data:[]
-                        });
+                         return next(new ValidationError("No Users Found"))
                     }
                 }
 
@@ -73,11 +65,7 @@ export const getUser = async (req:Request,res:Response,next:NextFunction) => {
                         data: user
                         });
                 }else {
-                     res.status(404).json({
-                        success:false,
-                        message:"User not found !",
-                        data:[]
-                        });
+                      return next(new ValidationError("User not Found"))
                 }
             }
             }catch(error){
@@ -110,6 +98,8 @@ export const userUpdate = async (req:Request,res:Response,next:NextFunction) => 
                         message:"User updated successfully !",
                         data: user
                         });
+            }else {
+                 return next(new ValidationError("User cannot updated"))
             }
 
     }catch(error){
@@ -141,17 +131,11 @@ export const userDelete = async (req:Request,res:Response,next:NextFunction) => 
                         });
             
             }else {
-                res.status(201).json({
-                        success:false,
-                        message:"User not deleted !"
-                        });
+                return next(new ValidationError("User cannot deleted"))
             }
         }
         }else {
-            res.status(404).json({
-                        success:false,
-                        message:"Id Parameter not given !"
-                        });
+            return next(new ValidationError("Id parameter not given"))
         }
 
     }catch(error){
@@ -192,10 +176,7 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
             message:"User registered succesfully !",
         });
         }else {
-            res.status(201).json({
-            success:false,
-            message:"User cannot registered !",
-            });
+             return next(new ValidationError("User cannot registered"))
         }
     
 

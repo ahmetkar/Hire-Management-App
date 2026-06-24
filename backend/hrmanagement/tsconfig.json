@@ -38,6 +38,12 @@
     },
     {
       "path": "./lib/prisma"
+    },
+    {
+      "path": "./apps/ai-service-e2e"
+    },
+    {
+      "path": "./apps/ai-service"
     }
   ]
 }

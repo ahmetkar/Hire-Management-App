@@ -25,6 +25,10 @@
     staff staff?
     createdJobs jobs[] @relation("CreatorJob")
     responsibleJobs jobs[] @relation("ResponsibleJob")
+    receivedNotifications notifications[] @relation("NotificationReceiver")
+    sendedNotifications notifications[] @relation("NotificationSender")
+    deniedapplications deniedApplications[] @relation("DeniedApplications")
+    approvedapplications jobapplication[] @relation("ApprovedApplications")
   }
 
    model staff {
@@ -80,6 +84,8 @@
     ipadress String?
     staffapproved Boolean @default(false)
     managerapproved Boolean @default(false)
+    approverId String
+    approver   users @relation("ApprovedApplications",fields: [approverId], references: [id])
     jobId String? @unique
     job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
     
@@ -109,6 +115,7 @@ model jobs {
     createdByUserId  String
     createdByUser   users @relation("CreatorJob",fields: [createdByUserId], references: [id])
     applications jobapplication[]
+    deniedapplications deniedApplications[]
 }
 
 model settings {
@@ -119,3 +126,43 @@ model settings {
     sitetitle String?
     sitedesc String?
 }
+
+model notifications {
+   id String @id @default(auto()) @map("_id") @db.ObjectId
+   title String?
+   desc String?
+   bywhoId String
+   byWho   users @relation("NotificationSender",fields: [bywhoId], references: [id])
+   toWhoId String
+   toWho   users @relation("NotificationReceiver",fields: [toWhoId], references: [id])
+}
+
+model deniedApplications {
+   id String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+    email String @unique
+    position String?
+    phone_number String?
+    country String?
+    city  String?
+    county String?
+    address String?
+    postcode String?
+    university String?
+    unidepartment String?
+    unifaculty  String?
+    graduatedate DateTime
+    githublink  String?
+    linkedinlink String?
+    abilities   String?
+    selfbio    String?
+    birthdate DateTime
+    agreeterms Boolean @default(false)
+    appdate DateTime @default(now())  
+    ipadress String?
+    deniedById String 
+    deniedBy   users @relation("DeniedApplications",fields: [deniedById], references: [id])
+    jobId String? @unique
+    job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+

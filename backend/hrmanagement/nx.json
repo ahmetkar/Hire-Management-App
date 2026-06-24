@@ -51,7 +51,9 @@
         "apps/auth-service-e2e/**/*",
         "apps/staff-service-e2e/**/*",
         "apps/management-service-e2e/**/*",
-        "apps/job-service-e2e/**/*"
+        "apps/job-service-e2e/**/*",
+        "apps/ai-service-e2e/**/*",
+        "apps/ai-service-e2e/**/*"
       ]
     },
     {
