@@ -2,12 +2,20 @@
 
 import Link from 'next/link'
 import React, { useState } from 'react'
+import useLogout from '../utils/logout'
 
 
 
 const Aside = () => {
     const [firstToggle,setFirstToggle] = useState(false)
     const [secToggle,setSecToggle] = useState(false)
+
+
+    const logout = useLogout()
+
+    const handleLogout = () => {
+      logout.mutate()
+    }
 
   return (
     <aside className="sidebar-left border-right bg-white shadow" id="leftSidebar" data-simplebar>
@@ -123,9 +131,9 @@ const Aside = () => {
           </ul>
           
           <div className="btn-box w-100 mt-4 mb-1">
-            <a href="https://themeforest.net/item/tinydash-bootstrap-html-admin-dashboard-template/27511269" target="_blank" className="btn mb-2 btn-danger btn-lg btn-block">
+            <button disabled={logout.isPending} onClick={()=>handleLogout()}  className="btn mb-2 btn-danger btn-lg btn-block">
               <i className="fe fe-log-out fe-12 mx-2"></i><span className="small">Çıkış Yap</span>
-            </a>
+            </button>
           </div>
         </nav>
       </aside>

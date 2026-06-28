@@ -24,5 +24,13 @@
     "eslint.config.js",
     "eslint.config.cjs",
     "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../lib/error-handler/tsconfig.lib.json"
+    },
+    {
+      "path": "../../lib/prisma/tsconfig.lib.json"
+    }
   ]
 }

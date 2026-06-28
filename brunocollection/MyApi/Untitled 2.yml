@@ -1,0 +1,25 @@
+info:
+  name: Untitled 2
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:4000/auth/user-registiration
+  body:
+    type: json
+    data: |-
+      {
+          "name":"ahmetkar",
+          "email":"ahmetkar@gmail.com",
+          "password":"katilx00",
+          "role":"admin"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

@@ -29,6 +29,7 @@ export default function RootLayout({
 }>) {
   
   return (
+  
 <html suppressHydrationWarning>
    <head suppressHydrationWarning>
 
@@ -52,7 +53,7 @@ export default function RootLayout({
     
    
   </head>
-  
+    
     <Body children={children}></Body>
   
 
@@ -91,5 +92,6 @@ export default function RootLayout({
     <Script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1" strategy="afterInteractive"></Script>
     <Script src="/js/gtaghelper.js" strategy="afterInteractive"></Script>
   </html>
+  
   );
 }

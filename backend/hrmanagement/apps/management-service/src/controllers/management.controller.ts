@@ -14,7 +14,7 @@ const {themecolor,timezone,language,sitetitle,sitedesc} = req.body;
 
                     const lastSettings = await prisma.settings.findFirst({
                                 orderBy: {
-                                    createdAt: "desc",
+                                    id: "desc",
                                 },
                                 });
                     if(!lastSettings){
@@ -67,7 +67,7 @@ export const getSettings = async (req:Request,res:Response,next:NextFunction) =>
                     
                   const lastSettings = await prisma.settings.findFirst({
                                 orderBy: {
-                                    createdAt: "desc",
+                                    id: "desc",
                                 },
                                 });
                     if(lastSettings){
@@ -78,6 +78,34 @@ export const getSettings = async (req:Request,res:Response,next:NextFunction) =>
                         });
                     }else {
                         return next(new ValidationError("Settings Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+}
+
+export const getNotifications = async (req:any,res:Response,next:NextFunction) => {
+
+            const myId = req.header["x-user-id"]
+    
+            try {
+                
+                    
+                  const notifications = await prisma.notifications.findMany({
+                                where:{
+                                    toWhoId:myId
+                                }
+                                });
+                    if(notifications){
+                        res.status(201).json({
+                        success:true,
+                        message:"Notifications found !",
+                        data: notifications
+                        });
+                    }else {
+                        return next(new ValidationError("Notifications Not Found"))
                     }
                
 
@@ -98,7 +126,7 @@ export const createNotification = async (req:Request,res:Response,next:NextFunct
                             data:{
                                 title:title,
                                 desc:desc,
-                                byWhoId:byWhoId,
+                                bywhoId:byWhoId,
                                 toWhoId:toWhoId,
                             }
                         })

@@ -35,7 +35,7 @@ export const getOneStaff = async (req:Request,res:Response,next:NextFunction) =>
             try {
                 
                     
-                    const staff = await prisma.staff.findMany({where:{jobId:staffId}})
+                    const staff = await prisma.staff.findMany({where:{id:staffId}})
                     if(staff){
                         res.status(201).json({
                         success:true,
@@ -159,7 +159,7 @@ export const updateStaff = async (req:Request,res:Response,next:NextFunction) =>
 
      try {
                     
-                    const staff = await prisma.staff.create({
+                    const staff = await prisma.staff.update({
                         where:{id:id},
                         data:{
                             name:name,
@@ -186,7 +186,7 @@ export const updateStaff = async (req:Request,res:Response,next:NextFunction) =>
                     if(staff){
                         res.status(201).json({
                         success:true,
-                        message:"Staff created successfully",
+                        message:"Staff updated successfully",
                         data:staff
                         
                         });

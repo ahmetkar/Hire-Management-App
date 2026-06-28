@@ -1,21 +1,13 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
 
 import express from 'express';
-
-import path from 'path';
-
 import cors from "cors";
 import proxy from "express-http-proxy";
 import morgan from "morgan";
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-
-import swaggerUi from "swagger-ui-express";
-import axios from "axios";
 import cookieParser from "cookie-parser";
 import helmet from 'helmet';
+import { limiter } from './middlewares/rate-limiter.middleware';
+import { verifyToken } from './middlewares/auth.middleware';
+import { authorizeRoles } from './utils/authorizeRoles';
 
 
 const app = express();
@@ -35,24 +27,18 @@ app.use(helmet())
 app.use(cookieParser());
 app.set("trust proxy",1);
 
+app.use(limiter);
 
-const limiter = rateLimit({
-  windowMs:15*60*1000,
-  //max: (req:any)=>(req.user ? 1000 : 100), 
-  max:1000,
-  message:{error:"Too many request, please try again later"},
-  standardHeaders:true,
-  legacyHeaders:true,
-  keyGenerator: (req:any)=> ipKeyGenerator(req.ip) // spesifik ip için rate limiter ekle,
 
-});
 
+//Original url localhost:4000/auth/login şeklinde gelebelir burada auth u sil /login kalsın baştaki url i öyle değiştir.
 
 const createProxy = (prefix:string,target:string) => {
     let orgurl = ""
     return proxy(target,{
       timeout:5000,
       proxyReqPathResolver(req) {
+        //orgUrl i gidecek url e çevirirken prefixi kullanma
           orgurl = req.originalUrl.replace(new RegExp(`${prefix}`),"")  || "/"
           return orgurl
 
@@ -62,13 +48,33 @@ const createProxy = (prefix:string,target:string) => {
         res.status(502).json({
           message: `${prefix} service unavaliable (${orgurl})`
         })
+      },
+      proxyReqOptDecorator: (proxyReqOpts,srcReq:any)=>{
+        delete proxyReqOpts.headers?.["x-user-id"];
+        delete proxyReqOpts.headers?.["x-user-role"];
+        delete proxyReqOpts.headers?.["x-session-id"];
+
+        proxyReqOpts.headers = {
+        ...proxyReqOpts.headers,
+        "x-internal-api-key": process.env.INTERNAL_API_KEY as string,
+       };
+
+        if(srcReq.user){
+          proxyReqOpts.headers = {
+            ...proxyReqOpts.headers,
+            "x-user-id": srcReq.user.id,
+            "x-user-role":srcReq.user.role,
+            "x-session-id":srcReq.user.sessionId,
+          }
+
+        }
+        return proxyReqOpts
+        
       }
 
     })
 }
 
-
-app.use(limiter);
 
 
 app.get('/gateway-health', (req, res) => {
@@ -76,14 +82,43 @@ app.get('/gateway-health', (req, res) => {
 });
 
 
+
+app.use("/auth/user-delete/:id",verifyToken,authorizeRoles(["admin","user"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!));
+app.use("/auth/user-update",verifyToken,authorizeRoles(["admin","user"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!));
+app.use("/auth/get-user",verifyToken,authorizeRoles(["admin","user"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!));
+app.use("/auth/get-users",verifyToken,authorizeRoles(["admin","user"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!));
+
 app.use("/auth",createProxy("/auth",process.env.AUTH_SERVICE_URL!));
-app.use("/job",createProxy("/auth",process.env.JOB_SERVICE_URL!));
-app.use("/staff",createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/management",createProxy("/management",process.env.MANAGEMENT_SERVICE_URL!));
 
 
 
+app.use("/job/get-one-job/:id",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-all-jobs",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-job-by-filter",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 
+app.use("/job/job-create",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/job-delete/:id",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-job-application-by-filter",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-one-application/:id",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-all-application",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+
+app.use("/job/job-update",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/deny-application",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/approve-application",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+
+app.use("/job/create-department",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/update-department",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/delete-department/:id",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-all-departments",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/job/get-department/:id",verifyToken,authorizeRoles(["admin","user"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+
+
+app.use("/job",createProxy("/job",process.env.JOB_SERVICE_URL!));
+
+
+app.use("/staff",verifyToken,authorizeRoles(["admin","user"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/management",verifyToken,authorizeRoles(["admin","user"]),createProxy("/management",process.env.MANAGEMENT_SERVICE_URL!));
+app.use("/ai-service",verifyToken,authorizeRoles(["admin","user"]),createProxy("/ai-service",process.env.AI_SERVICE_URL!));
 
 
 const port = process.env.PORT || 4000;

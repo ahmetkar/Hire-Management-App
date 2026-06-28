@@ -6,6 +6,12 @@ import bcrypt  from "bcryptjs"
 import {prisma}  from "@hrmanagement/prisma"
 import jwt from "jsonwebtoken"
 import { setCookie } from "../util/setCookie";
+import { clearCookie } from "../util/clearCookie";
+import { publishUserLogin } from "../events/producers/userLogin.producers";
+import redis from "../config/redis";
+import { randomUUID } from "crypto";
+import { publishUserLogout } from "../events/producers/userLogout.producers";
+
 
 
 
@@ -50,7 +56,7 @@ export const getUsers = async (req:Request,res:Response,next:NextFunction) => {
 
 export const getUser = async (req:Request,res:Response,next:NextFunction) => {
             
-            const email = req.params.email ? String(req.params.email) : undefined;
+            const {email} = req.body
             
 
             try {
@@ -191,6 +197,9 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
 
 export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
     try {
+        const sessionId = randomUUID()
+        const jti = crypto.randomUUID()
+
         const {email,password} = req.body;
         if(!email || !password){
             return next(new ValidationError("Email and password required !"));
@@ -209,16 +218,31 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
         }
         
 
-        const accessToken = jwt.sign({id: user.id,role:user.role},process.env.ACCESS_TOKEN_SECRET as string,{
+        const accessToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId,jti:jti},process.env.ACCESS_TOKEN_SECRET as string,{
             expiresIn:"15m"
         })
 
-        const refreshToken = jwt.sign({id: user.id,role:"user"},process.env.REFRESH_TOKEN_SECRET as string,{
+        const refreshToken = jwt.sign({id: user.id,role:"user",sessionId:sessionId,jti:jti},process.env.REFRESH_TOKEN_SECRET as string,{
             expiresIn:"7d"
         })
 
         setCookie(res,"refresh_token",refreshToken)
         setCookie(res,"access_token",accessToken)
+
+
+        await redis.set(`session:${sessionId}`,JSON.stringify({
+                        id: user.id,
+                        role: user.role,
+                        sessionId:sessionId,
+                        jti:jti,
+                        revoked: false
+                            }),"EX",7*24*60*60)
+
+
+        await publishUserLogin({
+            key:user.id,
+            value:user.name
+        })
 
         res.status(200).json({
             message:"Login successful",
@@ -229,6 +253,39 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
 
         return next(error);
     }
+}
+
+
+export const logoutUser =  async (req:any,res:Response,next:NextFunction) => {
+
+      try {
+            const refreshToken = req.cookies["refresh_token"]
+
+            if(refreshToken){
+                const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as jwt.JwtPayload
+                if(decoded.sessionId){
+                    await redis.del(`session:${decoded.sessionId}`)
+                     await publishUserLogout({
+                        key:decoded.id,
+                        data:decoded.id
+                       })
+                }
+            }   
+
+            clearCookie(res,"refresh_token","/");
+            clearCookie(res,"access_token","/");
+
+           
+
+            res.status(200).json({
+                message:"Logout successful",
+            })
+        
+    }catch(error){
+
+        return next(error);
+    }
+    
 }
 
 export const refreshToken = async (req:any,res:Response,next:NextFunction) => {

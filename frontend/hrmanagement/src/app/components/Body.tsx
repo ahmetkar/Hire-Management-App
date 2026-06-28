@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useSelectedLayoutSegments } from "next/navigation";
+import Providers from './providers';
 
 const Body = ({
   children,
@@ -13,15 +14,21 @@ const Body = ({
     if(activeRoute == "(site)" || activeRoute == "(site)/applyjob"){
         return (
      <body className="horizontal light" suppressHydrationWarning>
-     
-        {children}</body>
+        <Providers>
+        {children}
+        </Providers>
+        </body>
     )
     }else {
     return (
      
      <body className="vertical light" suppressHydrationWarning>
-      
-        {children}</body>
+      <Providers>
+        {children}
+
+        </Providers>
+        
+        </body>
     )
     }
      

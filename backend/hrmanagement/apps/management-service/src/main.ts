@@ -5,6 +5,7 @@ import {errorMiddleware}  from "@hrmanagement/error-handler"
 import router from './routes/management.routes'
 import cors from "cors"
 import cookieParser from 'cookie-parser';
+import { verifyInternalRequest } from './middlewares/verify.middleware';
 
 const app = express();
 
@@ -32,6 +33,9 @@ app.use("/",router)
 
 
 app.use(errorMiddleware)
+
+app.use(verifyInternalRequest)
+
 
 
 const port = process.env.PORT || 3332;

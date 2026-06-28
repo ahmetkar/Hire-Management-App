@@ -1,14 +1,13 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
+
 
 import express from 'express';
-import * as path from 'path';
 import {errorMiddleware}  from "@hrmanagement/error-handler"
 import router from './routes/auth.routes';
 import cors from "cors"
 import cookieParser from 'cookie-parser';
+import init from './init';
+import { verifyInternalRequest } from './middlewares/verify.middleware';
+
 
 const app = express();
 
@@ -21,7 +20,7 @@ app.use(cors({
 }),
 );
 
-app.use(cookieParser())
+app.use(cookieParser()) 
 app.use(express.json())
 
 
@@ -37,10 +36,13 @@ app.use("/",router)
 
 app.use(errorMiddleware)
 
+app.use(verifyInternalRequest)
+
 
 
 const port = process.env.PORT || 3330;
-const server = app.listen(port, () => {
+const server = app.listen(port, async () => { 
+  await init();
   console.log(`Listening at http://localhost:${port}/`);
 });
 server.on('error', console.error);

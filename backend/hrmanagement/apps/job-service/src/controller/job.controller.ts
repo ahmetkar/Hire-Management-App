@@ -29,6 +29,34 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
 }
 
 
+
+export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => {
+     
+
+            try {
+                
+                    
+                    const jobs = await prisma.jobs.findMany()
+                    if(jobs){
+                        res.status(201).json({
+                        success:true,
+                        message:"Jobs found !",
+                        data: jobs
+                        });
+                    }else {
+                       return next(new ValidationError("Jobs Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+
+}
+
+
+
+
 export const getOneJobApplication = async (req:Request,res:Response,next:NextFunction) => {
 
         const jobId = req.params.jobid ? String(req.params.jobid) : undefined;
@@ -45,6 +73,31 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
                         });
                     }else {
                         return next(new ValidationError("Job Application Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+
+}
+
+export const getOneJob = async (req:Request,res:Response,next:NextFunction) => {
+
+        const jobId = req.params.jobid ? String(req.params.jobid) : undefined;
+    
+            try {
+                
+                    
+                    const job = await prisma.jobs.findMany({where:{id:jobId}})
+                    if(job){
+                        res.status(201).json({
+                        success:true,
+                        message:"Job found !",
+                        data: job
+                        });
+                    }else {
+                        return next(new ValidationError("Job Not Found"))
                     }
                
 
@@ -88,6 +141,48 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
                         });
                     }else {
                         return next(new ValidationError("Job Application Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+}
+
+export const getJobByFilter = async (req:Request,res:Response,next:NextFunction) => {
+
+     const {id,title,position,department,userId} = req.body;
+    
+            try {
+                    let whereclause = {}
+                    if(id!=""){ 
+                        whereclause = {...whereclause,id:id}
+                    }
+                    if(title!=""){
+                        whereclause = {...whereclause,title:title}
+                    }
+
+                    if(position!=""){
+                        whereclause = {...whereclause,position:position}
+                    }
+
+                    if(department!=""){
+                        whereclause = {...whereclause,department:department}
+                    }
+
+                    if(userId!=""){
+                        whereclause = {...whereclause,responsibleUserId:userId}
+                    }
+                    
+                    const job = await prisma.jobs.findMany({where:whereclause})
+                    if(job){
+                        res.status(201).json({
+                        success:true,
+                        message:"Jobs found !",
+                        data: job
+                        });
+                    }else {
+                        return next(new ValidationError("Jobs Not Found"))
                     }
                
 
@@ -154,12 +249,12 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
 }
 
-export const denyJobApplication = async (req:Request,res:Response,next:NextFunction) => {
+export const denyJobApplication = async (req:any,res:Response,next:NextFunction) => {
      
      const {oldId} = req.body;
 
- //TODO : Authorization
-     const deniedById = "1";
+
+     const deniedById = req.user.id;
         
 
      try {
@@ -169,7 +264,7 @@ export const denyJobApplication = async (req:Request,res:Response,next:NextFunct
 
                     if(oldJob){
                     
-                    const job = await prisma.denyJobApplication.create({
+                    const job = await prisma.deniedApplications.create({
                         data:{
                             name:oldJob.name,
                             email:oldJob.email,
@@ -218,7 +313,7 @@ export const denyJobApplication = async (req:Request,res:Response,next:NextFunct
 
 }
 
-export const approveJobApplication = async (req:Request,res:Response,next:NextFunction) => {
+export const approveJobApplication = async (req:any,res:Response,next:NextFunction) => {
 
     const {appId} = req.body
 
@@ -228,14 +323,11 @@ export const approveJobApplication = async (req:Request,res:Response,next:NextFu
     if(!existingJob){
             return next(new ValidationError("Job application does not exists with that id"))
     }
-
-     //TODO : Authorization
-    const approverId = "1"
-    const role = "admin"
+                const approverId = req.user.id
+                const role = req.user.role
 
    
-    
-                    
+
                     let job = null;
                     
                     if(role == "admin"){
@@ -246,7 +338,7 @@ export const approveJobApplication = async (req:Request,res:Response,next:NextFu
                             managerapproved:true
                         }
                     })
-                    }else if(role== "hr") {
+                    }else if(role== "user") {
                          job = await prisma.jobapplication.update({
                         where:{id:appId},
                         data:{
@@ -275,12 +367,13 @@ export const approveJobApplication = async (req:Request,res:Response,next:NextFu
 
 
 
-export const createJob = async (req:Request,res:Response,next:NextFunction) => {
+export const createJob = async (req:any,res:Response,next:NextFunction) => {
 
 
      const {jobtitle,jobrequirements,jobnotes,department,position,mounthlywage,weeklypayment,dailypayment,expiredate,responsibleUserId} = req.body;
 
-    var createdByUserId = "1";
+    console.log(req)
+    var createdByUserId = req.headers["x-user-id"]
     var createdate = new Date().toISOString()
 
      try {
@@ -302,7 +395,7 @@ export const createJob = async (req:Request,res:Response,next:NextFunction) => {
                             jobnotes:jobnotes,
                             department:department,
                             position:position,
-                            wageclause,
+                            ...wageclause,
                             createdByUserId:createdByUserId,
                             createdate: createdate,
                             expiredate:expiredate,
@@ -357,7 +450,7 @@ export const updateJob = async (req:Request,res:Response,next:NextFunction) => {
                             jobnotes:jobnotes,
                             department:department,
                             position:position,
-                            wageclause,
+                            ...wageclause,
                             expiredate:expiredate,
                             responsibleUserId:responsibleUserId
                         }
