@@ -4,11 +4,11 @@ import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import {getUniversities,University} from '../../lists/university';
-import {getCities,City} from '../../lists/cities';
-import {getCounties,County} from '../../lists/counties';
-import { getDepartments } from '../../lists/unidepartments';
-import { getJobInfos } from '../../lists/jobs';
+import {getUniversities,University} from '../../../lists/university';
+import {getCities,City} from '../../../lists/cities';
+import {getCounties,County} from '../../../lists/counties';
+import { getDepartments } from '../../../lists/unidepartments';
+import { getJobInfos } from '../../../lists/jobs';
 
 
 

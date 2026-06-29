@@ -104,10 +104,7 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
                             }),"EX",7*24*60*60)
 
 
-        await publishUserLogin({
-            key:user.id,
-            value:user.name
-        })
+                            
 
         res.status(200).json({
             message:"Login successful",
@@ -130,10 +127,7 @@ export const logoutUser =  async (req:any,res:Response,next:NextFunction) => {
                 const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as jwt.JwtPayload
                 if(decoded.sessionId){
                     await redis.del(`session:${decoded.sessionId}`)
-                     await publishUserLogout({
-                        key:decoded.id,
-                        data:decoded.id
-                       })
+                    
                 }
             }   
 

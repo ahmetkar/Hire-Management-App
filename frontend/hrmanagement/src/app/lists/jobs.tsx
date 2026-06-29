@@ -1,4 +1,5 @@
 import axios from "axios"
+import axiosInstance from "../utils/axiosInstance";
 
 
 export type Job =  {
@@ -12,9 +13,12 @@ export type Job =  {
  weeklypayment: number | null;
  dailypayment: number | null;
  expiredate: Date;
+createdate: Date;
+ responsibleUserId:string;
+ createdByUserId:string;
 }
 
-type JobResponse =  {
+export type JobResponse =  {
     data:Job
 }
 
@@ -22,6 +26,14 @@ type JobsResponse  = {
     data:Job[]
 }
 
+
+export const getJobs = async (): Promise<Job[]> => {
+
+    const response = await axiosInstance.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-jobs`)
+    const job =  response.data
+    return job.data
+
+}
 
 export const getJob = async (id:string): Promise<Job> => {
 

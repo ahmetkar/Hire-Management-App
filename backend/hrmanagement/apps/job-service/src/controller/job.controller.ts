@@ -84,12 +84,12 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
 
 export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
 
-        const jobId = req.params.jobid ? String(req.params.jobid) : undefined;
+        const id = req.params.id ? String(req.params.id) : undefined;
     
             try {
                 
                     if(req.header["x-user-id"]){
-                        const job = await prisma.jobs.findMany({where:{id:jobId}})
+                        const job = await prisma.jobs.findMany({where:{id:id}})
                         if(job){
                             res.status(201).json({
                             success:true,
@@ -100,7 +100,7 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
                             return next(new ValidationError("Job Not Found"))
                         }
                     }else {
-                        const job = await prisma.jobs.findMany({where:{id:jobId}})
+                        const job = await prisma.jobs.findMany({where:{id:id}})
                         if(job){
                             res.status(201).json({
                             success:true,
