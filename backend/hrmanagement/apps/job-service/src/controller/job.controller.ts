@@ -82,23 +82,48 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
 
 }
 
-export const getOneJob = async (req:Request,res:Response,next:NextFunction) => {
+export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
 
         const jobId = req.params.jobid ? String(req.params.jobid) : undefined;
     
             try {
                 
-                    
-                    const job = await prisma.jobs.findMany({where:{id:jobId}})
-                    if(job){
-                        res.status(201).json({
-                        success:true,
-                        message:"Job found !",
-                        data: job
-                        });
+                    if(req.header["x-user-id"]){
+                        const job = await prisma.jobs.findMany({where:{id:jobId}})
+                        if(job){
+                            res.status(201).json({
+                            success:true,
+                            message:"Job found !",
+                            data: job
+                            });
+                        }else {
+                            return next(new ValidationError("Job Not Found"))
+                        }
                     }else {
-                        return next(new ValidationError("Job Not Found"))
+                        const job = await prisma.jobs.findMany({where:{id:jobId}})
+                        if(job){
+                            res.status(201).json({
+                            success:true,
+                            message:"Job found !",
+                            data: {
+                                id: job[0].id,
+                                jobtitle: job[0].jobtitle,
+                                jobrequirements: job[0].jobrequirements,
+                                jobnotes: job[0].jobnotes,
+                                department: job[0].department,
+                                position: job[0].position,
+                                mounthlywage: job[0].mounthlywage,
+                                weeklypayment: job[0].weeklypayment,
+                                dailypayment: job[0].dailypayment,
+                                createdate: job[0].createdate,
+                                expiredate: job[0].expiredate     
+                            }
+                            });
+                        }else {
+                            return next(new ValidationError("Job Not Found"))
+                        }
                     }
+                    
                
 
             }catch(error){
@@ -198,7 +223,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
    var appdate = new Date().toISOString()
 
-
+    const abilitiesstr = abilities.join(",")
 
 
      try {
@@ -220,7 +245,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             graduatedate:graduatedate,
                             githublink:githublink,
                             linkedinlink:linkedinlink,
-                            abilities:abilities,
+                            abilities:abilitiesstr,
                             selfbio:selfbio,
                             birthdate:birthdate,
                             agreeterms:agreeterms,

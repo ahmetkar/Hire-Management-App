@@ -11,7 +11,7 @@ const Body = ({
 }>) => {
      const segments = useSelectedLayoutSegments();
      let activeRoute = segments.join("/")
-    if(activeRoute == "(site)" || activeRoute == "(site)/applyjob"){
+    if(activeRoute.includes("(site)")){
         return (
      <body className="horizontal light" suppressHydrationWarning>
         <Providers>

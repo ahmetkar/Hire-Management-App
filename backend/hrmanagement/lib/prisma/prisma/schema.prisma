@@ -22,19 +22,19 @@
     password String?
     signupdate DateTime @default(now())
     role String?
-    staff staff?
+    staffInfo staffInfo?
     createdJobs jobs[] @relation("CreatorJob")
     responsibleJobs jobs[] @relation("ResponsibleJob")
     receivedNotifications notifications[] @relation("NotificationReceiver")
     sendedNotifications notifications[] @relation("NotificationSender")
     deniedapplications deniedApplications[] @relation("DeniedApplications")
     approvedapplications jobapplication[] @relation("ApprovedApplications")
+    departmentId String
+    department department @relation(fields: [departmentId],references:[id])
   }
 
-   model staff {
+   model staffInfo {
     id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-    email String @unique
     position String?
     phone_number String?
     country String?
@@ -52,8 +52,6 @@
     selfbio    String?
     birthdate DateTime
     signupdate DateTime @default(now())
-    departmentId String
-    department department @relation(fields: [departmentId],references:[id])
     userId String? @unique
     user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
   }
@@ -63,11 +61,11 @@
     id String @id @default(auto()) @map("_id") @db.ObjectId
     name String
     email String @unique
-    position String?
-    phone_number String?
-    country String?
-    city  String?
-    county String?
+    position String
+    phone_number String
+    country String
+    city  String
+    county String
     address String?
     postcode String?
     university String?
@@ -84,8 +82,8 @@
     ipadress String?
     staffapproved Boolean @default(false)
     managerapproved Boolean @default(false)
-    approverId String
-    approver   users @relation("ApprovedApplications",fields: [approverId], references: [id])
+    approverId String?
+    approver   users? @relation("ApprovedApplications",fields: [approverId], references: [id])
     jobId String? @unique
     job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
     
@@ -94,7 +92,7 @@
   model department {
     id String @id @default(auto()) @map("_id") @db.ObjectId
     name String?
-    staff staff[]
+    users users[]
     addingdate DateTime @default(now())
   }
 

@@ -61,6 +61,12 @@ const Aside = () => {
                 <li className="nav-item">
                   <a className="nav-link pl-3" href="/application/jobmanagement/approved"><span className="ml-1 item-text">Onaylananları Yönet</span></a>
                 </li>
+                 <li className="nav-item">
+                  <a className="nav-link pl-3" href="/application/jobmanagement/createjob"><span className="ml-1 item-text">İş İlanı Ekle</span></a>
+                </li>
+                 <li className="nav-item">
+                  <a className="nav-link pl-3" href="/application/jobmanagement/jobs"><span className="ml-1 item-text">İş İlanlarını gör</span></a>
+                </li>
                 
               </ul>
             </li>
@@ -71,14 +77,14 @@ const Aside = () => {
             <li className="nav-item dropdown">
               <Link href="#" onClick={()=>setSecToggle(!secToggle)} className="dropdown-toggle nav-link">
                 <i className="fe fe-users fe-16"></i>
-                <span className="ml-3 item-text">Personel Yönetimi</span>
+                <span className="ml-3 item-text">Kullanıcı Yönetimi</span>
               </Link>
               <ul className={` list-unstyled pl-4 w-100 ${secToggle ? "d-block" : "d-none"}`} id="staff">
                 <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/staff/addstaff/"><span className="ml-1 item-text">Personel Ekle</span></Link>
+                  <Link className="nav-link pl-3" href="/application/users/adduser/"><span className="ml-1 item-text">Yeni Ekle</span></Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/staff/"><span className="ml-1 item-text">Personelleri Görüntüle</span></Link>
+                  <Link className="nav-link pl-3" href="/application/users/"><span className="ml-1 item-text">Kullanıcıları Görüntüle</span></Link>
                 </li>
             
               </ul>
@@ -115,12 +121,7 @@ const Aside = () => {
               </Link>
             </li>
 
-             <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/users/">
-                <i className="fe fe-user fe-16"></i>
-                <span className="ml-3 item-text">Kullanıcılar</span>
-              </Link>
-            </li>
+            
 
              <li className="nav-item w-100">
               <Link className="nav-link" href="/application/settings/myprofile">

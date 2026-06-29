@@ -6,7 +6,7 @@ const page = () => {
 
           <div className="row justify-content-center">
             <div className="col-12">
-              <h2 className="page-title">Personel Ekle</h2>
+              <h2 className="page-title">İş Güncelle</h2>
              
               <div className="card shadow mb-4">
                 <div className="card-header">

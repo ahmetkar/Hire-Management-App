@@ -15,141 +15,6 @@ import { publishUserLogout } from "../events/producers/userLogout.producers";
 
 
 
-export const getUsers = async (req:Request,res:Response,next:NextFunction) => {
-            
-            const role = req.query.email ? String(req.query.email) : undefined;
-
-            try {
-                if(role!=undefined){
-                    
-                    const users = await prisma.users.findMany({where:{
-                        role:role
-                    } })
-                    if(users){
-                        res.status(201).json({
-                        success:true,
-                        message:"Users found !",
-                        data: users
-                        });
-                    }else {
-                        return next(new ValidationError("No Users Found"))
-                    }
-                }else {
-                    const users = await prisma.users.findMany();
-                    if(users){
-                        res.status(201).json({
-                        success:true,
-                        message:"Users found !",
-                        data: users
-                        });
-                    }else {
-                         return next(new ValidationError("No Users Found"))
-                    }
-                }
-
-            }catch(error){
-                return next(error);
-            }
-}
-
-
-
-export const getUser = async (req:Request,res:Response,next:NextFunction) => {
-            
-            const {email} = req.body
-            
-
-            try {
-                if(email!=undefined){
-                 validateEmailData(email);
-                const user = await prisma.users.findUnique({where:{email:email}})
-
-                if(user){
-                     res.status(201).json({
-                        success:true,
-                        message:"User found !",
-                        data: user
-                        });
-                }else {
-                      return next(new ValidationError("User not Found"))
-                }
-            }
-            }catch(error){
-                return next(error);
-            }
-}
-
-
-export const userUpdate = async (req:Request,res:Response,next:NextFunction) => {
-
-    try {
-    const {name,email,password,role} = req.body
-
-    const existingUser = await prisma.users.findUnique({where:{email:email}})
-
-    if(!existingUser){
-            return next(new ValidationError("User does not exists with that email"))
-    }
-
-    const newhashedPassword = await bcrypt.hash(password,10)
-
-    const user = await prisma.users.update({
-        where:{email:email},
-        data:{name:name,email:email,password:newhashedPassword,role:role}
-    })
-
-    if(user){
-         res.status(201).json({
-                        success:true,
-                        message:"User updated successfully !",
-                        data: user
-                        });
-            }else {
-                 return next(new ValidationError("User cannot updated"))
-            }
-
-    }catch(error){
-        return next(error);
-    }
-    
-}
-
-
-export const userDelete = async (req:Request,res:Response,next:NextFunction) => {
-
-    try {
-        const id = req.params.id ? String(req.params.id) : undefined;
-
-        if(id!=undefined){
-
-        const existingUser = await prisma.users.findUnique({where:{id:id}})
-
-        if(!existingUser){
-                return next(new ValidationError("User does not exists"))
-        }else {
-            const deleted = await prisma.users.delete({
-                where:{id:id}
-            })
-            if(deleted){
-                   res.status(201).json({
-                        success:true,
-                        message:"User deleted successfully !"
-                        });
-            
-            }else {
-                return next(new ValidationError("User cannot deleted"))
-            }
-        }
-        }else {
-            return next(new ValidationError("Id parameter not given"))
-        }
-
-    }catch(error){
-        return next(error);
-    }
-
-}
-
 
 
 export const userRegister = async (req:Request,res:Response,next:NextFunction) => {
@@ -159,7 +24,7 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
 
         validateRegistirationData(req.body);
         
-        const {name,email,password,role} = req.body;
+        const {name,email,password,role,departmentId} = req.body;
 
         var signupdate  = new Date().toISOString();
             
@@ -173,13 +38,13 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
         const hashedPassword = await bcrypt.hash(password,10)
 
         const user = await prisma.users.create({
-            data : {name,email,password:hashedPassword,signupdate,role}
+            data : {name:name,email:email,password:hashedPassword,signupdate:signupdate,role:role,departmentId:departmentId}
         })
 
         if(user != null){
             res.status(201).json({
             success:true,
-            message:"User registered succesfully !",
+            message:"User registered succesfully !"
         });
         }else {
              return next(new ValidationError("User cannot registered"))

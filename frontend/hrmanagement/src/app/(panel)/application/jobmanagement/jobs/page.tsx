@@ -62,7 +62,7 @@ const page = () => {
     <div>
           <div className="row justify-content-center">
             <div className="col-12">
-              <h2 className="mb-2 page-title">Personel Listesi</h2>
+              <h2 className="mb-2 page-title">İş Listesi</h2>
               <p className="card-text">DataTables is a plug-in for the jQuery Javascript library. It is a highly flexible tool, built upon the foundations of progressive enhancement, that adds all of these advanced features to any HTML table. </p>
               <div className="row my-4">
               

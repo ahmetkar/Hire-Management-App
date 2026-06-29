@@ -26,21 +26,16 @@ export const verifyToken = async (req:any,res:any,next:NextFunction) => {
 
     try {
 
-   const authheader = req.headers["authorization"]
-
-   const [type,token] = authheader.split(' ')
-
-
-
-
-   if(type!= "Bearer" || !token){
-    return res.status(403).send({message:"Invalid authorization header 1"})
+   const token = req.cookies?.access_token
+    
+   if(!token){
+    return res.status(403).send({message:`Invalid authorization header`})
    }
-
 
    const decoded = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET as string) as AccessTokenPayload
 
    if(!decoded.id || !decoded.sessionId || !decoded.role){
+    console.log(decoded)  
     return res.status(403).send({message:`Invalid authorization header ${decoded.id} ${decoded.sessionId}`})
    }
 
@@ -92,7 +87,7 @@ export const verifyToken = async (req:any,res:any,next:NextFunction) => {
     return next();
     }catch(error){
     return res.status(401).json({
-      message: "Unauthorized",
+      message: "Unauthorized.",
       error:error
     });
     }

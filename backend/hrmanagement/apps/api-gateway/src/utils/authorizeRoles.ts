@@ -1,7 +1,7 @@
 import { NextFunction } from "express";
 
 
-type Role = "user" | "admin"
+type Role = "staff" | "admin" | "user"
 
 export const authorizeRoles = (roles:Role[]) => {
   return (req: any, res: any, next: NextFunction) => {

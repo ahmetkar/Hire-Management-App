@@ -1,0 +1,6 @@
+1-apprroved.ts düzenle
+2-geri kalan frontedleri ayarla,application için authorrization
+3-veritabanları ayır
+4-ai service yap
+5-redis-kafka düzenlemeleri
+6-cdn ,load balancer ekle

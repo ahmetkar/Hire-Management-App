@@ -1,17 +1,17 @@
 
 import express, { Router } from "express"
-import { createStaff, deleteStaff, getAllStaff, getOneStaff, getStaffByFilter, updateStaff } from "../controllers/staff.controller";
+import { createStaffAndUser, getUser, getUserByFilter, getUsers, userDelete, userUpdate } from "../controllers/staff.controller";
 
 
 const router:Router = express.Router()
 
 
-router.post("/staff-create",createStaff)
-router.post("/staff-update",updateStaff)
-router.post("/staff-delete/:id",deleteStaff)
-router.get("/get-staff/:staffid",getOneStaff)
-router.get("/get-all-staff",getAllStaff)
-router.get("/get-staff-by-filter",getStaffByFilter)
+router.post("/user-create",createStaffAndUser)
+router.post("/get-user-by-filter/:usertype",getUserByFilter)
+router.post("/user-delete/:id/:usertype",userDelete)
+router.get("/user-update/:usertype",userUpdate)
+router.get("/get-users/:usertype",getUsers)
+router.get("/get-user",getUser)
 
 
 
