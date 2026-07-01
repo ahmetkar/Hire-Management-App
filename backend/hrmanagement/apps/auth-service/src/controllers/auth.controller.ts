@@ -4,7 +4,7 @@ import { validateEmailData, validateRegistirationData } from "../helpers/auth.he
 import { AuthError, JsonWebTokenError, ValidationError } from "@hrmanagement/error-handler";
 import bcrypt  from "bcryptjs"
 import {prisma}  from "@hrmanagement/prisma"
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
 import { setCookie } from "../util/setCookie";
 import { clearCookie } from "../util/clearCookie";
 import { publishUserLogin } from "../events/producers/userLogin.producers";
@@ -13,8 +13,13 @@ import { randomUUID } from "crypto";
 import { publishUserLogout } from "../events/producers/userLogout.producers";
 
 
+type Role = "user" | "admin" | "staff" ;
 
-
+interface TokenPayload extends JwtPayload {
+  id: string;          // userId
+  role: Role;
+  sessionId: string;
+}
 
 
 export const userRegister = async (req:Request,res:Response,next:NextFunction) => {
@@ -63,7 +68,6 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
 export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
     try {
         const sessionId = randomUUID()
-        const jti = crypto.randomUUID()
 
         const {email,password} = req.body;
         if(!email || !password){
@@ -83,11 +87,11 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
         }
         
 
-        const accessToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId,jti:jti},process.env.ACCESS_TOKEN_SECRET as string,{
+        const accessToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId},process.env.ACCESS_TOKEN_SECRET as string,{
             expiresIn:"15m"
         })
 
-        const refreshToken = jwt.sign({id: user.id,role:"user",sessionId:sessionId,jti:jti},process.env.REFRESH_TOKEN_SECRET as string,{
+        const refreshToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId},process.env.REFRESH_TOKEN_SECRET as string,{
             expiresIn:"7d"
         })
 
@@ -99,8 +103,6 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
                         id: user.id,
                         role: user.role,
                         sessionId:sessionId,
-                        jti:jti,
-                        revoked: false
                             }),"EX",7*24*60*60)
 
 
@@ -124,7 +126,7 @@ export const logoutUser =  async (req:any,res:Response,next:NextFunction) => {
             const refreshToken = req.cookies["refresh_token"]
 
             if(refreshToken){
-                const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as jwt.JwtPayload
+                const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as TokenPayload
                 if(decoded.sessionId){
                     await redis.del(`session:${decoded.sessionId}`)
                     
@@ -149,15 +151,17 @@ export const logoutUser =  async (req:any,res:Response,next:NextFunction) => {
 
 export const refreshToken = async (req:any,res:Response,next:NextFunction) => {
     try {
+       
+        
         const refreshToken = req.cookies["refresh_token"] || req.headers.authorization?.split(" ")[1];
 
         if(!refreshToken){
             throw new ValidationError("Unauthorized ! No refresh token !")
         }
 
-        const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as {id:string,role:string}
+        const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as {id:string,role:string,sessionId:string}
 
-        if(!decoded || !decoded.id || !decoded.role){
+        if(!decoded || !decoded.id || !decoded.role || !decoded.sessionId){
             return new JsonWebTokenError("Forbidden ! Invalid refresh token !");
         }
 
@@ -168,7 +172,7 @@ export const refreshToken = async (req:any,res:Response,next:NextFunction) => {
             return new AuthError("Forbidden ! User not found !")
         }
 
-        const newAccessToken = jwt.sign({id:decoded.id,role:decoded.role},process.env.ACCESS_TOKEN_SECRET as string,{expiresIn:"15m"})
+        const newAccessToken = jwt.sign({id:decoded.id,role:decoded.role,sessionId:decoded.sessionId},process.env.ACCESS_TOKEN_SECRET as string,{expiresIn:"15m"})
         
         setCookie(res,"access_token",newAccessToken);
 

@@ -1,14 +1,23 @@
+"use client"
+import { useParams } from 'next/navigation'
 import React from 'react'
 
+
+
 const page = () => {
+
+
+  const {id} = useParams()
+
+
+
   return (
   
          <div>
-
           <div className="row justify-content-center">
             <div className="col-md-12">
                  <h2 className="page-title">İş Başvurusu Görüntüle</h2>
-              <p className="text-muted">#154666 nolu Backend Developer İlanı için <strong> Ahmet Kar </strong> tarafıdan yapılan iş başvurusu</p>
+              <p className="text-muted">#{id} nolu Backend Developer İlanı için <strong> Ahmet Kar </strong> tarafıdan yapılan iş başvurusu</p>
             </div>
               <div className="col-md-12 mb-4">
                   <div className="card shadow">

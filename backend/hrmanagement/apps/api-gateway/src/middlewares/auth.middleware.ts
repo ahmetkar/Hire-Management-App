@@ -3,13 +3,12 @@ import jwt,{JwtPayload} from "jsonwebtoken"
 import redis from "../config/redis"
 
 
-type Role = "user" | "admin" ;
+type Role = "user" | "admin" | "staff" ;
 
-interface AccessTokenPayload extends JwtPayload {
+interface TokenPayload extends JwtPayload {
   id: string;          // userId
   role: Role;
   sessionId: string;
-  jti?: string;         // token id, opsiyonel ama production için iyi olur
 }
 
 interface AuthRequest extends Request {
@@ -32,7 +31,7 @@ export const verifyToken = async (req:any,res:any,next:NextFunction) => {
     return res.status(403).send({message:`Invalid authorization header`})
    }
 
-   const decoded = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET as string) as AccessTokenPayload
+   const decoded = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET as string) as TokenPayload
 
    if(!decoded.id || !decoded.sessionId || !decoded.role){
     console.log(decoded)  
@@ -53,8 +52,6 @@ export const verifyToken = async (req:any,res:any,next:NextFunction) => {
       id: string;
       role: Role;
       sessionId:string;
-      revoked?: boolean;
-      jti?: string;
     }
 
     if(session.id !== decoded.id){
@@ -63,17 +60,6 @@ export const verifyToken = async (req:any,res:any,next:NextFunction) => {
       });
     }
 
-    if (session.revoked) {
-      return res.status(401).json({
-        message: "Session revoked"
-      });
-    }
-
-    if (session.jti && decoded.jti && session.jti !== decoded.jti) {
-      return res.status(401).json({
-        message: "Invalid token session"
-      });
-    }
 
 
       req.user = {

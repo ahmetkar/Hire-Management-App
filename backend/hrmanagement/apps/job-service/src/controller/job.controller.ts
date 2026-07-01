@@ -4,18 +4,100 @@ import { ValidationError } from "@hrmanagement/error-handler";
 
 
 
-export const getAllJobApplication = async (req:Request,res:Response,next:NextFunction) => {
-     
+export const searchAllJobApplication = async (req:Request,res:Response,next:NextFunction) => {
+
+
+
+            const page = Math.max(Number(req.query.page) || 1 ,1)
+            const limit = Math.min(Number(req.query.limit) || 10 ,100)
+            const type = req.query.type
+            const searchstr = req.query.searchstr?.toString()
+            
+            let whereclause = {}
+
+            if(type == "new"){
+                whereclause = {disapproved:false,managerapproved:false,staffapproved:false}
+            }else if(type == "waiting"){
+                whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
+            }else if(type == "approved"){
+                whereclause = {disapproved:false,managerapproved:true,staffapproved:true}
+            }else if(type == "disapproved") {
+                whereclause = {disapproved:true,managerapproved:false,staffapproved:false}
+            }
+
+
+            const skip = (page-1) * limit
 
             try {
-                
+
                     
-                    const jobs = await prisma.jobapplication.findMany()
-                    if(jobs){
+                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                        skip:skip,take:limit,orderBy:{
+                            appdate:'desc'
+                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {job:true}}),
+                        prisma.jobapplication.count()
+                    ])
+
+                    if(data){
                         res.status(201).json({
                         success:true,
                         message:"Applications found !",
-                        data: jobs
+                        data: data,
+                        page:page,
+                        limit:limit,
+                        total:total,
+                        totalPages:Math.ceil(total/limit)
+                        });
+                    }else {
+                       return next(new ValidationError("Job Application Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+}
+
+export const getAllJobApplication = async (req:Request,res:Response,next:NextFunction) => {
+
+            const page = Math.max(Number(req.query.page) || 1 ,1)
+            const limit = Math.min(Number(req.query.limit) || 10 ,100)
+            const type = req.query.type
+            
+            let whereclause = {}
+
+            if(type == "new"){
+                whereclause = {disapproved:false,managerapproved:false,staffapproved:false}
+            }else if(type == "waiting"){
+                whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
+            }else if(type == "approved"){
+                whereclause = {disapproved:false,managerapproved:true,staffapproved:true}
+            }else if(type == "disapproved") {
+                whereclause = {disapproved:true,managerapproved:false,staffapproved:false}
+            }
+
+
+            const skip = (page-1) * limit
+
+            try {
+ 
+                    
+                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                        skip:skip,take:limit,orderBy:{
+                            appdate:'desc'
+                        },where:{...whereclause},include : {job:true}}),
+                        prisma.jobapplication.count()
+                    ])
+
+                    if(data){
+                        res.status(201).json({
+                        success:true,
+                        message:"Applications found !",
+                        data: data,
+                        page:page,
+                        limit:limit,
+                        total:total,
+                        totalPages:Math.ceil(total/limit)
                         });
                     }else {
                        return next(new ValidationError("Job Application Not Found"))
@@ -34,14 +116,35 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
      
 
             try {
+
+                const page = Math.max(Number(req.query.page) || 1 ,1)
+                const limit = Math.min(Number(req.query.limit) || 10 ,100)
+                
+                const skip = (page-1) * limit
+
                 
                     
-                    const jobs = await prisma.jobs.findMany()
-                    if(jobs){
+                    const [data,total] = await Promise.all([prisma.jobs.findMany({
+                        skip,take:limit,orderBy:{
+                            createdate:'desc'
+                        }
+                    })
+                    ,
+                    prisma.jobs.count()
+                    ])
+
+
+
+                    if(data){
                         res.status(201).json({
                         success:true,
                         message:"Jobs found !",
-                        data: jobs
+                        data: data,
+                        total,
+                        page,
+                        limit,
+                        totalPages:Math.ceil(total/limit)
+
                         });
                     }else {
                        return next(new ValidationError("Jobs Not Found"))
@@ -291,28 +394,28 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
                     
                     const job = await prisma.deniedApplications.create({
                         data:{
-                            name:oldJob.name,
-                            email:oldJob.email,
-                            phone_number:oldJob.phone_number,
-                            city:oldJob.city,
-                            position:oldJob.position,
-                            country:oldJob.country,
-                            county:oldJob.county,
-                            address:oldJob.address,
-                            postcode:oldJob.postcode,
-                            university:oldJob.university,
-                            unidepartment:oldJob.unidepartment,
-                            unifaculty:oldJob.unifaculty,
-                            graduatedate:oldJob.graduatedate,
-                            githublink:oldJob.githublink,
-                            linkedinlink:oldJob.linkedinlink,
-                            abilities:oldJob.abilities,
-                            selfbio:oldJob.selfbio,
-                            birthdate:oldJob.birthdate,
-                            agreeterms:oldJob.agreeterms,
-                            appdate:oldJob.appdate,
-                            ipadress:oldJob.ipadress,
-                            jobId:oldJob.jobId,
+                            name:oldJob[0].name,
+                            email:oldJob[0].email,
+                            phone_number:oldJob[0].phone_number,
+                            city:oldJob[0].city,
+                            position:oldJob[0].position,
+                            country:oldJob[0].country,
+                            county:oldJob[0].county,
+                            address:oldJob[0].address,
+                            postcode:oldJob[0].postcode,
+                            university:oldJob[0].university,
+                            unidepartment:oldJob[0].unidepartment,
+                            unifaculty:oldJob[0].unifaculty,
+                            graduatedate:oldJob[0].graduatedate,
+                            githublink:oldJob[0].githublink,
+                            linkedinlink:oldJob[0].linkedinlink,
+                            abilities:oldJob[0].abilities,
+                            selfbio:oldJob[0].selfbio,
+                            birthdate:oldJob[0].birthdate,
+                            agreeterms:oldJob[0].agreeterms,
+                            appdate:oldJob[0].appdate,
+                            ipadress:oldJob[0].ipadress,
+                            jobId:oldJob[0].jobId,
                             deniedById:deniedById
                         }
                     })

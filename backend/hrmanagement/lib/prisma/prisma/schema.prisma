@@ -27,9 +27,10 @@
     responsibleJobs jobs[] @relation("ResponsibleJob")
     receivedNotifications notifications[] @relation("NotificationReceiver")
     sendedNotifications notifications[] @relation("NotificationSender")
-    deniedapplications deniedApplications[] @relation("DeniedApplications")
-    approvedapplications jobapplication[] @relation("ApprovedApplications")
-    departmentId String
+    userApprovedapplications jobapplication[] @relation("UserApprovedApplications")
+    managerApprovedapplications jobapplication[] @relation("ManagerApprovedApplications")
+    disApprovedapplications jobapplication[] @relation("DisapprovedApplications")
+    departmentId String @db.ObjectId
     department department @relation(fields: [departmentId],references:[id])
   }
 
@@ -52,7 +53,7 @@
     selfbio    String?
     birthdate DateTime
     signupdate DateTime @default(now())
-    userId String? @unique
+    userId String? @db.ObjectId @unique
     user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
   }
 
@@ -80,11 +81,16 @@
     agreeterms Boolean @default(false)
     appdate DateTime @default(now())  
     ipadress String?
+    disapproved Boolean @default(false)
     staffapproved Boolean @default(false)
     managerapproved Boolean @default(false)
-    approverId String?
-    approver   users? @relation("ApprovedApplications",fields: [approverId], references: [id])
-    jobId String? @unique
+    userApproverId String? @db.ObjectId
+    userApprover   users? @relation("UserApprovedApplications",fields: [userApproverId], references: [id])
+    managerApproverId String? @db.ObjectId
+    managerApprover   users? @relation("ManagerApprovedApplications",fields: [managerApproverId], references: [id])
+    disApproverId String? @db.ObjectId
+    disapprover   users? @relation("DisapprovedApplications",fields: [disApproverId], references: [id])
+    jobId String? @db.ObjectId
     job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
     
   }
@@ -108,12 +114,11 @@ model jobs {
     dailypayment    Int?
     createdate  DateTime @default(now())
     expiredate  DateTime
-    responsibleUserId String?
+    responsibleUserId String? @db.ObjectId
     responsibleUser   users? @relation("ResponsibleJob",fields: [responsibleUserId], references: [id], onDelete: SetNull)
-    createdByUserId  String
+    createdByUserId  String @db.ObjectId
     createdByUser   users @relation("CreatorJob",fields: [createdByUserId], references: [id])
     applications jobapplication[]
-    deniedapplications deniedApplications[]
 }
 
 model settings {
@@ -129,38 +134,9 @@ model notifications {
    id String @id @default(auto()) @map("_id") @db.ObjectId
    title String?
    desc String?
-   bywhoId String
+   bywhoId String @db.ObjectId
    byWho   users @relation("NotificationSender",fields: [bywhoId], references: [id])
-   toWhoId String
+   toWhoId String @db.ObjectId
    toWho   users @relation("NotificationReceiver",fields: [toWhoId], references: [id])
-}
-
-model deniedApplications {
-   id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-    email String @unique
-    position String?
-    phone_number String?
-    country String?
-    city  String?
-    county String?
-    address String?
-    postcode String?
-    university String?
-    unidepartment String?
-    unifaculty  String?
-    graduatedate DateTime
-    githublink  String?
-    linkedinlink String?
-    abilities   String?
-    selfbio    String?
-    birthdate DateTime
-    agreeterms Boolean @default(false)
-    appdate DateTime @default(now())  
-    ipadress String?
-    deniedById String 
-    deniedBy   users @relation("DeniedApplications",fields: [deniedById], references: [id])
-    jobId String? @unique
-    job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
 }
 

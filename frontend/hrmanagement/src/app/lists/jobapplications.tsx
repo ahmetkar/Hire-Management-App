@@ -2,6 +2,22 @@ import axios from "axios"
 import axiosInstance from "../utils/axiosInstance";
 
 
+export type Job =  {
+ id: string;
+ jobtitle: string;
+ jobrequirements: string;
+ jobnotes: string;
+ department: string;
+ position: string;
+ mounthlywage: number | null;
+ weeklypayment: number | null;
+ dailypayment: number | null;
+ expiredate: Date;
+createdate: Date;
+ responsibleUserId:string;
+ createdByUserId:string;
+}
+
 export type JobApp =  {
  id: string;
  name:string;
@@ -11,6 +27,7 @@ export type JobApp =  {
  country:string;
  city:string;
  county:string;
+ postcode:string;
  address:string;
  university:string;
  unidepartment:string;
@@ -24,23 +41,32 @@ export type JobApp =  {
  appdate:string;
  staffapproved:boolean;
  managerapproved:boolean;
+ job:Job
 }
 
 export type JobAppResponse =  {
     data:JobApp
 }
 
-type JobAppsResponse  = {
-    data:JobApp[]
+export type JobAppsResponse  = {
+    data:JobApp[],
+    page:number,
+    limit:number,
+    total:number,
+    totalPages:number
 }
 
 
-export const getJobApps = async (): Promise<JobApp[]> => {
+export const searchJobApps = async (searchstr:string,page:number,limit:number,type:string): Promise<JobAppsResponse> => {
+    const response = await axiosInstance.get<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/search-all-application?page=${page}&limit=${limit}&type=${type}&searchstr=${searchstr}`)
+    const jobapps =  response.data
+    return jobapps
+}  
 
-    const response = await axiosInstance.get<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-applications`)
-    const job =  response.data
-    return job.data
-
+export const getJobApps = async (page:number,limit:number,type:string): Promise<JobAppsResponse> => {
+    const response = await axiosInstance.get<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-application?page=${page}&limit=${limit}&type=${type}`)
+    const jobapps =  response.data
+    return jobapps
 }   
 
 export const getJobApp = async (id:string): Promise<JobApp> => {

@@ -1,21 +1,39 @@
 "use client"
-import { getJobs,Job } from '@/app/lists/jobs';
-import React, { useEffect, useState } from 'react'
+import { getJobs,Job,JobsResponse } from '@/app/lists/jobs';
 
+import React, { useEffect, useState } from 'react'
+import Pagination from '../../utils/pagination';
+import { useSearchParams } from 'next/navigation';
 const page = () => {
 
+  const [activeId,setActiveId] = useState("")
 
-   const [jobs, setJobs] = useState<Job[]>([]);
+   const [jobResponse, setJobResponse] = useState<JobsResponse>({
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0,
+   });
+   const params =  useSearchParams()
+
+   const page = Number(params.get("page")) || 1
+   const limit = 10
 
    useEffect(() => {
-      getJobs()
-        .then((data) => setJobs(data))
+      getJobs(page,limit)
+        .then((data) => setJobResponse(data))
         .catch((error) => console.error(error));   
-    }, []);
 
+     
+    }, [page]);
+
+
+    
 
   return (
     <div>
+  
           <div className="row justify-content-center">
             <div className="col-12">
               <h2 className="mb-2 page-title">İş Listesi</h2>
@@ -39,12 +57,12 @@ const page = () => {
                             <th>İş gereklilikleri</th>
                             <th>Notlar</th>
                             <th>Sorumlu Kişi</th>
-                            <th>Oluşturuan Kişi</th>
+                            <th>Oluşturan Kişi</th>
                             <th>Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {jobs.map((s)=>(
+                          {jobResponse.data.map((s)=>(
                            <tr key={s.id}>
                             <td>
                               <div className="custom-control custom-checkbox">
@@ -52,12 +70,16 @@ const page = () => {
                                 <label className="custom-control-label"></label>
                               </div>
                             </td>
-                            <td>{s.id.substring(0,5)}...</td>
+                           
+                            <td><a onClick={(e)=>{
+                              e.preventDefault()
+                              setActiveId(activeId==s.id ? s.id.substring(0,5) : s.id)
+                            }}>{activeId == s.id ? s.id: s.id.substring(0,5)}</a></td>
                             <td>{s.jobtitle}</td>
                             <td>{s.department}</td>
                             <td>{s.position}</td>
                             <td>{s.createdate.toString()}</td>
-                            <td>{s.expiredate.toString()}</td>
+                            <td>{s.expiredate.toString()}</td>  
                             <td>{s.jobrequirements}</td>
                             <td>{s.jobnotes}</td>
                             <td>{s.responsibleUserId.substring(0,5)}</td>
@@ -74,10 +96,12 @@ const page = () => {
                           </tr>
                           ))}
                           
-                          
-                          
+
                         </tbody>
                       </table>
+
+                      <Pagination currentPage={jobResponse.page} totalPages={jobResponse.totalPages} ></Pagination>
+                     
                     </div>
                   </div>
                 </div>

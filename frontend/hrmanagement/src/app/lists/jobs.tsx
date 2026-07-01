@@ -19,19 +19,23 @@ createdate: Date;
 }
 
 export type JobResponse =  {
-    data:Job
+    data:Job,
 }
 
-type JobsResponse  = {
-    data:Job[]
+export type JobsResponse  = {
+    data:Job[],
+      page:number,
+    limit:number,
+    total:number,
+    totalPages:number
 }
 
 
-export const getJobs = async (): Promise<Job[]> => {
+export const getJobs = async (page:number,limit:number): Promise<JobsResponse> => {
 
-    const response = await axiosInstance.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-jobs`)
-    const job =  response.data
-    return job.data
+    const response = await axiosInstance.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-jobs?page=${page}&limit=${limit}`)
+    const jobresp =  response.data
+    return jobresp
 
 }
 

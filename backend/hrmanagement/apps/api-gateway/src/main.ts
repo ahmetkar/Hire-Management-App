@@ -90,11 +90,15 @@ app.use("/auth",createProxy("/auth",process.env.AUTH_SERVICE_URL!));
 app.use("/job/get-all-jobs",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/get-job-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 
+
+
 app.use("/job/job-create",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/job-delete/:id",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/get-job-application-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/get-one-application/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/get-all-application",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+app.use("/search-all-application",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
+
 
 app.use("/job/job-update",verifyToken,authorizeRoles(["admin"]),createProxy("/job",process.env.JOB_SERVICE_URL!));
 app.use("/job/deny-application",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/job",process.env.JOB_SERVICE_URL!));

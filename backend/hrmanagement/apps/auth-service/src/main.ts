@@ -33,7 +33,6 @@ app.get("/health", (req, res) => {
 
 app.use("/",router)
 
-
 app.use(errorMiddleware)
 
 app.use(verifyInternalRequest)
