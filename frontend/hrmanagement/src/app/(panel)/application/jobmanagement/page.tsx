@@ -4,6 +4,8 @@ import { useSearchParams,useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Pagination from '../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
+import Modal from '@/app/components/Modal';
+import { approveJobApp, disapproveJobApp } from '@/app/actions/jobapplication';
 
 
 const page = () => {
@@ -12,6 +14,15 @@ const defaultLimit = 1
 const [activeId,setActiveId] = useState("")
 const [detailForId,setDetailForId] = useState("")
 const [type,setType] = useState("new")
+const [showApproveModal,setShowApproveModal] = useState(false)
+const [showDisapproveModal,setShowDisapproveModal] = useState(false)
+const [showSuccessModal,setShowSuccessModal] = useState(false)
+const [showFailureModal,setShowFailureModal] = useState(false)
+const [successTitle,setSuccessTitle] = useState("")
+const [failureTitle,setFailureTitle] = useState("")
+const [failureDesc,setFailureDesc] = useState("")
+const [successDesc,setSuccessDesc] = useState("")
+
 
      const [jobAppResponse, setJobAppResponse] = useState<JobAppsResponse>({
         data: [],
@@ -57,6 +68,23 @@ const [type,setType] = useState("new")
         router.push(`?${searchParams.toString()}`)
       }
 
+      const setNType = (e:React.ChangeEvent<HTMLSelectElement>) => {
+        
+        const l  = e.target.value
+        setType(l)
+        const searchParams = new URLSearchParams(params.toString())
+      
+        searchParams.set("limit",limit.toString())
+        searchParams.set("page","1")
+        searchParams.set("type",l.toString()
+        )
+        if(searchStr != null){
+        searchParams.set("search",searchStr)
+        }
+
+        router.push(`?${searchParams.toString()}`)
+      }
+
 
       const doSearch = (e:React.ChangeEvent<HTMLInputElement>)=>{
         const searchstr  = e.target.value
@@ -70,9 +98,48 @@ const [type,setType] = useState("new")
         router.push(`?${searchParams.toString()}`)
         
       }
+
+
+      const directApprove = (id:string) => {
+          setShowApproveModal(false)
+          approveJobApp(id)
+          .then((data) => {
+              setSuccessTitle("Onaylama başarılı oldu")
+              setSuccessDesc(data[0])
+              setShowSuccessModal(true)
+          })
+          .catch((error) => {
+              setFailureTitle("Onaylama başarısız oldu")
+              setFailureDesc(error)
+              setShowFailureModal(true)
+          });  
+      }
+
+      const directDisapprove = (id:string) => {
+          setShowDisapproveModal(false)
+            disapproveJobApp(id)
+          .then((data) => {
+            
+              setSuccessTitle("Red işlemi başarılı oldu")
+              setSuccessDesc(data[0])
+              setShowSuccessModal(true)
+            
+          })
+          .catch((error) => {
+              setFailureTitle("Red işlemi başarısız oldu")
+              setFailureDesc(error)
+              setShowFailureModal(true)
+          }); 
+      }
  
   return (
     <div>
+        <Modal show={showSuccessModal} title={successTitle} message={successDesc}
+                            confirmText='Tamam' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowSuccessModal(false)} />
+        <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
+                            confirmText='Tamam' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
+
+       
           <div className="row justify-content-center">
             <div className="col-12">
               <div className="row">
@@ -96,12 +163,12 @@ const [type,setType] = useState("new")
                             </div>
                              <div className="form-group col-auto ml-3">
                                 <label className="my-1 mr-2 sr-only" htmlFor="inlineFormCustomSelectPref">Status</label>
-                                <select className="custom-select my-1 mr-sm-2" id="inlineFormCustomSelectPref">
-                                  <option defaultValue={""}>Choose...</option>
-                                  <option onClick={()=>setType("new")} value="1">Yeni Başvuru</option>
-                                  <option onClick={()=>setType("waiting")} value="2">Yönetici Onayı Bekliyor</option>
-                                  <option onClick={()=>setType("approved")} value="3">Onaylanan</option>
-                                  <option onClick={()=>setType("disapproved")} value="3">Reddedilen</option>
+                                <select defaultValue="new" onChange={(e)=>setNType(e)} className="custom-select my-1 mr-sm-2" id="inlineFormCustomSelectPref">
+                                 
+                                  <option value="new">Yeni Başvuru</option>
+                                  <option  value="waiting">Yönetici Onayı Bekliyor</option>
+                                  <option value="approved">Onaylanan</option>
+                                  <option value="disapproved">Reddedilen</option>
                                 </select>
                               </div>
                             <div className="form-group col-auto">
@@ -134,9 +201,18 @@ const [type,setType] = useState("new")
                         <tbody>
                           {jobAppResponse.data.map((uap)=>(
                             
+                            
                             <React.Fragment key={uap.id}>
+                            
                             <tr>
+                                 
                             <td>
+                              <Modal show={showApproveModal} title="Onaylamak üzeresiniz." message="Onaylamak istediğinize emin misiniz ?" 
+                            confirmText='Onayla' cancelText='Vazgeç' setConfirm={true} onConfirm={()=>directApprove(uap.id)} onCancel={()=>setShowApproveModal(false)} />
+
+                            <Modal show={showDisapproveModal} title="Reddetmek üzeresiniz." message="Reddetmek istediğinize emin misiniz ?" 
+                            confirmText='Reddet' cancelText='Vazgeç' setConfirm={true} onConfirm={()=>directDisapprove(uap.id)} onCancel={()=>setShowDisapproveModal(false)} />
+                          
                               <div className="custom-control custom-checkbox">
                                 <a onClick={(e)=>{
                                   e.preventDefault()
@@ -193,15 +269,15 @@ const [type,setType] = useState("new")
                             </td> 
                             <td><small className="text-muted">{uap.country}</small></td>
                             <td className="text-muted">{uap.appdate.split("T")[0].toString()}</td>
-                            <td>{uap.managerapproved ? "Onaylı" : uap.staffapproved ? "Yönetici Onayı Bekliyor" : "Onay Bekliyor"}</td>
+                            <td>{uap.managerapproved ? "Onaylı" : uap.staffapproved ? "Yönetici Onayı Bekliyor" : uap.disapproved ? "Reddedilmiş" : "Onay Bekliyor"}</td>
                             <td><button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span className="text-muted sr-only">Aksiyonlar</span>
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
                             
                                 <a className="dropdown-item" href={`/application/jobmanagement/detail/${uap.id}`}>İncele</a>
-                                <a className="dropdown-item">Direkt Onayla</a>
-                                <a className="dropdown-item">Direkt Reddet</a>
+                                <a onClick={(e)=>setShowApproveModal(true)} className="dropdown-item">Direkt Onayla</a>
+                                <a onClick={(e)=>setShowDisapproveModal(true)} className="dropdown-item">Direkt Reddet</a>
                               </div>
                             </td>
                             </tr>

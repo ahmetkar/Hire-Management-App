@@ -22,6 +22,39 @@ interface TokenPayload extends JwtPayload {
 }
 
 
+
+export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) => {
+
+    try {
+        
+        const userId = req.headers["x-user-id"]
+
+            if(userId){
+
+            const user = await prisma.users.findUnique({where:{id:userId}})
+
+                        if(user){
+                               const { password, ...safeUser } = user;
+                                     
+                            res.status(201).json({
+                                success:true,
+                                message:"User found !",
+                                data: safeUser
+                                });
+                        }else {
+                            return next(new ValidationError("User not Found"))
+                        }
+            }else {
+                return next(new ValidationError("User not Found"))
+            }
+                    }catch(error){
+                        return next(error);
+                    }
+
+
+}
+
+
 export const userRegister = async (req:Request,res:Response,next:NextFunction) => {
 
     try {

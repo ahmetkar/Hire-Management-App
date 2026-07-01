@@ -41,11 +41,12 @@ export type JobApp =  {
  appdate:string;
  staffapproved:boolean;
  managerapproved:boolean;
+ disapproved:boolean;
  job:Job
 }
 
 export type JobAppResponse =  {
-    data:JobApp
+    data:JobApp[]
 }
 
 export type JobAppsResponse  = {
@@ -55,6 +56,7 @@ export type JobAppsResponse  = {
     total:number,
     totalPages:number
 }
+
 
 
 export const searchJobApps = async (searchstr:string,page:number,limit:number,type:string): Promise<JobAppsResponse> => {
@@ -71,9 +73,12 @@ export const getJobApps = async (page:number,limit:number,type:string): Promise<
 
 export const getJobApp = async (id:string): Promise<JobApp> => {
 
-    const response = await axios.get<JobAppResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-one-application/${id}`)
+    const response = await axiosInstance.get<JobAppResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-one-application/${id}`)
     const job =  response.data
-    return job.data
+    const data = job.data[0]
+    return data
 
 }
+
+
 

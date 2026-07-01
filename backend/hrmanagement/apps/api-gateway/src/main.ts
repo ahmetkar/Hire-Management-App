@@ -83,6 +83,10 @@ app.get('/gateway-health', (req, res) => {
 
 
 
+
+
+
+app.use("/auth/get-logged-user",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth",createProxy("/auth",process.env.AUTH_SERVICE_URL!));
 
 

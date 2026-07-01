@@ -58,9 +58,7 @@ const Aside = () => {
 
                   </a>
                 </li>
-                <li className="nav-item">
-                  <a className="nav-link pl-3" href="/application/jobmanagement/approved"><span className="ml-1 item-text">Onaylananları Yönet</span></a>
-                </li>
+
                  <li className="nav-item">
                   <a className="nav-link pl-3" href="/application/jobmanagement/createjob"><span className="ml-1 item-text">İş İlanı Ekle</span></a>
                 </li>

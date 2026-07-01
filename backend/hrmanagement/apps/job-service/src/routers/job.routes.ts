@@ -20,7 +20,7 @@ router.get("/get-job-by-filter",getJobByFilter)
 
 router.get("/get-all-application",getAllJobApplication)
 router.get("/search-all-application",searchAllJobApplication)
-router.get("/get-one-application/:jobid",getOneJobApplication)
+router.get("/get-one-application/:id",getOneJobApplication)
 router.get("/get-job-application-by-filter",getJobApplicationByFilter)
 
 router.post("/create-job-application",createJobApplication)

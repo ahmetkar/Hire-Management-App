@@ -14,17 +14,15 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
             const searchstr = req.query.searchstr?.toString()
             
             let whereclause = {}
-
             if(type == "new"){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:false}
             }else if(type == "waiting"){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
             }else if(type == "approved"){
-                whereclause = {disapproved:false,managerapproved:true,staffapproved:true}
+                whereclause = {disapproved:false,managerapproved:true}
             }else if(type == "disapproved") {
-                whereclause = {disapproved:true,managerapproved:false,staffapproved:false}
+                whereclause = {disapproved:true}
             }
-
 
             const skip = (page-1) * limit
 
@@ -35,7 +33,7 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
                         },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {job:true}}),
-                        prisma.jobapplication.count()
+                        prisma.jobapplication.count({where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]}})
                     ])
 
                     if(data){
@@ -71,9 +69,9 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
             }else if(type == "waiting"){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
             }else if(type == "approved"){
-                whereclause = {disapproved:false,managerapproved:true,staffapproved:true}
+                whereclause = {disapproved:false,managerapproved:true}
             }else if(type == "disapproved") {
-                whereclause = {disapproved:true,managerapproved:false,staffapproved:false}
+                whereclause = {disapproved:true}
             }
 
 
@@ -86,7 +84,7 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
                         },where:{...whereclause},include : {job:true}}),
-                        prisma.jobapplication.count()
+                        prisma.jobapplication.count({where:{...whereclause}})
                     ])
 
                     if(data){
@@ -162,12 +160,12 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
 
 export const getOneJobApplication = async (req:Request,res:Response,next:NextFunction) => {
 
-        const jobId = req.params.jobid ? String(req.params.jobid) : undefined;
+        const id = req.params.id ? String(req.params.id) : undefined;
     
             try {
                 
                     
-                    const job = await prisma.jobapplication.findMany({where:{jobId:jobId}})
+                    const job = await prisma.jobapplication.findMany({where:{id:id}})
                     if(job){
                         res.status(201).json({
                         success:true,
@@ -190,9 +188,9 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
         const id = req.params.id ? String(req.params.id) : undefined;
     
             try {
-                
-                    if(req.header["x-user-id"]){
-                        const job = await prisma.jobs.findMany({where:{id:id}})
+    
+                    if(req.headers["x-user-id"]){
+                        const job = await prisma.jobs.findUnique({where:{id:id}})
                         if(job){
                             res.status(201).json({
                             success:true,
@@ -203,23 +201,23 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
                             return next(new ValidationError("Job Not Found"))
                         }
                     }else {
-                        const job = await prisma.jobs.findMany({where:{id:id}})
+                        const job = await prisma.jobs.findUnique({where:{id:id}})
                         if(job){
                             res.status(201).json({
                             success:true,
                             message:"Job found !",
                             data: {
-                                id: job[0].id,
-                                jobtitle: job[0].jobtitle,
-                                jobrequirements: job[0].jobrequirements,
-                                jobnotes: job[0].jobnotes,
-                                department: job[0].department,
-                                position: job[0].position,
-                                mounthlywage: job[0].mounthlywage,
-                                weeklypayment: job[0].weeklypayment,
-                                dailypayment: job[0].dailypayment,
-                                createdate: job[0].createdate,
-                                expiredate: job[0].expiredate     
+                                id: job.id,
+                                jobtitle: job.jobtitle,
+                                jobrequirements: job.jobrequirements,
+                                jobnotes: job.jobnotes,
+                                department: job.department,
+                                position: job.position,
+                                mounthlywage: job.mounthlywage,
+                                weeklypayment: job.weeklypayment,
+                                dailypayment: job.dailypayment,
+                                createdate: job.createdate,
+                                expiredate: job.expiredate     
                             }
                             });
                         }else {
@@ -379,57 +377,39 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
 export const denyJobApplication = async (req:any,res:Response,next:NextFunction) => {
      
-     const {oldId} = req.body;
+     const {id} = req.body;
 
 
-     const deniedById = req.user.id;
+     const deniedById = req.headers["x-user-id"]
         
 
      try {
 
-                    const oldJob = await prisma.jobapplication.findMany({where:{id:oldId}})
+                    const job = await prisma.jobapplication.findMany({where:{id:id}})
 
 
-                    if(oldJob){
-                    
-                    const job = await prisma.deniedApplications.create({
+                    if(job){
+                        
+                        const denyjob = await prisma.jobapplication.update({
+                        where:{id:id},
                         data:{
-                            name:oldJob[0].name,
-                            email:oldJob[0].email,
-                            phone_number:oldJob[0].phone_number,
-                            city:oldJob[0].city,
-                            position:oldJob[0].position,
-                            country:oldJob[0].country,
-                            county:oldJob[0].county,
-                            address:oldJob[0].address,
-                            postcode:oldJob[0].postcode,
-                            university:oldJob[0].university,
-                            unidepartment:oldJob[0].unidepartment,
-                            unifaculty:oldJob[0].unifaculty,
-                            graduatedate:oldJob[0].graduatedate,
-                            githublink:oldJob[0].githublink,
-                            linkedinlink:oldJob[0].linkedinlink,
-                            abilities:oldJob[0].abilities,
-                            selfbio:oldJob[0].selfbio,
-                            birthdate:oldJob[0].birthdate,
-                            agreeterms:oldJob[0].agreeterms,
-                            appdate:oldJob[0].appdate,
-                            ipadress:oldJob[0].ipadress,
-                            jobId:oldJob[0].jobId,
-                            deniedById:deniedById
+                            managerapproved:false,
+                            staffapproved:false,
+                            disApproverId:deniedById,
+                            disapproved:true      
                         }
                     })
-                    if(job){
+                    if(denyjob){
                         res.status(201).json({
-                        success:true,
                         
+                        data:{success:true,message:"Successfully disapproved !"}
                         });
                     }else {
-                       return next(new ValidationError("Job Application Cannot Denied"))
+                       return next(new ValidationError("Job Application Cannot Disapproved "))
                     }
 
                 }else {
-                    return next(new ValidationError("Job Application Cannot Denied"))
+                    return next(new ValidationError("Job Application Cannot Found"))
                 }
                
 
@@ -443,34 +423,36 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
 
 export const approveJobApplication = async (req:any,res:Response,next:NextFunction) => {
 
-    const {appId} = req.body
+    const {id} = req.body
 
 
-     const existingJob = await prisma.jobapplication.findUnique({where:{id:appId}})
+     const existingJob = await prisma.jobapplication.findUnique({where:{id:id}})
 
     if(!existingJob){
             return next(new ValidationError("Job application does not exists with that id"))
     }
-                const approverId = req.user.id
-                const role = req.user.role
+                const approverId = req.headers["x-user-id"]
+                const role = req.headers["x-user-role"]
 
-   
+
 
                     let job = null;
                     
-                    if(role == "admin"){
+                    if(role == "admin" && (!existingJob.managerapproved)){
                     job = await prisma.jobapplication.update({
-                        where:{id:appId},
+                        where:{id:id},
                         data:{
-                            approverId:approverId,
+                            disapproved:false,
+                            managerApproverId:approverId,
                             managerapproved:true
                         }
                     })
-                    }else if(role== "user") {
+                    }else if(role== "staff" && (!existingJob.staffapproved)) {
                          job = await prisma.jobapplication.update({
-                        where:{id:appId},
+                        where:{id:id},
                         data:{
-                            approverId:approverId,
+                            disapproved:false,
+                            userApproverId:approverId,
                             staffapproved:true      
                         }
                     })
@@ -478,9 +460,7 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
 
                     if(job){
                         res.status(201).json({
-                        success:true,
-                        message:"Job approved successfully.",
-                        data:job
+                         data:{success:true,message:"Successfully approved !"}
                         
                         });
                     }else {

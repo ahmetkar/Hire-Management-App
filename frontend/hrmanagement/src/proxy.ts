@@ -8,10 +8,17 @@ const authRoutes = [
   "/login",
 ];
 
-export function middleware(req: NextRequest) {
+
+const checkTokenValidation = (token:string)=>{
+
+}
+
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const accessToken = req.cookies.get("access_token")?.value;
+
+  
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
