@@ -197,7 +197,7 @@ const page = () => {
                       </div>
 
                         <div className="form-group mb-3">
-                        <label htmlFor="example-palaceholder">Doğum tarihi</label>
+                        <label  htmlFor="example-palaceholder">Doğum tarihi</label>
                         <input className="form-control" id="example-date" type="date" 
                         {...register("birthdate",{required: "Doğum tarihi gereklidir."})}
                         />

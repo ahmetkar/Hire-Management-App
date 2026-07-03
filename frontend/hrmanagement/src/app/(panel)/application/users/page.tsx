@@ -44,7 +44,6 @@ const page = () => {
   ]
 
 
-
   return (
     <div>
           <div className="row justify-content-center">

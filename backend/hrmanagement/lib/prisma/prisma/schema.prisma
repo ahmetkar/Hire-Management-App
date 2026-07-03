@@ -22,7 +22,7 @@
     password String?
     signupdate DateTime @default(now())
     role String?
-    staffInfo staffInfo?
+    staffInfo staff?
     createdJobs jobs[] @relation("CreatorJob")
     responsibleJobs jobs[] @relation("ResponsibleJob")
     receivedNotifications notifications[] @relation("NotificationReceiver")
@@ -34,9 +34,10 @@
     department department @relation(fields: [departmentId],references:[id])
   }
 
-   model staffInfo {
+   model staff {
     id String @id @default(auto()) @map("_id") @db.ObjectId
-    position String?
+    name String
+    email String @unique
     phone_number String?
     country String?
     city  String?
@@ -55,6 +56,10 @@
     signupdate DateTime @default(now())
     userId String? @db.ObjectId @unique
     user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
+    departmentId String @db.ObjectId
+    department department @relation(fields: [departmentId],references:[id])
+    jobId String? @db.ObjectId
+    position   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
   }
 
 
@@ -62,7 +67,6 @@
     id String @id @default(auto()) @map("_id") @db.ObjectId
     name String
     email String @unique
-    position String
     phone_number String
     country String
     city  String
@@ -91,7 +95,7 @@
     disApproverId String? @db.ObjectId
     disapprover   users? @relation("DisapprovedApplications",fields: [disApproverId], references: [id])
     jobId String? @db.ObjectId
-    job   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+    position   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
     
   }
 
@@ -99,6 +103,7 @@
     id String @id @default(auto()) @map("_id") @db.ObjectId
     name String?
     users users[]
+    staff staff[]
     addingdate DateTime @default(now())
   }
 
@@ -119,6 +124,7 @@ model jobs {
     createdByUserId  String @db.ObjectId
     createdByUser   users @relation("CreatorJob",fields: [createdByUserId], references: [id])
     applications jobapplication[]
+    staff        staff[]
 }
 
 model settings {

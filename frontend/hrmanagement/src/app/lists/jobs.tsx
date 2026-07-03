@@ -54,3 +54,4 @@ export const getJobInfos = async (id:string): Promise<string[]> => {
     return [job.data.jobrequirements,job.data.position]
 
 }
+

@@ -318,7 +318,7 @@ export const getJobByFilter = async (req:Request,res:Response,next:NextFunction)
 }
 
 export const createJobApplication= async (req:Request,res:Response,next:NextFunction) => {
-    const {jobId,name,email,phone_number,city,position,country,county,
+    const {jobId,name,email,phone_number,city,country,county,
         address,postcode,university,unidepartment,unifaculty,graduatedate,githublink
     ,linkedinlink,abilities,selfbio,birthdate,agreeterms,ipadress} = req.body;
 
@@ -335,7 +335,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             email:email,
                             phone_number:phone_number,
                             city:city,
-                            position:position,
+                            jobId:jobId,
                             country:country,
                             county:county,
                             address:address,
@@ -352,7 +352,6 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             agreeterms:agreeterms,
                             appdate:appdate,
                             ipadress:ipadress,
-                            jobId:jobId
                         }
                     })
                     if(job){

@@ -81,12 +81,13 @@ app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to api-gateway!' });
 });
 
+app.use("/auth/get-user-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
+app.use("/auth/user-delete/:id/",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
+app.use("/auth/user-update",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
+app.use("/auth/get-users",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
+app.use("/auth/get-user/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
+app.use("/auth//user-register",verifyToken,authorizeRoles(["admin"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 
-
-
-
-
-app.use("/auth/get-logged-user",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth",createProxy("/auth",process.env.AUTH_SERVICE_URL!));
 
 
@@ -119,12 +120,16 @@ app.use("/job",createProxy("/job",process.env.JOB_SERVICE_URL!));
 
 
 
-app.use("/staff/user-delete/:id/:usertype",verifyToken,authorizeRoles(["admin"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/user-update/:usertype",verifyToken,authorizeRoles(["admin"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/get-user",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/user-create",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/get-users/:usertype",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/get-user-by-filter/:usertype",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff//staff-delete",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/staff-update",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/staff-create",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-staff/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-all-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-user-and-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-all-user-and-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-user-and-staff-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-staff-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+
 
 app.use("/staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/management",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/management",process.env.MANAGEMENT_SERVICE_URL!));

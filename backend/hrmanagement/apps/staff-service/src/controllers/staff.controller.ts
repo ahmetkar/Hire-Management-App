@@ -1,21 +1,65 @@
 
 import { ValidationError } from "@hrmanagement/error-handler";
 import {prisma}  from "@hrmanagement/prisma"
-import { Request,Response,NextFunction } from "express";
 import bcrypt  from "bcryptjs"
+import { Request,Response,NextFunction } from "express";
 
 
+export const getStaffByFilter = async (req:any,res:Response,next:NextFunction) => {
 
-//usrtype paramları staff olarak geldiğinde tüm bilgileri alır yoksa sadece user bilgisini alır
+      try {
+                    const {name,email,departmentId,phone_number,city,jobId} = req.body;
+                    let whereclause = {}
+                        if(name!=""){
+                            whereclause = {...whereclause,name:name}
+                        }
+    
+                        if(email!=""){
+                            whereclause = {...whereclause,email:email}
+                        }
 
-export const getUserByFilter = async (req:any,res:Response,next:NextFunction) => {
+                        if(departmentId!=""){ 
+                                whereclause = {...whereclause,departmentId:departmentId}
+                        }
 
-              const usertype = req.params
-     
-                if(usertype == "staff"){
+                        if(phone_number!=""){
+                                whereclause = {...whereclause,phone_number:phone_number}
+                        }
+        
+                        if(city!=""){
+                                whereclause = {...whereclause,city:city}
+                        }
+
+                        if(jobId!=""){
+                                whereclause = {...whereclause,jobId:jobId}
+                        }
+
+                        const staff = await prisma.staff.findMany({where:whereclause})
+
+                        if(staff){
+                            
+                            res.status(201).json({
+                                success:true,
+                                message:"Staff found !",
+                                data: staff
+                                
+                                });
+                        }else {
+                            return next(new ValidationError("Staff not Found"))
+                        }
+                    
+                    }catch(error){
+                        return next(error);
+                    }
+
+}
+
+
+export const getUserAndStaffByFilter = async (req:any,res:Response,next:NextFunction) => {
+
                    
                     try {
-                        const {name,email,departmentId,phone_number,city,position} = req.body;
+                        const {name,email,departmentId,phone_number,city,jobId} = req.body;
                         let whereclause0 = {}
                         let whereclause = {}
                          if(name!=""){
@@ -37,8 +81,8 @@ export const getUserByFilter = async (req:any,res:Response,next:NextFunction) =>
                                 whereclause = {...whereclause,city:city}
                             }
 
-                            if(position!=""){
-                                whereclause = {...whereclause,position:position}
+                            if(jobId!=""){
+                                whereclause = {...whereclause,jobId:jobId}
                             }
 
                         const user = await prisma.users.findMany({where:{...whereclause0,staffInfo:{
@@ -70,55 +114,12 @@ export const getUserByFilter = async (req:any,res:Response,next:NextFunction) =>
                 }catch(error){
                     return next(error);
                 }
-                }else {
-
-                try {
-                    const {name,email,departmentId} = req.body;
-                    let whereclause = {}
-                        if(name!=""){
-                            whereclause = {...whereclause,name:name}
-                        }
-    
-                        if(email!=""){
-                            whereclause = {...whereclause,email:email}
-                        }
-
-                        if(departmentId!=""){ 
-                                whereclause = {...whereclause,departmentId:departmentId}
-                            }
-
-                        const user = await prisma.users.findMany({where:whereclause})
-
-                        if(user){
-                            const safeUsers = user.map((u) => {
-                                        const { password, ...safeUser } = u;
-                                        return safeUser;
-                                        });
-                            res.status(201).json({
-                                success:true,
-                                message:"User found !",
-                                data: safeUsers
-                                
-                                });
-                        }else {
-                            return next(new ValidationError("User not Found"))
-                        }
-                    
-                    }catch(error){
-                        return next(error);
-                    }
-
-                }
+                
                 
 }
 
 
-export const getUsers = async (req:any,res:Response,next:NextFunction) => {
-            
-          
-              const {usertype} = req.params
-     
-                if(usertype == "staff"){
+export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction) => {
                    
                     try {
 
@@ -136,48 +137,68 @@ export const getUsers = async (req:any,res:Response,next:NextFunction) => {
                                 });
                                 
                             }else {
-                                        return next(new ValidationError("User Not Found"))
+                                        return next(new ValidationError("Users Not Found"))
                                     }
                    
     
                 }catch(error){
                     return next(error);
                 }
-                }else {
+                
+}
 
-                try {
-                   
 
-                        const user = await prisma.users.findMany()
+export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
+    try {
 
-                        if(user){
-                            const safeUsers = user.map((u) => {
-                                        const { password, ...safeUser } = u;
-                                        return safeUser;
-                                        });
-                            res.status(201).json({
+                        const staff = await prisma.staff.findMany()
+                                if(staff){
+                                
+                                res.status(201).json({
                                 success:true,
-                                message:"User found !",
-                                data: safeUsers
+                                message:"All staff found !",
+                                data: staff
                                 });
-                        }else {
-                            return next(new ValidationError("User not Found"))
-                        }
-                    
-                    }catch(error){
-                        return next(error);
-                    }
-
+                                
+                            }else {
+                                        return next(new ValidationError("Staff Not Found"))
+                                    }
+    
+                }catch(error){
+                    return next(error);
                 }
 }
 
 
-export const getUser = async (req:Request,res:Response,next:NextFunction) => {
-            
-                const {usertype,email} = req.body;
-                if(usertype == "staff"){
-                    
+export const getStaff = async (req:any,res:Response,next:NextFunction) => {
+
+                    const {id} = req.params
+                    try {
+
+                        const staff = await prisma.staff.findUnique({where:{id:id} })
+
+
+                        if(staff){
+                                res.status(201).json({
+                                success:true,
+                                message:"Staff found !",
+                                data: staff
+                                });
+                            
+                    }else {
+                                return next(new ValidationError("Staff Not Found"))
+                            }
                    
+    
+                }catch(error){
+                    return next(error);
+                }
+}
+
+
+export const getUserAndStaff = async (req:Request,res:Response,next:NextFunction) => {
+            
+                const {email} = req.body;
                     try {
 
                         const user = await prisma.users.findMany({where:{email:email},include:{staffInfo:true} })
@@ -204,68 +225,56 @@ export const getUser = async (req:Request,res:Response,next:NextFunction) => {
                 }catch(error){
                     return next(error);
                 }
-                }else {
-
-                try {
-                        const user = await prisma.users.findMany({where:{email:email}})
-
-                        if(user){
-                               const safeUsers = user.map((u) => {
-                                        const { password, ...safeUser } = u;
-                                        return safeUser;
-                                        });
-                            res.status(201).json({
-                                success:true,
-                                message:"User found !",
-                                data: safeUsers
-                                });
-                        }else {
-                            return next(new ValidationError("User not Found"))
-                        }
-                    
-                    }catch(error){
-                        return next(error);
-                    }
-
-                }
+                
 }
 
 
-export const userUpdate = async (req:any,res:Response,next:NextFunction) => {
 
+export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
     
-    const {usertype} = req.params;
-
-
-    if(usertype == "staff"){
-
-     const {name,email,password,role,phone_number,city,position,country,county,
+     const {name,email,userId,staffId,phone_number,city,jobId,country,county,
         address,postcode,university,unidepartment,unifaculty,graduatedate,githublink
     ,linkedinlink,abilities,selfbio,birthdate,departmentId} = req.body;
 
+    var abilitiesstr = abilities.join("")
+
      try {
-
-                const existingUser = await prisma.users.findUnique({where:{email:email}})
-
-                if(!existingUser){
-                        return next(new ValidationError("User does not exists with that email"))
-                }
-
-                const newhashedPassword = await bcrypt.hash(password,10)
-
-                const user = await prisma.users.update({
-                    where:{email:email},
-                    data:{name:name,email:email,password:newhashedPassword,role:role,departmentId:departmentId}
-                })
-
-                if(user){
-                    
-                    const staff = await prisma.staffInfo.update({
-                        where:{userId:existingUser.id},
+    
+    let staff = null
+    if(userId!=undefined){
+    staff = await prisma.staff.update({
+                        where:{userId:userId},
                         data:{
+                            name:name,
+                            email:email,
                             phone_number:phone_number,
                             city:city,
-                            position:position,
+                            jobId:jobId,
+                            country:country,
+                            county:county,
+                            address:address,
+                            postcode:postcode,
+                            university:university,
+                            unidepartment:unidepartment,
+                            unifaculty:unifaculty,
+                            graduatedate:graduatedate,
+                            githublink:githublink,
+                            linkedinlink:linkedinlink,
+                            abilities:abilitiesstr,
+                            selfbio:selfbio,
+                            birthdate:birthdate,
+                            departmentId:departmentId
+                        }
+                    })
+    }else {
+        staff = await prisma.staff.update({
+                        where:{id:staffId},
+                        data:{
+                            name:name,
+                            email:email,
+                            phone_number:phone_number,
+                            city:city,
+                            jobId:jobId,
                             country:country,
                             county:county,
                             address:address,
@@ -279,8 +288,10 @@ export const userUpdate = async (req:any,res:Response,next:NextFunction) => {
                             abilities:abilities,
                             selfbio:selfbio,
                             birthdate:birthdate,
+                            departmentId:departmentId
                         }
                     })
+    }
                     if(staff){
                         res.status(201).json({
                         success:true,
@@ -289,87 +300,56 @@ export const userUpdate = async (req:any,res:Response,next:NextFunction) => {
                         
                         });
                     }else {
-                       return next(new ValidationError("User Cannot Updated"))
+                       return next(new ValidationError("Staff Cannot Updated"))
                     }
-                }else {
-                    return next(new ValidationError("User Cannot Updated"))
-                }
+                
 
             }catch(error){
                 return next(error);
             }
-
-        }else {
-
-                try {
-                const {name,email,password,role,departmentId} = req.body
-
-                const existingUser = await prisma.users.findUnique({where:{email:email}})
-
-                if(!existingUser){
-                        return next(new ValidationError("User does not exists with that email"))
-                }
-
-                const newhashedPassword = await bcrypt.hash(password,10)
-
-                const user = await prisma.users.update({
-                    where:{email:email},
-                    data:{name:name,email:email,password:newhashedPassword,role:role,departmentId:departmentId}
-                })
-
-                if(user){
-                    res.status(201).json({
-                                    success:true,
-                                    message:"User updated successfully !",
-                                    data: user
-                                    });
-                        }else {
-                            return next(new ValidationError("User cannot updated"))
-                        }
-
-                }catch(error){
-                    return next(error);
-                }
-
-    }
-    
 }
 
 
-export const userDelete = async (req:Request,res:Response,next:NextFunction) => {
 
+export const staffDelete = async (req:any,res:Response,next:NextFunction) => {
 
-    let {id,usertype} = req.params
+     const  {userId,staffId} = req.body
 
-    id = id as string
-    usertype = usertype as string
-
-
-    if(usertype == "staff"){
-            try {
-                if(id!=undefined){
-                
-                const existingUser = await prisma.users.findUnique({where:{id:id}})
-                
-                if(!existingUser){
-                        return next(new ValidationError("User does not exists"))
-                }else {
-                    const deleted = await prisma.users.delete({
-                        where:{id:id}
-                    })
-                    if(deleted){
+    try {
+                if(userId!=undefined){
                         
-                        const existingStaff = await prisma.staffInfo.findUnique({where:{userId:existingUser.id}})
+                        const existingStaff = await prisma.staff.findUnique({where:{userId:userId}})
                         if(!existingStaff){
                                 return next(new ValidationError("Staff infos does not exists"))
                         }else {
-                                        const deletestaff = await prisma.staffInfo.delete({
-                                            where:{id:id}
+                                        const deletestaff = await prisma.staff.delete({
+                                            where:{userId:userId}
                                         })
                                         if(deletestaff){
                                             res.status(201).json({
                                                     success:true,
-                                                    message:"User deleted successfully !"
+                                                    message:"Staff deleted successfully !"
+                                                    });
+                                        
+                                        }else {
+                                            return next(new ValidationError("User cannot deleted"))
+                                        }
+                                    
+                        }
+
+                }else {
+
+                     const existingStaff = await prisma.staff.findUnique({where:{id:staffId}})
+                        if(!existingStaff){
+                                return next(new ValidationError("Staff infos does not exists"))
+                        }else {
+                                        const deletestaff = await prisma.staff.delete({
+                                            where:{id:staffId}
+                                        })
+                                        if(deletestaff){
+                                            res.status(201).json({
+                                                    success:true,
+                                                    message:"Staff deleted successfully !"
                                                     });
                                         
                                         }else {
@@ -377,76 +357,81 @@ export const userDelete = async (req:Request,res:Response,next:NextFunction) => 
                                         }
                                     
                                     
-                                    }
+                        }
                 }
-            }
-            }
+                            
+             
 
         }catch(error){
             return next(error);
         }
-    }else {
-         try {
-        
-
-        if(id!=undefined){
-
-        const existingUser = await prisma.users.findUnique({where:{id:id}})
-
-        if(!existingUser){
-                return next(new ValidationError("User does not exists"))
-        }else {
-            const deleted = await prisma.users.delete({
-                where:{id:id}
-            })
-            if(deleted){
-                   res.status(201).json({
-                        success:true,
-                        message:"User deleted successfully !"
-                        });
-            
-            }else {
-                return next(new ValidationError("User cannot deleted"))
-            }
-        }
-        }else {
-            return next(new ValidationError("Id parameter not given"))
-        }
-
-    }catch(error){
-        return next(error);
-    }
-    }
-
-
 
 }
 
 
+//sadece staff veya user ve staff
+export const createStaff= async (req:Request,res:Response,next:NextFunction) => {
 
-export const createStaffAndUser= async (req:Request,res:Response,next:NextFunction) => {
-
-
-     const {name,email,password,role,phone_number,city,position,country,county,
+     const {name,email,password,phone_number,city,jobId,country,county,
         address,postcode,university,unidepartment,unifaculty,graduatedate,githublink
     ,linkedinlink,abilities,selfbio,birthdate,departmentId} = req.body;
 
-   var signupdate = new Date().toISOString()
-   
-    const hashedPassword = await bcrypt.hash(password,10)
+    var signupdate = new Date().toISOString()
+    var abilitiesstr = abilities.join("")
+   const hashedPassword = await bcrypt.hash(password,10)
+        
+     try {  
+                if(password!=undefined){
+                const user = await prisma.users.create({ data:{
+                                name:name,
+                                email:email,
+                                role:"staff",
+                                password:hashedPassword,
+                                staffInfo:{
+                                    create:{
+                                    name:name,
+                                    email:email,
+                                    phone_number:phone_number,
+                                    city:city,
+                                    jobId:jobId,
+                                    country:country,
+                                    county:county,
+                                    address:address,
+                                    postcode:postcode,
+                                    university:university,
+                                    unidepartment:unidepartment,
+                                    unifaculty:unifaculty,
+                                    graduatedate:graduatedate,
+                                    githublink:githublink,
+                                    linkedinlink:linkedinlink,
+                                    abilities:abilitiesstr,
+                                    selfbio:selfbio,
+                                    birthdate:birthdate,
+                                    signupdate:signupdate,
+                                    departmentId:departmentId
+                                    }
+                                },
+                                signupdate:signupdate,
+                                departmentId:departmentId,
+                            }
+                                
+                    })
 
-     try {
-                    
-                    const user = await prisma.users.create({data:{
-                        name:name,
-                        email:email,
-                        password:hashedPassword,
-                        role:role,
-                        staffInfo:{
-                            create:{
+                     if(user){
+                        res.status(201).json({
+                        success:true,
+                        message:"User and staff created successfully",
+                        });
+                    }else {
+                       return next(new ValidationError("Staff Cannot Created"))
+                    }
+                }else {
+                     const staff = await prisma.staff.create({data:{
+                                name:name,
+                                email:email,
                                 phone_number:phone_number,
                                 city:city,
-                                position:position,
+                                jobId:jobId,
                                 country:country,
                                 county:county,
                                 address:address,
@@ -459,29 +444,31 @@ export const createStaffAndUser= async (req:Request,res:Response,next:NextFuncti
                                 linkedinlink:linkedinlink,
                                 abilities:abilities,
                                 selfbio:selfbio,
-                                birthdate:birthdate
-                            }
-                        },
-                        departmentId:departmentId,
-                        signupdate:signupdate
+                                birthdate:birthdate,
+                                signupdate:signupdate,
+                                departmentId:departmentId
                     }})
 
-                    if(user){
+                     if(staff){
                         res.status(201).json({
                         success:true,
                         message:"Staff created successfully",
-                        data:user
-                        
                         });
                     }else {
                        return next(new ValidationError("Staff Cannot Created"))
                     }
+                }
+
+                   
                
 
             }catch(error){
                 return next(error);
             }
+
 }
+
+
 
 
 

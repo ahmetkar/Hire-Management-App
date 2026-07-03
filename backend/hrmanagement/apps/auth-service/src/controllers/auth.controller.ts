@@ -7,10 +7,9 @@ import {prisma}  from "@hrmanagement/prisma"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { setCookie } from "../util/setCookie";
 import { clearCookie } from "../util/clearCookie";
-import { publishUserLogin } from "../events/producers/userLogin.producers";
+
 import redis from "../config/redis";
 import { randomUUID } from "crypto";
-import { publishUserLogout } from "../events/producers/userLogout.producers";
 
 
 type Role = "user" | "admin" | "staff" ;
@@ -21,6 +20,171 @@ interface TokenPayload extends JwtPayload {
   sessionId: string;
 }
 
+
+export const getUserByFilter = async (req:any,res:Response,next:NextFunction) => {
+     try {
+                    const {name,email,departmentId} = req.body;
+                    let whereclause = {}
+                        if(name!=""){
+                            whereclause = {...whereclause,name:name}
+                        }
+    
+                        if(email!=""){
+                            whereclause = {...whereclause,email:email}
+                        }
+
+                        if(departmentId!=""){ 
+                                whereclause = {...whereclause,departmentId:departmentId}
+                            }
+
+                        const user = await prisma.users.findMany({where:whereclause})
+
+                        if(user){
+                            const safeUsers = user.map((u) => {
+                                        const { password, ...safeUser } = u;
+                                        return safeUser;
+                                        });
+                            res.status(201).json({
+                                success:true,
+                                message:"User found !",
+                                data: safeUsers
+                                
+                                });
+                        }else {
+                            return next(new ValidationError("User not Found"))
+                        }
+                    
+                    }catch(error){
+                        return next(error);
+                    }
+}
+
+
+export const getAllUser = async (req:any,res:Response,next:NextFunction) => {
+ try {
+
+                        const user = await prisma.users.findMany()
+                        if(user){
+                                const safeUsers = user.map((u)=>{
+                                    const { password, ...safeUser } = u;
+                                    return safeUser
+                                })
+                                res.status(201).json({
+                                success:true,
+                                message:"All users found !",
+                                data: safeUsers
+                                });
+                                
+                            }else {
+                                        return next(new ValidationError("Staff Not Found"))
+                                    }
+    
+                }catch(error){
+                    return next(error);
+                }
+
+}
+
+export const getUser = async (req:any,res:Response,next:NextFunction) => {
+     const {id} = req.params
+                    try {
+
+                        const user = await prisma.users.findUnique({where:{id:id} })
+
+
+                        if(user){
+
+                               const { password, ...safeUser } = user;
+                                res.status(201).json({
+                                success:true,
+                                message:"User found !",
+                                data: safeUser
+                                });
+                            
+                    }else {
+                                return next(new ValidationError("User Not Found"))
+                            }
+                   
+    
+                }catch(error){
+                    return next(error);
+                }
+
+}
+export const userUpdate = async (req:any,res:Response,next:NextFunction) => {
+
+
+                try {
+                const {name,email,password,role,departmentId} = req.body
+
+                const existingUser = await prisma.users.findUnique({where:{email:email}})
+
+                if(!existingUser){
+                        return next(new ValidationError("User does not exists with that email"))
+                }
+
+                const newhashedPassword = await bcrypt.hash(password,10)
+
+                const user = await prisma.users.update({
+                    where:{email:email},
+                    data:{name:name,email:email,password:newhashedPassword,role:role,departmentId:departmentId}
+                })
+
+                if(user){
+                    res.status(201).json({
+                                    success:true,
+                                    message:"User updated successfully !",
+                                    data: user
+                                    });
+                        }else {
+                            return next(new ValidationError("User cannot updated"))
+                        }
+
+                }catch(error){
+                    return next(error);
+                }
+    
+}
+
+export const userDelete = async (req:Request,res:Response,next:NextFunction) => {
+
+
+    let {id} = req.params
+
+    id = id as string
+
+    try {
+        
+        if(id!=undefined){
+
+            const existingUser = await prisma.users.findUnique({where:{id:id}})
+
+            if(!existingUser){
+                    return next(new ValidationError("User does not exists"))
+            }else {
+                const deleted = await prisma.users.delete({
+                    where:{id:id}
+                })
+                if(deleted){
+                    res.status(201).json({
+                            success:true,
+                            message:"User deleted successfully !"
+                            });
+                
+                }else {
+                    return next(new ValidationError("User cannot deleted"))
+                }
+            }
+        }else {
+            return next(new ValidationError("Id parameter not given"))
+        }
+
+    }catch(error){
+        return next(error);
+    }
+    
+
+}
 
 
 export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) => {
@@ -70,6 +234,7 @@ export const userRegister = async (req:Request,res:Response,next:NextFunction) =
 
         if(existingUser){
             return next(new ValidationError("User already exists with that email"))
+
         }
 
 
