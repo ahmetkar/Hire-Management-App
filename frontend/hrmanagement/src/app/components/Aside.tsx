@@ -84,6 +84,12 @@ const Aside = () => {
                 <li className="nav-item">
                   <Link className="nav-link pl-3" href="/application/users/"><span className="ml-1 item-text">Kullanıcıları Görüntüle</span></Link>
                 </li>
+                 <li className="nav-item">
+                  <Link className="nav-link pl-3" href="/application/users/staff"><span className="ml-1 item-text">Personelleri Görüntüle</span></Link>
+                </li>
+                 <li className="nav-item">
+                  <Link className="nav-link pl-3" href="/application/users/staffusers"><span className="ml-1 item-text">Kayıtlı Personelleri Görüntüle</span></Link>
+                </li>
             
               </ul>
             </li>
@@ -121,12 +127,6 @@ const Aside = () => {
 
             
 
-             <li className="nav-item w-100">
-              <Link className="nav-link" href="/application/settings/myprofile">
-                <i className="fe fe-sidebar fe-16"></i>
-                <span className="ml-3 item-text">Profilim</span>
-              </Link>
-            </li>
           </ul>
           
           <div className="btn-box w-100 mt-4 mb-1">

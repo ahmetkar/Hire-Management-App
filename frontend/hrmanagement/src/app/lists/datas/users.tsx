@@ -69,24 +69,12 @@ export type StaffResponse =  {
 }
 
 export type StaffUserResponse =  {
-    data:StaffUser[],
+    data:(StaffUser | undefined)[] ,
     page:number,
     limit:number,
     total:number,
     totalPages:number
 }
-
-export type AllResponse =  {
-    staffResponse:StaffResponse | undefined,
-    userResponse:UserResponse | undefined,
-    staffuserResponse:StaffUserResponse | undefined,
-    allresponse:{name:string,email:string,departmentId:string,signupdate:string}[] | undefined,
-    page:number,
-    limit:number,
-    total:number,
-    totalPages:number
-}
-
 
 
 
@@ -113,54 +101,16 @@ export const getAllStaff = async (page:number,limit:number): Promise<StaffRespon
 export const getAllUserAndStaff = async (page:number,limit:number): Promise<StaffUserResponse> => {
     const response = await axiosInstance.get<StaffUserResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-all-user-and-staff?page=${page}&limit=${limit}`)
     const dep =  response.data
+
+    const dataclean = dep.data!.map((d)=>{
+
+        if(d!=undefined){ if(d.staffInfo != undefined) return d }
+    })
+
+    dep.data = dataclean
+
     return dep
 }
-
-export const getAll = async (page:number,limit:number): Promise<AllResponse> => {
-
-    const users = await getUsers(page,limit)
-    const staff = await getAllStaff(page,limit)
-    const staffusers = await getAllUserAndStaff(page,limit)
-
-
-    const allresp1 = users.data.map((item)=>({
-        name:item.name,
-        email:item.email,
-        departmentId:item.departmentId,
-        signupdate:item.signupdate
-
-    }))
-
-     const allresp2 = staff.data.map((item)=>({
-        name:item.name,
-        email:item.email,
-        departmentId:item.departmentId,
-        signupdate:item.signupdate
-
-    }))
-
-
-    const allresp0 = Array.from(new Map([
-            ...allresp1,...allresp2
-        ].map((item)=>[item.email,item])).values())
-
-    const allresp:AllResponse = {
-        staffResponse:staff,
-        userResponse:users,
-        staffuserResponse:staffusers,
-        allresponse:allresp0,
-        page:page,
-        limit:limit,
-        total:users.total+staff.total,
-        totalPages:Number((users.total+staff.total)/limit)
-    }
-
-    return allresp;
-
-}
-
-
-
 
 
 

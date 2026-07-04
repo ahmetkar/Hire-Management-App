@@ -32,7 +32,7 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
                     const [data,total] = await Promise.all([prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {job:true}}),
+                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true}}),
                         prisma.jobapplication.count({where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]}})
                     ])
 
@@ -83,7 +83,7 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
                     const [data,total] = await Promise.all([prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause},include : {job:true}}),
+                        },where:{...whereclause},include : {position:true}}),
                         prisma.jobapplication.count({where:{...whereclause}})
                     ])
 
@@ -154,8 +154,6 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
             }
 
 }
-
-
 
 
 export const getOneJobApplication = async (req:Request,res:Response,next:NextFunction) => {
@@ -235,6 +233,11 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
 
 export const getJobApplicationByFilter = async (req:Request,res:Response,next:NextFunction) => {
 
+     const page = Math.max(Number(req.query.page) || 1 ,1)
+     const limit = Math.min(Number(req.query.limit) || 10 ,100)
+
+     const skip = (page-1) * limit
+
      const {jobId,name,email,phone_number,city} = req.body;
     
             try {
@@ -258,12 +261,20 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
                         whereclause = {...whereclause,city:city}
                     }
                     
-                    const job = await prisma.jobapplication.findMany({where:whereclause})
+                    const [job,total] = await Promise.all([prisma.jobapplication.findMany({skip,take:limit,orderBy:{
+                        appdate:"desc"
+                    },where:whereclause}),
+                    prisma.jobapplication.count()
+                    ])
                     if(job){
                         res.status(201).json({
                         success:true,
                         message:"Application found !",
-                        data: job
+                        data: job,
+                        page:page,
+                        limit:limit,
+                        total:total,
+                        totalPages:Math.ceil(total/limit)
                         });
                     }else {
                         return next(new ValidationError("Job Application Not Found"))
@@ -276,6 +287,11 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
 }
 
 export const getJobByFilter = async (req:Request,res:Response,next:NextFunction) => {
+
+    const page = Math.max(Number(req.query.page) || 1 ,1)
+     const limit = Math.min(Number(req.query.limit) || 10 ,100)
+
+     const skip = (page-1) * limit
 
      const {id,title,position,department,userId} = req.body;
     
@@ -300,13 +316,23 @@ export const getJobByFilter = async (req:Request,res:Response,next:NextFunction)
                         whereclause = {...whereclause,responsibleUserId:userId}
                     }
                     
-                    const job = await prisma.jobs.findMany({where:whereclause})
+                    const [job,total] = await Promise.all([ prisma.jobs.findMany({skip,take:limit,orderBy:{
+                        createdate:"desc"
+                    },where:whereclause}),
+                    prisma.jobs.count()
+                     ])
+
                     if(job){
                         res.status(201).json({
                         success:true,
                         message:"Jobs found !",
-                        data: job
-                        });
+                        data: job,
+                        total:total,
+                        page:page,
+                        limit:limit,
+                        totalPages:Math.ceil(total/limit)
+                        })
+                   
                     }else {
                         return next(new ValidationError("Jobs Not Found"))
                     }

@@ -58,12 +58,23 @@ export type JobAppsResponse  = {
 }
 
 
+export type JobsResponse  = {
+    data:Job[],
+    page:number,
+    limit:number,
+    total:number,
+    totalPages:number
+}
+
+
 
 export const searchJobApps = async (searchstr:string,page:number,limit:number,type:string): Promise<JobAppsResponse> => {
     const response = await axiosInstance.get<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/search-all-application?page=${page}&limit=${limit}&type=${type}&searchstr=${searchstr}`)
     const jobapps =  response.data
     return jobapps
 }  
+
+ 
 
 export const getJobApps = async (page:number,limit:number,type:string): Promise<JobAppsResponse> => {
     const response = await axiosInstance.get<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-application?page=${page}&limit=${limit}&type=${type}`)

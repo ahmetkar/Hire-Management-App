@@ -39,6 +39,23 @@ export const getJobs = async (page:number,limit:number): Promise<JobsResponse> =
 
 }
 
+export const getJobsNoAuth = async (page:number,limit:number): Promise<JobsResponse> => {
+
+    const response = await axios.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-jobs?page=${page}&limit=${limit}`)
+    const jobresp =  response.data
+    return jobresp
+
+}
+
+
+
+export const getJobsByDepartment = async (dep:string,page:number,limit:number): Promise<JobsResponse> => {
+    const response = await axiosInstance.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-job-by-filter?page=${page}&limit=${limit}`,{data:{
+        department:dep
+    }})
+    return response.data
+}  
+
 export const getJob = async (id:string): Promise<Job> => {
 
     const response = await axios.get<JobResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-one-job/${id}`)

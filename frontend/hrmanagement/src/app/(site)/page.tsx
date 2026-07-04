@@ -2,11 +2,43 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { JobsResponse,getJobs } from "../lists/jobs";
+import Pagination from "../(panel)/application/utils/pagination";
 
 export default function Home() {
 
-  const [tabNu,setTabNu] = useState<Number>(0)
+      const [tabNu,setTabNu] = useState<Number>(0)
+      const defaultLimit = 5
+
+       const [jobsResponse, setJobResponse] = useState<JobsResponse>({
+          data: [],
+          total: 0,
+          page: 1,
+          limit: defaultLimit,
+          totalPages: 0,
+       });
+
+
+       const params =  useSearchParams()
+       const router = useRouter()
+    
+       const page = Number(params.get("page")) || 1
+       const limit = Number(params.get("limit") || defaultLimit)
+     
+    
+       useEffect(() => {
+         
+          getJobs(page,limit)
+            .then((data) => setJobResponse(data))
+            .catch((error) => console.error(error));  
+
+          
+         
+        }, [page,limit]);
+  
 
   return (
      <div>
@@ -38,6 +70,7 @@ export default function Home() {
               
               {
                 tabNu == 0 ? (
+                  <div>
                     <table className="table table-borderless table-striped">
                 <thead>
                   <tr>
@@ -45,174 +78,39 @@ export default function Home() {
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
                     <th>Konum</th>
+                    <th>Departman</th>
                     <th>Yayınlanma Tarihi</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colSpan={5}>
-                     <span className="small text-muted text-uppercase">Yazılım Depertmanı İçin Açık İlanlar</span>
-                    </td>
-                  </tr>
 
-                  <tr>
+                  {(jobsResponse.data ? (
+                    (jobsResponse.data.map((j)=>(
+                       <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
                         <span className="fe fe-briefcase fe-16 text-muted"></span>
                       </div>
                       
                     </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
+                    <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
+                      <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
+                    <td className="text-muted">{j.mounthlywage}</td>
+                    <td className="text-muted">{j.department}</td>
+                    <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
                   </tr>
+                    )))
+                   
+                  ) : (<div></div>))}
 
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-
-                 
-                  <tr>
-                    <td colSpan={5}>
-                      <span className="small text-muted text-uppercase">IT Depertmanı İçin Açık Pozisyonlar</span>
-                    </td>
-                  </tr>
-                 
-                  <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
+                  
                 </tbody>
               </table>
+              <Pagination currentPage={jobsResponse.page} totalPages={jobsResponse.totalPages} ></Pagination>
+              </div>
                 ):  (tabNu==1) ?  (
                  <table className="table table-borderless table-striped">
                 <thead>
@@ -226,12 +124,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colSpan={5}>
-                     <span className="small text-muted text-uppercase">Yazılım Depertmanı İçin Açık İlanlar</span>
-                    </td>
-                  </tr>
-
+                
                   <tr>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
@@ -247,148 +140,14 @@ export default function Home() {
                     <td className="text-muted">Mar 17, 2026</td>
                     
                   </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
+                
+             
 
 
                  
-                  <tr>
-                    <td colSpan={5}>
-                      <span className="small text-muted text-uppercase">IT Depertmanı İçin Açık Pozisyonlar</span>
-                    </td>
-                  </tr>
-                 
-                  <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
                 </tbody>
               </table>
+
                 ) : (tabNu==2) ? (
                   <table className="table table-borderless table-striped">
                 <thead>
@@ -402,11 +161,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colSpan={5}>
-                     <span className="small text-muted text-uppercase">Yazılım Depertmanı İçin Açık İlanlar</span>
-                    </td>
-                  </tr>
+              
 
                   <tr>
                     <td className="text-center">
@@ -424,145 +179,7 @@ export default function Home() {
                     
                   </tr>
 
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-
-                 
-                  <tr>
-                    <td colSpan={5}>
-                      <span className="small text-muted text-uppercase">IT Depertmanı İçin Açık Pozisyonlar</span>
-                    </td>
-                  </tr>
-                 
-                  <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
-                   <tr>
-                    <td className="text-center">
-                      <div className="circle circle-sm bg-light">
-                        <span className="fe fe-briefcase fe-16 text-muted"></span>
-                      </div>
-                      
-                    </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
-                    </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
-                    
-                  </tr>
-
+                  
                 </tbody>
               </table>
                 ) :("")
