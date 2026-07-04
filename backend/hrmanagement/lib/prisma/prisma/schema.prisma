@@ -55,7 +55,7 @@
     birthdate DateTime
     signupdate DateTime @default(now())
     userId String? @db.ObjectId @unique
-    user   users? @relation(fields: [userId], references: [id], onDelete: SetNull)
+    user users? @relation(fields: [userId], references: [id], onDelete: SetNull)
     departmentId String @db.ObjectId
     department department @relation(fields: [departmentId],references:[id])
     jobId String? @db.ObjectId

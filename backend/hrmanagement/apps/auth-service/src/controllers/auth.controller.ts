@@ -61,9 +61,18 @@ export const getUserByFilter = async (req:any,res:Response,next:NextFunction) =>
 
 
 export const getAllUser = async (req:any,res:Response,next:NextFunction) => {
- try {
+ try {  
 
-                        const user = await prisma.users.findMany()
+                     const page = Math.max(Number(req.query.page) || 1 ,1)
+                     const limit = Math.min(Number(req.query.limit) || 10 ,100)
+                        
+                     const skip = (page-1) * limit
+
+                        const [user,total] = await Promise.all([prisma.users.findMany({skip,take:limit,orderBy:{
+                            signupdate:"desc"
+                        }}),
+                        prisma.users.count()
+                        ])
                         if(user){
                                 const safeUsers = user.map((u)=>{
                                     const { password, ...safeUser } = u;
@@ -72,7 +81,11 @@ export const getAllUser = async (req:any,res:Response,next:NextFunction) => {
                                 res.status(201).json({
                                 success:true,
                                 message:"All users found !",
-                                data: safeUsers
+                                data: safeUsers,
+                                 total,
+                                page,
+                                limit,
+                                totalPages:Math.ceil(total/limit)
                                 });
                                 
                             }else {

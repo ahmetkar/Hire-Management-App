@@ -123,8 +123,19 @@ export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction)
                    
                     try {
 
-                        const user = await prisma.users.findMany({include:{staffInfo:true
-                        }})
+                        const page = Math.max(Number(req.query.page) || 1 ,1)
+                        const limit = Math.min(Number(req.query.limit) || 10 ,100)
+                        
+                        const skip = (page-1) * limit
+
+
+                        const [user,total] = await Promise.all([prisma.users.findMany({skip,take:limit,orderBy:{
+                            signupdate:"desc"
+                        },include:{staffInfo:true
+                        }}
+                        ),
+                        prisma.users.count()
+                        ])
                                 if(user){
                                 const safeUsers = user.map((u) => {
                                         const { password, ...safeUser } = u;
@@ -133,7 +144,11 @@ export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction)
                                 res.status(201).json({
                                 success:true,
                                 message:"User found !",
-                                data: safeUsers
+                                data: safeUsers,
+                                total,
+                                page,
+                                limit,
+                                totalPages:Math.ceil(total/limit)
                                 });
                                 
                             }else {
@@ -150,16 +165,29 @@ export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction)
 
 export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
     try {
+                       const page = Math.max(Number(req.query.page) || 1 ,1)
+                        const limit = Math.min(Number(req.query.limit) || 10 ,100)
+                        
+                        const skip = (page-1) * limit
 
-                        const staff = await prisma.staff.findMany()
-                                if(staff){
+
+                        const [staff,total] = await Promise.all([ prisma.staff.findMany({skip,take:limit,orderBy:{
+                            signupdate:"desc"
+                        }}),
+                        prisma.staff.count()
+
+                        ])
+                        if(staff){
                                 
                                 res.status(201).json({
                                 success:true,
                                 message:"All staff found !",
-                                data: staff
-                                });
-                                
+                                data: staff,
+                                total,
+                                page,
+                                limit,
+                                totalPages:Math.ceil(total/limit)
+                                })
                             }else {
                                         return next(new ValidationError("Staff Not Found"))
                                     }
@@ -168,6 +196,7 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
                     return next(error);
                 }
 }
+
 
 
 export const getStaff = async (req:any,res:Response,next:NextFunction) => {
@@ -196,25 +225,25 @@ export const getStaff = async (req:any,res:Response,next:NextFunction) => {
 }
 
 
-export const getUserAndStaff = async (req:Request,res:Response,next:NextFunction) => {
+export const getUserAndStaff = async (req:any,res:Response,next:NextFunction) => {
             
-                const {email} = req.body;
+                
+                    const {id} = req.params
+                
                     try {
 
-                        const user = await prisma.users.findMany({where:{email:email},include:{staffInfo:true} })
+                        const user = await prisma.users.findUnique({where:{id:id},include:{staffInfo:true} })
 
 
                         if(user){
 
-                               const safeUsers = user.map((u) => {
-                                        const { password, ...safeUser } = u;
-                                        return safeUser;
-                                        });
+                               const { password, ...safeUser } = user;
+                                      
 
                                 res.status(201).json({
                                 success:true,
                                 message:"User found !",
-                                data: safeUsers
+                                data: safeUser
                                 });
                             
                     }else {
@@ -236,7 +265,7 @@ export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
         address,postcode,university,unidepartment,unifaculty,graduatedate,githublink
     ,linkedinlink,abilities,selfbio,birthdate,departmentId} = req.body;
 
-    var abilitiesstr = abilities.join("")
+    var abilitiesstr = abilities.join(",")
 
      try {
     
@@ -285,7 +314,7 @@ export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
                             graduatedate:graduatedate,
                             githublink:githublink,
                             linkedinlink:linkedinlink,
-                            abilities:abilities,
+                            abilities:abilitiesstr,
                             selfbio:selfbio,
                             birthdate:birthdate,
                             departmentId:departmentId
@@ -377,11 +406,12 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
     ,linkedinlink,abilities,selfbio,birthdate,departmentId} = req.body;
 
     var signupdate = new Date().toISOString()
-    var abilitiesstr = abilities.join("")
-   const hashedPassword = await bcrypt.hash(password,10)
+    var abilitiesstr = abilities.join(",")
+   
         
      try {  
                 if(password!=undefined){
+                const hashedPassword = await bcrypt.hash(password,10)
                 const user = await prisma.users.create({ data:{
                                 name:name,
                                 email:email,
@@ -413,6 +443,9 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                                 },
                                 signupdate:signupdate,
                                 departmentId:departmentId,
+                            },
+                            include:{
+                                staffInfo:true
                             }
                                 
                     })
@@ -442,12 +475,13 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                                 graduatedate:graduatedate,
                                 githublink:githublink,
                                 linkedinlink:linkedinlink,
-                                abilities:abilities,
+                                abilities:abilitiesstr,
                                 selfbio:selfbio,
                                 birthdate:birthdate,
                                 signupdate:signupdate,
                                 departmentId:departmentId
-                    }})
+                    }
+                })
 
                      if(staff){
                         res.status(201).json({

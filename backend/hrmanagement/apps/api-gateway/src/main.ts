@@ -125,7 +125,7 @@ app.use("/staff/staff-update",verifyToken,authorizeRoles(["admin","staff"]),crea
 app.use("/staff/staff-create",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/staff/get-staff/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/staff/get-all-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
-app.use("/staff/get-user-and-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
+app.use("/staff/get-user-and-staff/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/staff/get-all-user-and-staff",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/staff/get-user-and-staff-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
 app.use("/staff/get-staff-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/staff",process.env.STAFF_SERVICE_URL!));
