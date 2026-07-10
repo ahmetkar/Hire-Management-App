@@ -1,6 +1,7 @@
-1-apprroved.ts düzenle
-2-geri kalan frontedleri ayarla,application için authorrization
-3-veritabanları ayır
-4-ai service yap
-5-redis-kafka düzenlemeleri
-6-cdn ,load balancer ekle
+1-kafka ekle
+2-ai service (personel ve job app için tekli veya çoklu ai prompt isteme onaylananı metnini mongodbye vektörünü vectordb ye ekleme 
+onaylanmayan için farklı ai şablonu seçip tekrar prompt isteme),(vectordb üzerinde benzerlik araması yaptırma veya rag  yani - seçilen 
+kişiler arasında en uygununu sorma ve seçilen personeller ve bir job app için job app in bu personel profillerine benzerliğini sorma-)
+3-select sorguları ve ai için redis cache eklemeleri
+4-cdn ekle
+5-dockerize et ve load balancer ekle
