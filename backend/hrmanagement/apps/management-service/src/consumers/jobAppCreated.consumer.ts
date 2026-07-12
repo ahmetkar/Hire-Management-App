@@ -1,5 +1,5 @@
 import { Kafka } from 'kafkajs';
-import { SendJobNotificationToStaff } from '../helpers/notification.helper';
+import { SendJobNotificationToManager, SendJobNotificationToStaff } from '../helpers/notification.helper';
 
 
 const kafka = new Kafka({
@@ -46,6 +46,7 @@ export const startKafkaJobAppCreatedConsumer = async () => {
                      -> offset:${message.offset} -> key -> ${message.key}  `)
                 
                 SendJobNotificationToStaff(data.ipaddress,data.jobId,data.jobAppId,"created");
+                SendJobNotificationToManager(data.ipaddress,data.jobId,data.jobAppId,"created");
 
             }catch(error){
                 console.error("Kafka mesajı işlenemedi ",error);

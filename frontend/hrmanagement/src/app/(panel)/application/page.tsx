@@ -1,6 +1,28 @@
+"use client";
+import { getNotifications, NotificationResponse } from "@/app/lists/notifications";
+import { useEffect, useState } from "react";
 
 
-const page = () => {
+const Page = () => {
+
+
+   const [notifications,setNotifications] = useState<NotificationResponse>({
+            data:[],
+            total: 0,
+            page: 1,
+            limit: 5,
+            totalPages: 0,
+         });
+
+     useEffect(() => {
+            
+            getNotifications(1,5)
+              .then((data) => setNotifications(data))
+              .catch((error) => console.error(error));  
+            
+          },[]);
+  
+  
 
   
   return (
@@ -98,7 +120,7 @@ const page = () => {
                     <div className="card-body">
                       <div className="card-title">
                         <strong>Özet Rakamlar</strong>
-                        <a className="float-right small text-muted" href="#!">View all</a>
+                        <a className="float-right small text-muted" href="/applications/notifications">Tüm bildirimleri görüntüle</a>
                       </div>
                       <div className="row mt-b">
                         <div className="col-6 text-center mb-3 border-right">
@@ -139,49 +161,22 @@ const page = () => {
                         <thead>
                           <tr>
                           
+                            <th>Başlık</th>
                             <th>Açıklama</th>
                             <th>Tarih</th>
-                            <th>Görülme</th>
+                        
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
+                          {notifications.data.map((ntf)=>(
+                            <tr key={ntf.title}>
+                            <td><a href={ntf.href!="" ? `/application/jobmanagement/detail/${ntf.href}` : "#"}>{ntf.title}</a></td>
+                            <td><span className="small text-muted">{ntf.desc}</span></td>
+                            <td>{ntf.date.toString().split("T")[0]}</td>
+                          </tr>
+                          ))}
                           
-                            <td>Enim Limited<br /><span className="small text-muted">901-6206 Cras Av.</span></td>
-                            <td>Apr 24, 2019</td>
-                            <td><span className="dot dot-lg bg-danger mr-2"></span></td>
-                          </tr>
-                          <tr>
-                           
-                        
-                            <td>Nunc Lectus Incorporated<br /><span className="small text-muted">Ap #705-5389 Id St.</span></td>
-                            <td>May 23, 2020</td>
-                            <td><span className="dot dot-lg bg-success mr-2"></span></td>
-                          </tr>
-                          <tr>
                          
-                         
-                            <td>Nisi Aenean Eget Limited<br />
-                              <span className="small text-muted">7425 Malesuada Rd.</span></td>
-                            <td>Nov 4, 2019</td>
-                            <td><span className="dot dot-lg bg-success mr-2"></span></td>
-                          </tr>
-                          <tr>
-                        
-                         
-                            <td>Pellentesque Associates<br />
-                              <span className="small text-muted">896 Sodales St.</span></td>
-                            <td>Mar 27, 2020</td>
-                            <td><span className="dot dot-lg bg-danger mr-2"></span></td>
-                          </tr>
-                          <tr>
-                          
-                          
-                            <td>Augue Incorporated<br />
-                              <span className="small text-muted">4583 Id St.</span></td>
-                            <td>Jan 13, 2020</td>
-                            <td><span className="dot dot-lg bg-success mr-2"></span></td>
-                          </tr>
                         </tbody>
                       </table>
                     </div>
@@ -197,4 +192,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

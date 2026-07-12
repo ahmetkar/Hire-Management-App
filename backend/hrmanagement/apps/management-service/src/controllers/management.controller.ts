@@ -89,21 +89,36 @@ export const getSettings = async (req:Request,res:Response,next:NextFunction) =>
 export const getNotifications = async (req:any,res:Response,next:NextFunction) => {
 
             const myId = req.header["x-user-id"]
+            
     
             try {
                 
+
+                const page = Math.max(Number(req.query.page) || 1 ,1)
+                const limit = Math.min(Number(req.query.limit) || 5 ,25)
+                
+                const skip = (page-1) * limit
+
                     
-                  const notifications = await prisma.notifications.findMany({
+                  const [notifications,count] = await Promise.all([ prisma.notifications.findMany({skip,take:limit,orderBy:{
+                        id:'desc'
+                  },
                                 where:{
                                     toWhoId:myId
                                 }
-                                });
+                                }),
+                                prisma.notifications.count()
+                    ])
+                    
                     if(notifications){
                         res.status(201).json({
                         success:true,
                         message:"Notifications found !",
-                        data: notifications
-                        });
+                        data: notifications,
+                        count,
+                        page:page,
+                        limit:limit,
+                        totalPages:Math.ceil(count/limit),                });
                     }else {
                         return next(new ValidationError("Notifications Not Found"))
                     }
@@ -117,7 +132,9 @@ export const getNotifications = async (req:any,res:Response,next:NextFunction) =
 
 export const createNotification = async (req:Request,res:Response,next:NextFunction) => {
 
-    const {title,desc,byWhoId,toWhoId} = req.body;
+    const {title,desc,byWhoId,toWhoId,href} = req.body;
+
+    const date = new Date().toISOString()
 
      try {
                     
@@ -128,6 +145,8 @@ export const createNotification = async (req:Request,res:Response,next:NextFunct
                                 desc:desc,
                                 bywhoId:byWhoId,
                                 toWhoId:toWhoId,
+                                href:href,
+                                date:date
                             }
                         })
 

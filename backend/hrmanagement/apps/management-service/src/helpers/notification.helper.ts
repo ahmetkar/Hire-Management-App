@@ -3,11 +3,12 @@ import { Prisma } from "@prisma/client";
 
 
 
-
 export const SendJobMailToUser = async (email:string,name:string,jobId:string,jobAppId:string,status:string) => {
 
         if(status == "approved"){
 
+         
+            
         }else if(status == "denied"){
             
         }
@@ -16,16 +17,25 @@ export const SendJobMailToUser = async (email:string,name:string,jobId:string,jo
 
 
 export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,jobAppId:string,status:string) => {
+        const date = new Date().toISOString()
 
-        if(status == "created"){
 
+        let title="";
+        let desc="";
+        let href="";
+        const jobapp = await prisma.jobapplication.findUnique({where:{id:jobAppId}})
+        const job = await prisma.jobs.findUnique({where:{id:jobId}})
 
-            //created job app
+        if(jobapp && job){
 
-        }
-        
+            if(status == "created"){
+            //byWhoId önemsiz çünkü job application created
+            title = `${job.jobtitle} ilanına yeni bir iş başvurusu yapıldı.`
+            desc = `${jobapp.name} tarafından yeni bir iş başvurusu ${jobapp.appdate.toString().split("T")[0]} tarihinde yapıldı.`
+            href = jobapp.id
+           
 
-        let ids = []
+            let ids = []
        
          try {
 
@@ -41,11 +51,12 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
 
 
             const datas : Prisma.notificationsCreateManyInput[] = ids.map((id)=>({
-                    title:"",
-                    desc:"",
+                    title:title,
+                    desc:desc,
                     bywhoId:byWhoId,
                     toWhoId:id, 
-                    href:""
+                    href:href,
+                    date:date
             }))
 
             const notifications = await prisma.notifications.createMany({
@@ -65,20 +76,58 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
             }
 
 
+            }else {
+                console.log("Notification Status not valid")
+            }
+
+        }else {
+                 console.log("Notification cannot sended to user ")  
+            }
+   
 }
 
 export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,jobAppId:string,status:string) => {
 
+        const date = new Date().toISOString()
+        let title="";
+        let desc="";
+        let href="";
+        const jobapp = await prisma.jobapplication.findUnique({where:{id:jobAppId}})
+        const job = await prisma.jobs.findUnique({where:{id:jobId}})
 
-        if(status == "approved"){
 
-            //approved by staff
+        if(jobapp && job){
+
+
+
+            if(status == "approved"){
+            const by = await prisma.users.findUnique({where:{id:byWhoId}}) 
+            if(by){
+                title = `${by.name} tarafından #${jobapp.id} id li iş ilanı sizin onayınıza gönderildi.`
+                desc = `${job.jobtitle} başlıklı iş ilanına gelen ${jobapp.appdate} tarihli #${jobapp.id} id li iş başvurusu
+                ${by.name} tarafından size gönderildi ve sizden onay bekliyor`
+                href = jobapp.id
+            }   
+                
+            }else if(status == "denied"){
+            const by = await prisma.users.findUnique({where:{id:byWhoId}})    
+
+            if(by){
+                title = `${by.name} tarafından #${jobapp.id} id li iş ilanı reddedildi.`
+                desc = `${job.jobtitle} başlıklı iş ilanına gelen ${jobapp.appdate} tarihli #${jobapp.id} id li iş ilanı ${by.name} tarafından reddedildi.`
+                href = jobapp.id
+            }   
+
+            }else if(status == "created"){
+                title = `${job.jobtitle} ilanına yeni bir iş başvurusu yapıldı.`
+                desc = `${jobapp.name} tarafından yeni bir iş başvurusu ${jobapp.appdate.toString().split("T")[0]} tarihinde yapıldı.`
+                href = jobapp.id
             
-        }else if(status == "denied"){
-
-            //denied by staff
-        }
-        
+            }else {
+                console.log("Notification status not valid")
+                return;
+            }
+            
 
         let ids = []
        
@@ -96,11 +145,12 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
 
 
             const datas : Prisma.notificationsCreateManyInput[] = ids.map((id)=>({
-                    title:"",
-                    desc:"",
+                    title:title,
+                    desc:desc,
                     bywhoId:byWhoId,
                     toWhoId:id, 
-                    href:""
+                    href:href,
+                    date:date
             }))
 
             const notifications = await prisma.notifications.createMany({
@@ -119,5 +169,5 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
                    console.log("Notification cannot sended to user ",error)    
             }
 
-
+     }
 }

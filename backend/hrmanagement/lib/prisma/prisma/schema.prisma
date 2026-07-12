@@ -140,4 +140,5 @@ model notifications {
   toWhoId String  @db.ObjectId
   toWho   users   @relation("NotificationReceiver", fields: [toWhoId], references: [id])
   href    String?
+  date    DateTime
 }
