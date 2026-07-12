@@ -11,7 +11,8 @@ export const producer = kafka.producer({
   createPartitioner: Partitioners.DefaultPartitioner,
 });
 
-export const connectKafka = async () => {
+
+export const connectKafkaProducer = async () => {
   try {
     await producer.connect();
     console.log('Kafka producer connected');
@@ -21,7 +22,7 @@ export const connectKafka = async () => {
   }
 };
 
-export const disconnectKafka = async () => {
+export const disconnectKafkaProducer = async () => {
   try {
     await producer.disconnect();
     console.log('Kafka producer disconnected');

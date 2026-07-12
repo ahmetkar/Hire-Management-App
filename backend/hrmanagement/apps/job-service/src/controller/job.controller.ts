@@ -1,7 +1,9 @@
 import { Request,Response,NextFunction } from "express";
 import {prisma}  from "@hrmanagement/prisma"
 import { ValidationError } from "@hrmanagement/error-handler";
-
+import { publishJobAppCreated } from "../events/producers/jobAppCreated.producers";
+import { publishJobAppDenied } from "../events/producers/jobAppDenied.producers";
+import { publishJobAppApproved } from "../events/producers/jobAppApproved.producers";
 
 
 export const searchAllJobApplication = async (req:Request,res:Response,next:NextFunction) => {
@@ -108,8 +110,6 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
 
 }
 
-
-
 export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => {
      
 
@@ -154,7 +154,6 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
             }
 
 }
-
 
 export const getOneJobApplication = async (req:Request,res:Response,next:NextFunction) => {
 
@@ -381,6 +380,11 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                         }
                     })
                     if(job){
+
+                        publishJobAppCreated({
+                            data:{jobAppid:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress,message:"Application created"}
+                        })
+
                         res.status(201).json({
                         success:true,
                         
@@ -406,6 +410,7 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
 
 
      const deniedById = req.headers["x-user-id"]
+     const role = req.headers["x-user-role"]
         
 
      try {
@@ -425,6 +430,10 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
                         }
                     })
                     if(denyjob){
+
+                        publishJobAppDenied({deniedById:deniedById,role:role,jobAppId:denyjob.id,jobId:denyjob.jobId,
+                            name:denyjob.name,email:denyjob.email,message:"Job application denied"})
+
                         res.status(201).json({
                         
                         data:{success:true,message:"Successfully disapproved !"}
@@ -484,6 +493,8 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
                     }
 
                     if(job){
+                        publishJobAppApproved({approverId:approverId,role:role,jobAppId:id,jobId:job.jobId,
+                            name:job.name,email:job.email,message:"Job application approved"})
                         res.status(201).json({
                          data:{success:true,message:"Successfully approved !"}
                         
@@ -495,10 +506,6 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
 
 
 }
-
-
-
-
 
 export const createJob = async (req:any,res:Response,next:NextFunction) => {
 
@@ -638,8 +645,6 @@ export const deleteJob = async (req:Request,res:Response,next:NextFunction) => {
     }
 }
 
-
-
 export const createDepartment = async (req:Request,res:Response,next:NextFunction) => {
      try {
         if(req.body &&  Object.keys(req.body).length > 0){
@@ -672,7 +677,6 @@ export const createDepartment = async (req:Request,res:Response,next:NextFunctio
 
 }
 
-
 export const updateDepartment = async (req:Request,res:Response,next:NextFunction) => {
 
  try {
@@ -703,7 +707,6 @@ export const updateDepartment = async (req:Request,res:Response,next:NextFunctio
 
 
 }
-
 
 export const deleteDepartment = async (req:Request,res:Response,next:NextFunction) => {
 
@@ -761,8 +764,6 @@ export const getAllDepartment = async (req:Request,res:Response,next:NextFunctio
                 return next(error);
             }
 }
-
-
 
 export const getOneDepartment = async (req:Request,res:Response,next:NextFunction) => {
 

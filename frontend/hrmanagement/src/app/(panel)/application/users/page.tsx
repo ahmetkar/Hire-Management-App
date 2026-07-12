@@ -7,7 +7,7 @@ import Pagination from '../utils/pagination';
 import axiosInstance from '@/app/utils/axiosInstance';
 import Modal from '@/app/components/Modal';
 
-const page = () => {
+const Page = () => {
 
   const defaultLimit = 4
   const [activeId,setActiveId] = useState("")
@@ -150,4 +150,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

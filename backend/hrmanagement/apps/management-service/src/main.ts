@@ -1,11 +1,12 @@
-
-
 import express from 'express';
 import {errorMiddleware}  from "@hrmanagement/error-handler"
 import router from './routes/management.routes'
 import cors from "cors"
 import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
+import { JobAppCreatedConsumerShutdown,startKafkaJobAppCreatedConsumer } from './consumers/jobAppCreated.consumer';
+import { JobAppApprovedConsumerShutdown, startKafkaJobAppApprovedConsumer } from './consumers/jobAppApproved.consumer';
+import { JobAppDeniedConsumerShutdown, startKafkaJobAppDeniedConsumer } from './consumers/jobAppDenied.consumer';
 
 const app = express();
 
@@ -40,9 +41,39 @@ app.use(verifyInternalRequest)
 
 const port = process.env.PORT || 3332;
 const server = app.listen(port, () => {
+  try {
+  startKafkaJobAppCreatedConsumer();
+  startKafkaJobAppApprovedConsumer();
+  startKafkaJobAppDeniedConsumer();
+
+  }catch(error){
+    console.error("Kafka consumerlar başlatılamadı",error)
+  }
   console.log(`Listening at http://localhost:${port}/s`);
 });
 server.on('error', console.error);
+
+
+
+server.on("SIGINT", () => {
+  try {
+  void JobAppCreatedConsumerShutdown();
+  void JobAppApprovedConsumerShutdown();
+  void JobAppDeniedConsumerShutdown();
+  }catch(error){
+    console.error("Consumer kapatılırken hata verdi",error)
+  }
+});
+
+server.on("SIGTERM", () => {
+   try {
+  void JobAppCreatedConsumerShutdown();
+  void JobAppApprovedConsumerShutdown();
+  void JobAppDeniedConsumerShutdown();
+  }catch(error){
+    console.error("Consumer kapatılırken hata verdi",error)
+  }
+});
 
 
 

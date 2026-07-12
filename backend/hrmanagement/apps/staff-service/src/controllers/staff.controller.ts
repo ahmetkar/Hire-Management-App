@@ -86,7 +86,7 @@ export const getUserAndStaffByFilter = async (req:any,res:Response,next:NextFunc
                             }
 
                         const user = await prisma.users.findMany({where:{...whereclause0,staffInfo:{
-                            is: {
+                            some: {
                                 ...whereclause
                             }
                         }},include:{staffInfo:true} })
@@ -238,7 +238,7 @@ export const getUserAndStaff = async (req:any,res:Response,next:NextFunction) =>
                         if(user){
 
                                const { password, ...safeUser } = user;
-                                      
+
 
                                 res.status(201).json({
                                 success:true,
@@ -271,8 +271,17 @@ export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
     
     let staff = null
     if(userId!=undefined){
+    const staffFound = await prisma.staff.findFirst({
+            where: {
+                userId: userId,
+            },
+            select: {
+                id: true,
+            },
+            });
+    if(staffFound){
     staff = await prisma.staff.update({
-                        where:{userId:userId},
+                        where:{id:staffFound.id},
                         data:{
                             name:name,
                             email:email,
@@ -295,6 +304,7 @@ export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
                             departmentId:departmentId
                         }
                     })
+                }
     }else {
         staff = await prisma.staff.update({
                         where:{id:staffId},
@@ -347,12 +357,12 @@ export const staffDelete = async (req:any,res:Response,next:NextFunction) => {
     try {
                 if(userId!=undefined){
                         
-                        const existingStaff = await prisma.staff.findUnique({where:{userId:userId}})
+                        const existingStaff = await prisma.staff.findFirst({where:{userId:userId}})
                         if(!existingStaff){
                                 return next(new ValidationError("Staff infos does not exists"))
                         }else {
                                         const deletestaff = await prisma.staff.delete({
-                                            where:{userId:userId}
+                                            where:{id:existingStaff.id}
                                         })
                                         if(deletestaff){
                                             res.status(201).json({

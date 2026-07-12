@@ -10,7 +10,7 @@ import { getAllStaff, StaffResponse } from '@/app/lists/datas/users';
 
 
 
-const page = () => {
+const Page = () => {
 
     const defaultLimit = 5
     const [activeId,setActiveId] = useState("")
@@ -280,4 +280,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

@@ -1,9 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-
 
 import express from 'express';
 import {errorMiddleware}  from "@hrmanagement/error-handler"
@@ -11,6 +5,9 @@ import router from './routes/staff.routes';
 import cors from "cors"
 import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
+
+import { JobAppApprovedConsumerShutdown, startKafkaJobAppApprovedConsumer } from './consumers/jobAppApproved.consumer';
+
 
 const app = express();
 
@@ -43,9 +40,37 @@ app.use(errorMiddleware)
 
 
 
-
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
+  try {
+
+    startKafkaJobAppApprovedConsumer();
+
+  }catch(error){
+    console.error("Kafka consumerlar başlatılamadı",error)
+  }
   console.log(`Listening at http://localhost:${port}/api`);
 });
 server.on('error', console.error);
+
+
+
+
+server.on("SIGINT", () => {
+  try {
+  void JobAppApprovedConsumerShutdown();
+
+  }catch(error){
+    console.error("Consumer kapatılırken hata verdi",error)
+  }
+});
+
+server.on("SIGTERM", () => {
+   try {
+
+  void JobAppApprovedConsumerShutdown();
+
+  }catch(error){
+    console.error("Consumer kapatılırken hata verdi",error)
+  }
+});

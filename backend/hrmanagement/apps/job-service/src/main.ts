@@ -1,12 +1,10 @@
-
-
-
 import express from 'express';
 import {errorMiddleware}  from "@hrmanagement/error-handler"
 import router from './routers/job.routes';
 import cors from "cors"
 import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
+import init from './init';
 
 
 const app = express();
@@ -42,7 +40,8 @@ app.use(verifyInternalRequest)
 
 
 const port = process.env.PORT || 3331;
-const server = app.listen(port, () => {
+const server = app.listen(port, async () => {
+  await init();
   console.log(`Listening at http://localhost:${port}/`);
 });
 server.on('error', console.error);

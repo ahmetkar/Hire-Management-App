@@ -1,148 +1,143 @@
-  // This is your Prisma schema file,
-  // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-  // Get a free hosted Postgres database in seconds: `npx create-db`
+// Get a free hosted Postgres database in seconds: `npx create-db`
 
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
 
-  datasource db {
-    provider = "mongodb" 
-    url      = env("DATABASE_URL")
-  }
+generator client {
+  provider = "prisma-client-js"
+}
 
+model users {
+  id                          String           @id @default(auto()) @map("_id") @db.ObjectId
+  name                        String
+  email                       String           @unique
+  password                    String?
+  signupdate                  DateTime         @default(now())
+  role                        String?
+  staffInfo                   staff[]
+  createdJobs                 jobs[]           @relation("CreatorJob")
+  responsibleJobs             jobs[]           @relation("ResponsibleJob")
+  receivedNotifications       notifications[]  @relation("NotificationReceiver")
+  sendedNotifications         notifications[]  @relation("NotificationSender")
+  userApprovedapplications    jobapplication[] @relation("UserApprovedApplications")
+  managerApprovedapplications jobapplication[] @relation("ManagerApprovedApplications")
+  disApprovedapplications     jobapplication[] @relation("DisapprovedApplications")
+  departmentId                String           @db.ObjectId
+  department                  department       @relation(fields: [departmentId], references: [id])
+}
 
-  generator client {
-    provider = "prisma-client-js"
-  }
+model staff {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String     @unique
+  phone_number  String?
+  country       String?
+  city          String?
+  county        String?
+  address       String?
+  postcode      String?
+  university    String?
+  unidepartment String?
+  unifaculty    String?
+  graduatedate  DateTime
+  githublink    String?
+  linkedinlink  String?
+  abilities     String?
+  selfbio       String?
+  birthdate     DateTime
+  signupdate    DateTime   @default(now())
+  userId        String?    @db.ObjectId
+  user          users?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  departmentId  String     @db.ObjectId
+  department    department @relation(fields: [departmentId], references: [id])
+  jobId         String?    @db.ObjectId
+  position      jobs?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
 
+model jobapplication {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String   @unique
+  phone_number      String
+  country           String
+  city              String
+  county            String
+  address           String?
+  postcode          String?
+  university        String?
+  unidepartment     String?
+  unifaculty        String?
+  graduatedate      DateTime
+  githublink        String?
+  linkedinlink      String?
+  abilities         String?
+  selfbio           String?
+  birthdate         DateTime
+  agreeterms        Boolean  @default(false)
+  appdate           DateTime @default(now())
+  ipadress          String?
+  disapproved       Boolean  @default(false)
+  staffapproved     Boolean  @default(false)
+  managerapproved   Boolean  @default(false)
+  userApproverId    String?  @db.ObjectId
+  userApprover      users?   @relation("UserApprovedApplications", fields: [userApproverId], references: [id])
+  managerApproverId String?  @db.ObjectId
+  managerApprover   users?   @relation("ManagerApprovedApplications", fields: [managerApproverId], references: [id])
+  disApproverId     String?  @db.ObjectId
+  disapprover       users?   @relation("DisapprovedApplications", fields: [disApproverId], references: [id])
+  jobId             String?  @db.ObjectId
+  position          jobs?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
 
-  model users {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-    email String @unique
-    password String?
-    signupdate DateTime @default(now())
-    role String?
-    staffInfo staff?
-    createdJobs jobs[] @relation("CreatorJob")
-    responsibleJobs jobs[] @relation("ResponsibleJob")
-    receivedNotifications notifications[] @relation("NotificationReceiver")
-    sendedNotifications notifications[] @relation("NotificationSender")
-    userApprovedapplications jobapplication[] @relation("UserApprovedApplications")
-    managerApprovedapplications jobapplication[] @relation("ManagerApprovedApplications")
-    disApprovedapplications jobapplication[] @relation("DisapprovedApplications")
-    departmentId String @db.ObjectId
-    department department @relation(fields: [departmentId],references:[id])
-  }
-
-   model staff {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-    email String @unique
-    phone_number String?
-    country String?
-    city  String?
-    county String?
-    address String?
-    postcode String?
-    university String?
-    unidepartment String?
-    unifaculty  String?
-    graduatedate DateTime
-    githublink  String?
-    linkedinlink String?
-    abilities   String?
-    selfbio    String?
-    birthdate DateTime
-    signupdate DateTime @default(now())
-    userId String? @db.ObjectId @unique
-    user users? @relation(fields: [userId], references: [id], onDelete: SetNull)
-    departmentId String @db.ObjectId
-    department department @relation(fields: [departmentId],references:[id])
-    jobId String? @db.ObjectId
-    position   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  }
-
-
-    model jobapplication {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-    email String @unique
-    phone_number String
-    country String
-    city  String
-    county String
-    address String?
-    postcode String?
-    university String?
-    unidepartment String?
-    unifaculty  String?
-    graduatedate DateTime
-    githublink  String?
-    linkedinlink String?
-    abilities   String?
-    selfbio    String?
-    birthdate DateTime
-    agreeterms Boolean @default(false)
-    appdate DateTime @default(now())  
-    ipadress String?
-    disapproved Boolean @default(false)
-    staffapproved Boolean @default(false)
-    managerapproved Boolean @default(false)
-    userApproverId String? @db.ObjectId
-    userApprover   users? @relation("UserApprovedApplications",fields: [userApproverId], references: [id])
-    managerApproverId String? @db.ObjectId
-    managerApprover   users? @relation("ManagerApprovedApplications",fields: [managerApproverId], references: [id])
-    disApproverId String? @db.ObjectId
-    disapprover   users? @relation("DisapprovedApplications",fields: [disApproverId], references: [id])
-    jobId String? @db.ObjectId
-    position   jobs? @relation(fields: [jobId], references: [id], onDelete: SetNull)
-    
-  }
-
-  model department {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    name String?
-    users users[]
-    staff staff[]
-    addingdate DateTime @default(now())
-  }
+model department {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String?
+  users      users[]
+  staff      staff[]
+  addingdate DateTime @default(now())
+}
 
 model jobs {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    jobtitle String
-    jobrequirements String
-    jobnotes  String
-    department String
-    position String
-    mounthlywage    Int?
-    weeklypayment   Int?
-    dailypayment    Int?
-    createdate  DateTime @default(now())
-    expiredate  DateTime
-    responsibleUserId String? @db.ObjectId
-    responsibleUser   users? @relation("ResponsibleJob",fields: [responsibleUserId], references: [id], onDelete: SetNull)
-    createdByUserId  String @db.ObjectId
-    createdByUser   users @relation("CreatorJob",fields: [createdByUserId], references: [id])
-    applications jobapplication[]
-    staff        staff[]
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  jobtitle          String
+  jobrequirements   String
+  jobnotes          String
+  department        String
+  position          String
+  mounthlywage      Int?
+  weeklypayment     Int?
+  dailypayment      Int?
+  createdate        DateTime         @default(now())
+  expiredate        DateTime
+  responsibleUserId String?          @db.ObjectId
+  responsibleUser   users?           @relation("ResponsibleJob", fields: [responsibleUserId], references: [id], onDelete: SetNull)
+  createdByUserId   String           @db.ObjectId
+  createdByUser     users            @relation("CreatorJob", fields: [createdByUserId], references: [id])
+  applications      jobapplication[]
+  staff             staff[]
 }
 
 model settings {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    themecolor String?
-    timezone String?
-    language String?
-    sitetitle String?
-    sitedesc String?
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  themecolor String?
+  timezone   String?
+  language   String?
+  sitetitle  String?
+  sitedesc   String?
 }
 
 model notifications {
-   id String @id @default(auto()) @map("_id") @db.ObjectId
-   title String?
-   desc String?
-   bywhoId String @db.ObjectId
-   byWho   users @relation("NotificationSender",fields: [bywhoId], references: [id])
-   toWhoId String @db.ObjectId
-   toWho   users @relation("NotificationReceiver",fields: [toWhoId], references: [id])
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  title   String?
+  desc    String?
+  bywhoId String  @db.ObjectId
+  byWho   users   @relation("NotificationSender", fields: [bywhoId], references: [id])
+  toWhoId String  @db.ObjectId
+  toWho   users   @relation("NotificationReceiver", fields: [toWhoId], references: [id])
+  href    String?
 }
-

@@ -52,7 +52,8 @@ export type StaffUser = {
     email:string,
     departmentId:string,
     signupdate:string,
-    staffInfo:Staff
+    staffInfo:Staff[],
+    staffInfoOne:Staff
 }
 
 type OneStaffResponse = {
@@ -104,10 +105,16 @@ export const getAllUserAndStaff = async (page:number,limit:number): Promise<Staf
 
     const dataclean = dep.data!.map((d)=>{
 
-        if(d!=undefined){ if(d.staffInfo != undefined) return d }
+        if(d!=undefined){
+             if(d.staffInfo != undefined) {
+                d.staffInfoOne = d.staffInfo[0]
+                return d
+            } 
+    }
     })
 
     dep.data = dataclean
+
 
     return dep
 }

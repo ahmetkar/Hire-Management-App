@@ -10,7 +10,7 @@ import { getAllUserAndStaff, StaffUserResponse } from '@/app/lists/datas/users';
 
 
 
-const page = () => {
+const Page = () => {
 
     const defaultLimit = 3
     const [activeId,setActiveId] = useState("")
@@ -206,8 +206,8 @@ const page = () => {
                                       </p>
                                     
                                     </td> 
-                                    <td><small className="text-muted">{uap!.staffInfo.country}</small></td>
-                                    <td className="text-muted">{uap!.staffInfo.jobId}</td>
+                                    <td><small className="text-muted">{uap!.staffInfoOne.country}</small></td>
+                                    <td className="text-muted">{uap!.staffInfoOne.jobId}</td>
                                     
                                     <td>
                                         <button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -226,39 +226,39 @@ const page = () => {
                                     <td colSpan={detailForId == uap!.id ? 8 : 1}>{detailForId == uap!.id ? (<>
                                       <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Adres :</strong> {uap!.staffInfo.address} - {uap!.staffInfo.county} - {uap!.staffInfo.city} - {uap!.staffInfo.postcode}
+                                        <strong>Adres :</strong> {uap!.staffInfoOne.address} - {uap!.staffInfoOne.county} - {uap!.staffInfoOne.city} - {uap!.staffInfoOne.postcode}
                                       </small>
                                         </p>
 
                                         <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Eğitim Bilgileri :</strong> {uap!.staffInfo.university} - {uap!.staffInfo.unidepartment}  / {uap!.staffInfo.graduatedate.split("T")[0].toString()}
+                                        <strong>Eğitim Bilgileri :</strong> {uap!.staffInfoOne.university} - {uap!.staffInfoOne.unidepartment}  / {uap!.staffInfoOne.graduatedate.split("T")[0].toString()}
                                       </small>
                                         </p>
 
                                         
                                         <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Yetenekler :</strong> {uap!.staffInfo.abilities}
+                                        <strong>Yetenekler :</strong> {uap!.staffInfoOne.abilities}
                                       </small>
                                         </p>
 
                                         <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Doğum tarihi :</strong> {uap!.staffInfo.birthdate}
+                                        <strong>Doğum tarihi :</strong> {uap!.staffInfoOne.birthdate}
                                       </small>
                                         </p>
 
                                         <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Biyografi :</strong> {uap!.staffInfo.selfbio}
+                                        <strong>Biyografi :</strong> {uap!.staffInfoOne.selfbio}
                                       </small>
                                         </p>
 
 
                                         <p className='mb-0'>
                                         <small className="mb-0">
-                                        <strong>Linkler :</strong> {uap!.staffInfo.githublink} | {uap!.staffInfo.linkedinlink}
+                                        <strong>Linkler :</strong> {uap!.staffInfoOne.githublink} | {uap!.staffInfoOne.linkedinlink}
                                       </small>
                                         </p>
 
@@ -294,4 +294,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
