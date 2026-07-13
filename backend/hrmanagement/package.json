@@ -11,6 +11,7 @@
   },
   "private": true,
   "dependencies": {
+    "@mistralai/mistralai": "^2.4.1",
     "@prisma/client": "^6.19.0",
     "axios": "^1.18.0",
     "cookie-parser": "^1.4.7",
