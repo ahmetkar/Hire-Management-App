@@ -1,6 +1,6 @@
 1-ai service (personel ve job app için tekli veya çoklu ai prompt isteme onaylananı metnini mongodbye vektörünü vectordb ye ekleme 
-onaylanmayan için farklı ai şablonu seçip tekrar prompt isteme),(vectordb üzerinde benzerlik araması yaptırma veya rag  yani - seçilen 
-kişiler arasında en uygununu sorma ve seçilen personeller ve bir job app için job app in bu personel profillerine benzerliğini sorma-)
-2-select sorguları ve ai için redis cache+bullmq eklemeleri
+onaylanmayan için farklı ai şablonu seçip tekrar prompt isteme),(vectordb üzerinde benzerlik araması yaptırma  yani - aynı pozisyon,deparrtmanda en yeni ve en kıdemli 
+işe alınanlarla karşılaştırma,departman,pozisyon en çok uyanlarla karşılaştırma-)
+2-select sorguları ve ai,job application,personel oluşturma için redis cache+bullmq eklemeleri
 3-cdn ekle
 4-dockerize et ve load balancer ekle
