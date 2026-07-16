@@ -7,7 +7,7 @@ import Modal from '@/app/components/Modal';
 import useUser from '@/app/utils/useUser';
 
 
-const page = () => {
+const Page = () => {
 
 
   const {id} = useParams()
@@ -26,6 +26,8 @@ const page = () => {
 
 
 
+
+  console.log(user)
 
     useEffect(() => {
           getJobApp(id!.toString())
@@ -271,7 +273,7 @@ const page = () => {
                                   <h5>Bu iş başvurusu personel tarafından onaylanmıştır.Yönetici onayı gereklidir</h5>
                                   </div>
 
-                                 
+                                   
                                     {(user!=undefined && user.data.role == "admin") ? (
                                       <div className='col-md-12'>
                                     <button onClick={(e)=>setShowApproveModal(true)} className="col-md-6 btn btn-success" type="submit">Onayla</button>
@@ -293,6 +295,10 @@ const page = () => {
 
                           ) : (
                             <div className="col-md-12">
+                             {(user!=undefined && user.data.role == "admin" && jobApp.disapproved) ? (
+                             <h5 className='text-2xl red'>Bu iş başvurusu reddedilmiştir.Tekrar işlem yapmak için aşağıdakilerden birini seçin.</h5>
+                             ):("")}
+
                             <button onClick={(e)=>setShowApproveModal(true)} className="col-md-6 btn btn-success" type="submit">Onayla</button>
                             <button onClick={(e)=>setShowDisapproveModal(true)} className="col-md-6 btn btn-danger" type="submit">Reddet</button>
                             </div>
@@ -321,4 +327,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

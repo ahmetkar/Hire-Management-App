@@ -1,4 +1,3 @@
-import axios from "axios"
 import axiosInstance from "../utils/axiosInstance";
 
 
@@ -13,7 +12,7 @@ export type Job =  {
  weeklypayment: number | null;
  dailypayment: number | null;
  expiredate: Date;
-createdate: Date;
+ createdate: Date;
  responsibleUserId:string;
  createdByUserId:string;
 }
@@ -22,7 +21,7 @@ export type JobApp =  {
  id: string;
  name:string;
  email:string;
- position:string;
+ position:Job;
  phone_number:string;
  country:string;
  city:string;
@@ -42,7 +41,6 @@ export type JobApp =  {
  staffapproved:boolean;
  managerapproved:boolean;
  disapproved:boolean;
- job:Job
 }
 
 export type JobAppResponse =  {

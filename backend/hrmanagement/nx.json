@@ -41,22 +41,6 @@
       }
     },
     {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      },
-      "exclude": [
-        "apps/hrmanagement-e2e/**/*",
-        "apps/api-gateway-e2e/**/*",
-        "apps/auth-service-e2e/**/*",
-        "apps/staff-service-e2e/**/*",
-        "apps/management-service-e2e/**/*",
-        "apps/job-service-e2e/**/*",
-        "apps/ai-service-e2e/**/*",
-        "apps/ai-service-e2e/**/*"
-      ]
-    },
-    {
       "plugin": "@nx/webpack/plugin",
       "options": {
         "buildTargetName": "build",

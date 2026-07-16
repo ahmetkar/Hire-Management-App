@@ -12,7 +12,7 @@ import { getJobInfos } from '../../../lists/jobs';
 
 
 
-const page = () => {
+const Page = () => {
 
 
   const {id} = useParams()
@@ -73,7 +73,7 @@ const page = () => {
 
 
   type FormData = {
-      jobid:string;
+      jobId:string;
       name:string;
       phone_number:string;
       birthdate:string;
@@ -86,7 +86,7 @@ const page = () => {
       country:string;
       position:string;
       county:string;
-      zipcode:string;
+      postcode:string;
       githublink:string;
       linkedinlink:string;
       abilities:string[];
@@ -116,7 +116,7 @@ const page = () => {
     mutationFn: async (data:FormData) => {
         if(id != undefined){
           console.log(data.abilities)
-          data.jobid = id as string;
+          data.jobId = id as string;
           data.country = "tr"
           data.position = position
           data.birthdate = data.birthdate ? new Date(`${data.birthdate}T00:00:00.000Z`).toISOString(): ""
@@ -336,11 +336,11 @@ const page = () => {
                           <div className="col-md-3 mb-3">
                             <label htmlFor="custom-zip">Posta kodu</label>
                             <input className="form-control input-zip" id="custom-zip" autoComplete="false" maxLength={9} 
-                            {...register("zipcode",{required: "Posta kodu gereklidir."})}
+                            {...register("postcode",{required: "Posta kodu gereklidir."})}
                             />
                             <div className="invalid-feedback"> 
-                             {errors.zipcode && (
-                        <p className='text-red-500 text-sm'>{String(errors.zipcode.message)}</p>
+                             {errors.postcode && (
+                        <p className='text-red-500 text-sm'>{String(errors.postcode.message)}</p>
                     )
                     }
                              </div>
@@ -475,4 +475,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

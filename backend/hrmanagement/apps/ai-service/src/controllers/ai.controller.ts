@@ -73,7 +73,7 @@ async function getEmbedding(input:string) : Promise<EmbeddingResponse>{
          const embbedingResponse = await client.embeddings.create({    
             model:'mistral-embed',
             inputs:messages
-         }  )
+         })
 
          return embbedingResponse
         
@@ -127,6 +127,8 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
 
      if(response){
         return res.status(201).json({airesponse:responseText,embedding:embeddingResponse})
+     }else {
+        return res.status(404).json({message:"Response içeriği alma başarısız",airesponse:responseText,embedding:embeddingResponse})
      }
      
 

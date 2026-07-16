@@ -17,7 +17,7 @@ export const SendJobMailToUser = async (email:string,name:string,jobId:string,jo
 
 
 export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,jobAppId:string,status:string) => {
-        const date = new Date().toISOString()
+        const date = new Date()
 
 
         let title="";
@@ -40,7 +40,7 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
          try {
 
             const staffs = await prisma.users.findMany({where:{role:"staff"}})
-            if(!staffs){
+            if(staffs.length === 0){
                 console.log("Staff not found")
                 return;
             }
@@ -48,16 +48,25 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
             ids = staffs.map((staff)=>{
                 return staff.id
             })
-
-
-            const datas : Prisma.notificationsCreateManyInput[] = ids.map((id)=>({
+            let datas : Prisma.notificationsCreateManyInput[] = []
+            if(byWhoId!=""){
+                    datas = ids.map((id)=>({
+                            title:title,
+                            desc:desc,
+                            bywhoId:byWhoId,
+                            toWhoId:id, 
+                            href:href,
+                            date:date
+                    }))
+            }else {
+                   datas  = ids.map((id)=>({
                     title:title,
                     desc:desc,
-                    bywhoId:byWhoId,
                     toWhoId:id, 
                     href:href,
                     date:date
-            }))
+                    }))
+            }
 
             const notifications = await prisma.notifications.createMany({
                                 data:datas
@@ -88,7 +97,7 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
 
 export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,jobAppId:string,status:string) => {
 
-        const date = new Date().toISOString()
+        const date = new Date()
         let title="";
         let desc="";
         let href="";
@@ -144,14 +153,25 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
             })
 
 
-            const datas : Prisma.notificationsCreateManyInput[] = ids.map((id)=>({
+            let datas : Prisma.notificationsCreateManyInput[] = []
+            if(byWhoId!=""){
+                    datas = ids.map((id)=>({
+                            title:title,
+                            desc:desc,
+                            bywhoId:byWhoId,
+                            toWhoId:id, 
+                            href:href,
+                            date:date
+                    }))
+            }else {
+                   datas  = ids.map((id)=>({
                     title:title,
                     desc:desc,
-                    bywhoId:byWhoId,
                     toWhoId:id, 
                     href:href,
                     date:date
-            }))
+                    }))
+            }
 
             const notifications = await prisma.notifications.createMany({
                                 data:datas

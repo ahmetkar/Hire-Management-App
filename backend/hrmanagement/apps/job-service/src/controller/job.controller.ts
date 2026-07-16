@@ -349,6 +349,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
    var appdate = new Date().toISOString()
 
+
     const abilitiesstr = abilities.join(",")
 
 
@@ -382,7 +383,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                     if(job){
 
                         publishJobAppCreated({
-                            data:{jobAppid:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress,message:"Application created"}
+                        key:job.id,jobAppId:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress===undefined ? "" : ipadress,message:"Application created"
                         })
 
                         res.status(201).json({
@@ -431,7 +432,7 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
                     })
                     if(denyjob){
 
-                        publishJobAppDenied({deniedById:deniedById,role:role,jobAppId:denyjob.id,jobId:denyjob.jobId,
+                        publishJobAppDenied({key:denyjob.id,deniedById:deniedById,role:role,jobAppId:denyjob.id,jobId:denyjob.jobId!,
                             name:denyjob.name,email:denyjob.email,message:"Job application denied"})
 
                         res.status(201).json({
@@ -493,7 +494,7 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
                     }
 
                     if(job){
-                        publishJobAppApproved({approverId:approverId,role:role,jobAppId:id,jobId:job.jobId,
+                        publishJobAppApproved({key:id,approverId:approverId,role:role,jobAppId:id,jobId:job.jobId!,
                             name:job.name,email:job.email,message:"Job application approved"})
                         res.status(201).json({
                          data:{success:true,message:"Successfully approved !"}

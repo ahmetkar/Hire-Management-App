@@ -8,7 +8,7 @@ import Modal from '@/app/components/Modal';
 import { approveJobApp, disapproveJobApp } from '@/app/actions/jobapplication';
 
 
-const page = () => {
+const Page = () => {
 
 const defaultLimit = 1
 const [activeId,setActiveId] = useState("")
@@ -245,11 +245,11 @@ const [successDesc,setSuccessDesc] = useState("")
                             <td>
                               <p className="mb-0 text-muted">
 
-                                <small className="mb-0 text-muted">İlan Id : {uap.job.id}</small>
+                                <small className="mb-0 text-muted">İlan Id : {uap.position.id}</small>
                               </p>
                               
                                <p className="mb-0 text-muted">
-                                <small className="mb-0 text-muted">İlan Başlık : {uap.job.jobtitle}</small>
+                                <small className="mb-0 text-muted">İlan Başlık : {uap.position.jobtitle}</small>
                                </p>
                             </td>
                             <td>
@@ -359,4 +359,4 @@ const [successDesc,setSuccessDesc] = useState("")
   )
 }
 
-export default page
+export default Page

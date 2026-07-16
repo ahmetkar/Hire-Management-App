@@ -132,7 +132,7 @@ export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction)
                         const [user,total] = await Promise.all([prisma.users.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
                         },include:{staffInfo:true
-                        }}
+                        },where:{staffInfo:{some:{}}}}
                         ),
                         prisma.users.count()
                         ])
@@ -231,8 +231,8 @@ export const getUserAndStaff = async (req:any,res:Response,next:NextFunction) =>
                     const {id} = req.params
                 
                     try {
-
-                        const user = await prisma.users.findUnique({where:{id:id},include:{staffInfo:true} })
+                       
+                        const user = await prisma.users.findUnique({where:{id:id,staffInfo:{some:{}}},include:{staffInfo:true} })
 
 
                         if(user){

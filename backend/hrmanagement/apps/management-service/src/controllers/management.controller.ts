@@ -88,9 +88,9 @@ export const getSettings = async (req:Request,res:Response,next:NextFunction) =>
 
 export const getNotifications = async (req:any,res:Response,next:NextFunction) => {
 
-            const myId = req.header["x-user-id"]
-            
+            const myId = req.headers["x-user-id"]
     
+            console.log("my id : ",myId)
             try {
                 
 

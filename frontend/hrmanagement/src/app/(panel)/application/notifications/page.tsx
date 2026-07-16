@@ -1,3 +1,4 @@
+"use client"
 import { getNotifications, NotificationResponse } from '@/app/lists/notifications';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
@@ -53,7 +54,7 @@ const Page = () => {
                         </thead>
                         <tbody>
                           {notifications.data.map((ntf)=>(
-                            <tr key={ntf.title}>
+                            <tr key={ntf.desc}>
                             <td><a href={ntf.href!="" ? `/application/jobmanagement/detail/${ntf.href}` : "#"}>{ntf.title}</a></td>
                             <td><span className="small text-muted">{ntf.desc}</span></td>
                             <td>{ntf.date.toString().split("T")[0]}</td>

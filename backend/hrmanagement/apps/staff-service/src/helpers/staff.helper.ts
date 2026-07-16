@@ -43,9 +43,10 @@ export const AddApprovedJobApplicationToStaff = async (jobAppId:string,jobId:str
                                         selfbio:jobApp.selfbio,
                                         birthdate:jobApp.birthdate,
                                         signupdate:signupdate,
-                                        departmentId:job.department
+                                        departmentId:"6a4249b2b1459f6e87f6795c"
                             }
                         })
+                        
 
                             if(staff){
                                 console.log("New staff created from approved job application")

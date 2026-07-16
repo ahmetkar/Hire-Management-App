@@ -58,11 +58,6 @@
           "buildTarget": "management-service:build:production"
         }
       }
-    },
-    "test": {
-      "options": {
-        "passWithNoTests": true
-      }
     }
   }
 }

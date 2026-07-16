@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import Pagination from '../utils/pagination';
 import axiosInstance from '@/app/utils/axiosInstance';
 import Modal from '@/app/components/Modal';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 const Page = () => {
 
@@ -19,6 +20,7 @@ const Page = () => {
   const [failureTitle,setFailureTitle] = useState("")
   const [failureDesc,setFailureDesc] = useState("")
   const [successDesc,setSuccessDesc] = useState("")
+   const [detailForId,setDetailForId] = useState("")
   
   
        const [users,setUsers] = useState<UserResponse>({
@@ -101,37 +103,93 @@ const Page = () => {
                         </thead>
                         <tbody>
                           {(users.data!=undefined ? users.data.map((u)=>(
-                          <React.Fragment key={u.id}>
+                          <React.Fragment key={u!.id}>
                           
                           
                            <tr>
-                            <td>
+                            <td style={{borderBottom:(u!.staffInfoOne!=undefined) ? "none" : undefined,}}>
                                  <Modal show={showDeleteModal} title={"Silmek istediğinize emin misiniz ?"} message={"Bu kişiyi silmek üzeresiniz."}
-                                    confirmText='Tamam' cancelText='İptal' setConfirm={true} onConfirm={()=>{deleteUser(u.id)}} onCancel={()=>setShowDeleteModal(false)} />
-                              <div className="custom-control custom-checkbox">
-                                <input type="checkbox" className="custom-control-input" />
-                                <label className="custom-control-label"></label>
-                              </div>
+                                    confirmText='Tamam' cancelText='İptal' setConfirm={true} onConfirm={()=>{deleteUser(u!.id)}} onCancel={()=>setShowDeleteModal(false)} />
+                                {(u!.staffInfoOne!=undefined) ? (
+                                  <div>
+                                            <a onClick={(e)=>{
+                                            e.preventDefault()
+                                            setDetailForId(u!.id == detailForId ? "" : u!.id)}}>
+                                                {detailForId==u!.id ? (
+                                                <ArrowUp  />
+                                                ) : (
+                                                <ArrowDown />
+                                                )}
+                                                </a>
+                                        </div>
+                                ) : ("")}
+                                
                             </td>
                             <td><small className="mb-0 text-muted" onClick={(e)=>{
                                 e.preventDefault()
-                                setActiveId(activeId==u.id ? u.id.substring(0,5) : u.id)
-                                }}>{activeId == u.id ? u.id: u.id.substring(0,5)}</small></td>
-                            <td>{u.name}</td>
-                            <td>{u.email}</td>
-                            <td>{u.departmentId}</td>
-                            <td>{u.role}</td>
-                           <td>{u.signupdate}</td>
+                                setActiveId(activeId==u!.id ? u!.id.substring(0,5) : u!.id)
+                                }}>{activeId == u!.id ? u!.id: u!.id.substring(0,5)}</small></td>
+                            <td>{u!.name}</td>
+                            <td>{u!.email}</td>
+                            <td>{u!.departmentId}</td>
+                            <td>{u!.role}</td>
+                           <td>{u!.signupdate}</td>
                             
                             <td><button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span className="text-muted sr-only">Action</span>
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
-                                <a className="dropdown-item" href={`/application/users/view/${u.id}`}>Güncelle</a>
+                                <a className="dropdown-item" href={u!.staffInfoOne!=undefined ?  `/application/users/view/${u!.staffInfoOne.id}` : `/application/users/view/${u!.id}`}>Güncelle</a>
                                 <a onClick={()=>setShowDeleteModal(true)} className="dropdown-item" href='#'>Sil</a>
                               </div>
                             </td>
                           </tr>
+                          {(u!.staffInfoOne!=undefined) ? (
+                            <tr style={{marginTop:0}}>
+                            <td style={{borderTop:(u!.staffInfoOne!=undefined) ? "none" : undefined,paddingTop:0,paddingBottom:0,paddingLeft:5}} colSpan={detailForId == u!.id ? 8 : 1}>{detailForId == u!.id ? (<>
+                                      <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Adres :</strong> {u!.staffInfoOne.address} - {u!.staffInfoOne.county} - {u!.staffInfoOne.city} - {u!.staffInfoOne.postcode}
+                                      </small>
+                                        </p>
+
+                                        <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Eğitim Bilgileri :</strong> {u!.staffInfoOne.university} - {u!.staffInfoOne.unidepartment}  / {u!.staffInfoOne.graduatedate.split("T")[0].toString()}
+                                      </small>
+                                        </p>
+
+                                        
+                                        <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Yetenekler :</strong> {u!.staffInfoOne.abilities}
+                                      </small>
+                                        </p>
+
+                                        <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Doğum tarihi :</strong> {u!.staffInfoOne.birthdate}
+                                      </small>
+                                        </p>
+
+                                        <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Biyografi :</strong> {u!.staffInfoOne.selfbio}
+                                      </small>
+                                        </p>
+
+
+                                        <p className='mb-0'>
+                                        <small className="mb-0">
+                                        <strong>Linkler :</strong> {u!.staffInfoOne.githublink} | {u!.staffInfoOne.linkedinlink}
+                                      </small>
+                                        </p>
+
+                                        </>
+                                    ) : ("")}</td>
+                          </tr>
+                          ) : ("")}
+                          
                           </React.Fragment>
                           )) : (<div></div>))}
                          

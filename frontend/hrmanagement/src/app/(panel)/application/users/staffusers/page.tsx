@@ -200,6 +200,7 @@ const Page = () => {
                                     <td>
                                       {uap!.role}
                                     </td>
+                                    <td>{uap!.email}</td>
                                     <td>
                                       <p className="mb-0 text-muted">
                                             {uap!.signupdate}
@@ -207,6 +208,7 @@ const Page = () => {
                                     
                                     </td> 
                                     <td><small className="text-muted">{uap!.staffInfoOne.country}</small></td>
+                                    
                                     <td className="text-muted">{uap!.staffInfoOne.jobId}</td>
                                     
                                     <td>
@@ -215,7 +217,7 @@ const Page = () => {
                                       </button>
                                       <div className="dropdown-menu dropdown-menu-right">
                                     
-                                        <a className="dropdown-item" href={`/application/users/view/${uap.id}`}>Güncelle</a>
+                                        <a className="dropdown-item" href={`/application/users/view/${uap.staffInfoOne.id}`}>Güncelle</a>
                                         <a onClick={(e)=>setShowDeleteModal(true)} className="dropdown-item">Sil</a>
                                         
                                       </div>

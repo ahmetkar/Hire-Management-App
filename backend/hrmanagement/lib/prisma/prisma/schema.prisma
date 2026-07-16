@@ -135,8 +135,8 @@ model notifications {
   id      String  @id @default(auto()) @map("_id") @db.ObjectId
   title   String?
   desc    String?
-  bywhoId String  @db.ObjectId
-  byWho   users   @relation("NotificationSender", fields: [bywhoId], references: [id])
+  bywhoId String?  @db.ObjectId
+  byWho   users?   @relation("NotificationSender", fields: [bywhoId], references: [id])
   toWhoId String  @db.ObjectId
   toWho   users   @relation("NotificationReceiver", fields: [toWhoId], references: [id])
   href    String?

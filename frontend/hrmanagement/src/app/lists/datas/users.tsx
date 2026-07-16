@@ -6,11 +6,13 @@ name:string,
 role:string,
 email:string,
 departmentId:string,
-signupdate:string
+signupdate:string,
+staffInfo:(Staff[] | undefined),
+staffInfoOne:(Staff | undefined)
 }
 
 export type UserResponse =  {
-    data:User[],
+    data:(User | undefined)[],
     page:number,
     limit:number,
     total:number,
@@ -88,6 +90,18 @@ export const searchUsers = async (search:string,page:number,limit:number): Promi
 export const getUsers = async (page:number,limit:number): Promise<UserResponse> => {
     const response = await axiosInstance.get<UserResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/get-users?page=${page}&limit=${limit}`)
     const dep =  response.data
+     const dataclean = dep.data!.map((d)=>{
+
+        if(d!=undefined){
+             if(d.staffInfo != undefined) {
+                console.log(d.staffInfoOne)
+                d.staffInfoOne = d.staffInfo[0]
+                return d
+            } 
+    }
+    })
+
+    dep.data = dataclean
     return dep
 }
 
@@ -107,6 +121,7 @@ export const getAllUserAndStaff = async (page:number,limit:number): Promise<Staf
 
         if(d!=undefined){
              if(d.staffInfo != undefined) {
+                console.log(d.staffInfoOne)
                 d.staffInfoOne = d.staffInfo[0]
                 return d
             } 

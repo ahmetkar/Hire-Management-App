@@ -120,7 +120,7 @@ const Page = () => {
                     <div className="card-body">
                       <div className="card-title">
                         <strong>Özet Rakamlar</strong>
-                        <a className="float-right small text-muted" href="/applications/notifications">Tüm bildirimleri görüntüle</a>
+                        <a className="float-right small text-muted" href="#">+</a>
                       </div>
                       <div className="row mt-b">
                         <div className="col-6 text-center mb-3 border-right">
@@ -154,7 +154,7 @@ const Page = () => {
                   <div className="card shadow eq-card">
                     <div className="card-header">
                       <strong className="card-title">Bildirimler</strong>
-                      <a className="float-right small text-muted" href="#!">View all</a>
+                      <a className="float-right small text-muted" href="/application/notifications">Hepsini gör</a>
                     </div>
                     <div className="card-body">
                       <table className="table table-hover table-borderless table-striped mt-n3 mb-n1">
@@ -169,7 +169,7 @@ const Page = () => {
                         </thead>
                         <tbody>
                           {notifications.data.map((ntf)=>(
-                            <tr key={ntf.title}>
+                            <tr key={ntf.desc}>
                             <td><a href={ntf.href!="" ? `/application/jobmanagement/detail/${ntf.href}` : "#"}>{ntf.title}</a></td>
                             <td><span className="small text-muted">{ntf.desc}</span></td>
                             <td>{ntf.date.toString().split("T")[0]}</td>

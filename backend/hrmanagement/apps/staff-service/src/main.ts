@@ -41,10 +41,10 @@ app.use(errorMiddleware)
 
 
 const port = process.env.PORT || 3333;
-const server = app.listen(port, () => {
+const server = app.listen(port, async () => {
   try {
 
-    startKafkaJobAppApprovedConsumer();
+    await startKafkaJobAppApprovedConsumer();
 
   }catch(error){
     console.error("Kafka consumerlar başlatılamadı",error)
@@ -56,19 +56,19 @@ server.on('error', console.error);
 
 
 
-server.on("SIGINT", () => {
+server.on("SIGINT", async () => {
   try {
-  void JobAppApprovedConsumerShutdown();
+  await JobAppApprovedConsumerShutdown();
 
   }catch(error){
     console.error("Consumer kapatılırken hata verdi",error)
   }
 });
 
-server.on("SIGTERM", () => {
+server.on("SIGTERM", async () => {
    try {
 
-  void JobAppApprovedConsumerShutdown();
+  await JobAppApprovedConsumerShutdown();
 
   }catch(error){
     console.error("Consumer kapatılırken hata verdi",error)

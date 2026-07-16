@@ -1,21 +1,30 @@
 import {JOB_TOPICS} from '../../constants'
+import { JobApplicationCreatedEvent } from '../JobApplicationCreatedEvent'
 
 const {producer} = require('../kafka')
 
 
-export const publishJobAppCreated = async (data:any) => {
+export const publishJobAppCreated = async (event:JobApplicationCreatedEvent) => {
     const topic = JOB_TOPICS.JOB_APP_CREATED
 
-    console.log(` publishing message to topic ${topic} with message : ${JSON.stringify(data)} `)
+    if(!event){
+        console.log("Veri gelmedi")
+    }
+
+    const value = JSON.stringify(event)
+
+    console.log(` publishing message to topic ${topic} with message : ${value} `)
 
     await producer.send({
         topic,messages:[
             {
-                key:data.key,
-                value:JSON.stringify(data.value)
+               key:event.key,
+               value:value
             }
         ]
     })
 }
+
+
 
 

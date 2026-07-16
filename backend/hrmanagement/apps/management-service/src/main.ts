@@ -39,37 +39,38 @@ app.use(verifyInternalRequest)
 
 
 
+
 const port = process.env.PORT || 3332;
-const server = app.listen(port, () => {
+const server = app.listen(port, async () => {
   try {
-  startKafkaJobAppCreatedConsumer();
-  startKafkaJobAppApprovedConsumer();
-  startKafkaJobAppDeniedConsumer();
+  await startKafkaJobAppCreatedConsumer();
+  await startKafkaJobAppApprovedConsumer();
+  await startKafkaJobAppDeniedConsumer();
 
   }catch(error){
     console.error("Kafka consumerlar başlatılamadı",error)
   }
-  console.log(`Listening at http://localhost:${port}/s`);
+  console.log(`Listening at http://localhost:${port}`);
 });
 server.on('error', console.error);
 
 
 
-server.on("SIGINT", () => {
+server.on("SIGINT", async () => {
   try {
-  void JobAppCreatedConsumerShutdown();
-  void JobAppApprovedConsumerShutdown();
-  void JobAppDeniedConsumerShutdown();
+  await JobAppCreatedConsumerShutdown();
+  await JobAppApprovedConsumerShutdown();
+  await JobAppDeniedConsumerShutdown();
   }catch(error){
     console.error("Consumer kapatılırken hata verdi",error)
   }
 });
 
-server.on("SIGTERM", () => {
+server.on("SIGTERM", async () => {
    try {
-  void JobAppCreatedConsumerShutdown();
-  void JobAppApprovedConsumerShutdown();
-  void JobAppDeniedConsumerShutdown();
+  await JobAppCreatedConsumerShutdown();
+  await JobAppApprovedConsumerShutdown();
+  await JobAppDeniedConsumerShutdown();
   }catch(error){
     console.error("Consumer kapatılırken hata verdi",error)
   }

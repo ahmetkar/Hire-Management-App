@@ -1,4 +1,4 @@
-import { Kafka } from 'kafkajs';
+import { Kafka, logLevel } from 'kafkajs';
 import { SendJobNotificationToManager, SendJobNotificationToStaff } from '../helpers/notification.helper';
 
 
@@ -15,7 +15,6 @@ export const consumer = kafka.consumer({
     groupId:"management-service-job-app-created-group"
 });
 
-
 export let isStarted = false
 
 export const startKafkaJobAppCreatedConsumer = async () => {
@@ -27,6 +26,7 @@ export const startKafkaJobAppCreatedConsumer = async () => {
         fromBeginning:true
 
     })
+    console.log("subscribe tamam")
 
     isStarted = true
 
@@ -42,11 +42,12 @@ export const startKafkaJobAppCreatedConsumer = async () => {
 
                 const data = JSON.parse(value);
 
+                console.log("Kafka mesajı : ",data)
                 console.log(`Kafka mesajı :  ${data} -> topic :  ${topic} -> partition:${partition}
-                     -> offset:${message.offset} -> key -> ${message.key}  `)
+                     -> offset:${message.offset} -> key -> ${message.key}`)
                 
-                SendJobNotificationToStaff(data.ipaddress,data.jobId,data.jobAppId,"created");
-                SendJobNotificationToManager(data.ipaddress,data.jobId,data.jobAppId,"created");
+                SendJobNotificationToStaff("",data.jobId,data.jobAppId,"created");
+                SendJobNotificationToManager("",data.jobId,data.jobAppId,"created");
 
             }catch(error){
                 console.error("Kafka mesajı işlenemedi ",error);

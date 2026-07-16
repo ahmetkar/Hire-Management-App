@@ -19,8 +19,36 @@ export const consumer = kafka.consumer({
 
 export let isStarted = false
 
+
+
+async function testKafkaConnection(): Promise<void> {
+  const admin = kafka.admin();
+
+  try {
+    await admin.connect();
+
+    const cluster = await admin.describeCluster();
+    const metadata = await admin.fetchTopicMetadata({
+      topics: ['job.application.approved'],
+    });
+
+    console.dir(
+      {
+        configuredBroker: process.env.KAFKA_BROKER,
+        cluster,
+        metadata,
+      },
+      { depth: null },
+    );
+  } finally {
+    await admin.disconnect();
+  }
+}
+
+
 export const startKafkaJobAppApprovedConsumer = async () => {
   try {
+    testKafkaConnection();
     await consumer.connect();
 
     await consumer.subscribe({
@@ -43,6 +71,7 @@ export const startKafkaJobAppApprovedConsumer = async () => {
 
                 const data = JSON.parse(value);
 
+                console.log("Kafka mesajı : ",data)
                 console.log(`Kafka mesajı :  ${data} -> topic :  ${topic} -> partition:${partition}
                      -> offset:${message.offset} -> key -> ${message.key}  `)
                   

@@ -37,7 +37,7 @@ export const getUserByFilter = async (req:any,res:Response,next:NextFunction) =>
                                 whereclause = {...whereclause,departmentId:departmentId}
                             }
 
-                        const user = await prisma.users.findMany({where:whereclause})
+                        const user = await prisma.users.findMany({where:whereclause,include:{staffInfo:true}})
 
                         if(user){
                             const safeUsers = user.map((u) => {
@@ -70,7 +70,7 @@ export const getAllUser = async (req:any,res:Response,next:NextFunction) => {
 
                         const [user,total] = await Promise.all([prisma.users.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
-                        }}),
+                        },include:{staffInfo:true}}),
                         prisma.users.count()
                         ])
                         if(user){
@@ -102,7 +102,7 @@ export const getUser = async (req:any,res:Response,next:NextFunction) => {
      const {id} = req.params
                     try {
 
-                        const user = await prisma.users.findUnique({where:{id:id} })
+                        const user = await prisma.users.findUnique({where:{id:id},include:{staffInfo:true} })
 
 
                         if(user){
@@ -207,7 +207,7 @@ export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) =
         const userId = req.headers["x-user-id"]
 
             if(userId){
-
+            console.log(userId)
             const user = await prisma.users.findUnique({where:{id:userId}})
 
                         if(user){

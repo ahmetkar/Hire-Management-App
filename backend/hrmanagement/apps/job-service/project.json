@@ -58,11 +58,6 @@
           "buildTarget": "job-service:build:production"
         }
       }
-    },
-    "test": {
-      "options": {
-        "passWithNoTests": true
-      }
     }
   }
 }
