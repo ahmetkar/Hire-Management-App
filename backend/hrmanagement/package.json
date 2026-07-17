@@ -3,14 +3,16 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx run-many -t serve -p api-gateway auth-service job-service management-service staff-service --parallel=5",
+    "dev": "nx run-many -t serve -p api-gateway auth-service job-service management-service staff-service ai-service --parallel=6",
     "authdev": "nx run-many -t serve -p api-gateway auth-service --parallel=2",
     "jobdev": "nx run-many -t serve -p api-gateway auth-service job-service --parallel=3",
     "managedev": "nx run-many -t serve -p api-gateway auth-service management-service --parallel=3",
-    "staffdev": "nx run-many -t serve -p api-gateway auth-service staff-service --parallel=3"
+    "staffdev": "nx run-many -t serve -p api-gateway auth-service staff-service --parallel=3",
+    "aidev": "nx run-many -t serve -p api-gateway auth-service job-service staff-service ai-service --parallel=5"
   },
   "private": true,
   "dependencies": {
+    "@elastic/elasticsearch": "^9.4.2",
     "@mistralai/mistralai": "^2.4.1",
     "@prisma/client": "^6.19.0",
     "axios": "^1.18.0",

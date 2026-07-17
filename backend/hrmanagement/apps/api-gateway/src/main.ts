@@ -30,13 +30,12 @@ app.set("trust proxy",1);
 app.use(limiter);
 
 
-
 //Original url localhost:4000/auth/login şeklinde gelebelir burada auth u sil /login kalsın baştaki url i öyle değiştir.
 
 const createProxy = (prefix:string,target:string) => {
     let orgurl = ""
     return proxy(target,{
-      timeout:5000,
+      timeout:50000,
       proxyReqPathResolver(req) {
         //orgUrl i gidecek url e çevirirken prefixi kullanma
           orgurl = req.originalUrl.replace(new RegExp(`${prefix}`),"")  || "/"
