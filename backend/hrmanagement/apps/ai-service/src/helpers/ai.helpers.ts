@@ -4,7 +4,7 @@ import type { CompletionArgs, ConversationInputs, ConversationResponse, Embeddin
 
 
 export type PromptInput = {
-    role:string,name:string,university:string,unidepartment:string,graduatedate:string,abilities:string,
+    name:string,university:string,unidepartment:string,graduatedate:string,abilities:string,
     address:string,birthdate:string,selfbio:string,city:string,county:string,
     jobtitle:string,jobrequirements:string,
 }
@@ -45,15 +45,22 @@ export function isInfoList(value: unknown): value is InfoListElement {
 export const apiKey = process.env.API_KEY
         
 
-export async function sendPromptToAgent( input:PromptInput
+
+export function generatePrompt(input:PromptInput){
+
+   return `İsim ve soyisim : ${input.name},
+             Mezun olduğu üniversite ve bölüm,mezuniyet tarihi : ${input.university} , ${input.unidepartment} , ${input.graduatedate},
+             Yetenekleri : ${input.abilities} , Doğum tarihi : ${input.birthdate} , Biyografi : ${input.selfbio} , 
+             Ev Adresi : ${input.address} , Yaşadığı şehir ve ilçe : ${input.city} - ${input.county}`  
+
+}
+
+export async function sendPromptToAgent( role:string,prompt:string
 ) : Promise<ConversationResponse>{
      const messages : ConversationInputs = [
         {
             "role":"user",
-            "content":`İsim ve soyisim : ${input.name},
-             Mezun olduğu üniversite ve bölüm,mezuniyet tarihi : ${input.university} , ${input.unidepartment} , ${input.graduatedate},
-             Yetenekleri : ${input.abilities} , Doğum tarihi : ${input.birthdate} , Biyografi : ${input.selfbio} , 
-             Ev Adresi : ${input.address} , Yaşadığı şehir ve ilçe : ${input.city} - ${input.county}`  
+            "content":prompt
         }
     ]
 
@@ -70,12 +77,11 @@ export async function sendPromptToAgent( input:PromptInput
 
      let instructions = ""
      
-     if(input.role == "admin"){
+     if(role == "admin"){
         instructions =  `Sen bir işe alım yöneticisisin. Amacın işe alınacak kişileri seçmek. \n sSana adayın kişisel bilgileri verilecek ve hangi iş için uygun olduğu sorulacak.\n Üniversite eğitiminin iş ile alakalı olup olmadığını değerlendir.\nTecrübenin kullanıcı tarafından belirtilmişse uygun olup olmadığına bak belirtilmemişse bakma\nYeteneklerin belirtilen pozisyon için belirtilmiş gereken yeteneklere uygun olup olmadığına bak yoksa işin adına bakarak yetenekleri değerlendir.\nYaşı için özel bir bilgi verilmişse ona göre değerlendirme yap yoksa yaştan bahsetme.\nYaşadığı şehir için özel bir bilgi verilmişse ona göre değerlendirme yap yoksa bahsetme.\nProjelerin iş ile alakasını değerlendir.Pozisyon için belirtilen yeteneklere uygun projelermi onuda kontrol et.\nVe sonucu tek metin ile döndür. Ayrı başlıklar hiç olmasın.\n`
-     }else if(input.role == "staff") {
+     }else if(role == "staff") {
         instructions =  `Sen bir ik görevlisisin. Amacın genel müdüre işe alınacak kişilerin seçimini yapmak. \nSana adayın kişisel bilgileri verilecek ve hangi iş için uygun olduğu sorulacak.\nÜniversite eğitiminin iş ile alakalı olup olmadığını değerlendir.\nTecrübenin kullanıcı tarafından belirtilmişse uygun olup olmadığına bak belirtilmemişse bakma\nYeteneklerin belirtilen pozisyon için belirtilmiş gereken yeteneklere uygun olup olmadığına bak yoksa işin adına bakarak yetenekleri değerlendir.\nYaşı için özel bir bilgi verilmişse ona göre değerlendirme yap yoksa yaştan bahsetme.\nYaşadığı şehir için özel bir bilgi verilmişse ona göre değerlendirme yap yoksa bahsetme.\nProjelerin iş ile alakasını değerlendir.Pozisyon için belirtilen yeteneklere uygun projelermi onuda kontrol et.\nVe sonucu tek metin ile döndür. Ayrı başlıklar hiç olmasın.\n`
      }
-   
 
 
      const client = new Mistral({apiKey:apiKey})

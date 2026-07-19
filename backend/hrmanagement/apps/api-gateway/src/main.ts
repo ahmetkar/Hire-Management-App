@@ -35,7 +35,7 @@ app.use(limiter);
 const createProxy = (prefix:string,target:string) => {
     let orgurl = ""
     return proxy(target,{
-      timeout:50000,
+      timeout:500000,
       proxyReqPathResolver(req) {
         //orgUrl i gidecek url e çevirirken prefixi kullanma
           orgurl = req.originalUrl.replace(new RegExp(`${prefix}`),"")  || "/"

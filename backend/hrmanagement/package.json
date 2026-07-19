@@ -12,7 +12,7 @@
   },
   "private": true,
   "dependencies": {
-    "@elastic/elasticsearch": "^9.4.2",
+    "@elastic/elasticsearch": "^8.19.2",
     "@mistralai/mistralai": "^2.4.1",
     "@prisma/client": "^6.19.0",
     "axios": "^1.18.0",
