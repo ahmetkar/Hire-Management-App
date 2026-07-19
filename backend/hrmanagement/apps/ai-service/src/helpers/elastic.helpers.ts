@@ -5,12 +5,19 @@ export const elastic = new Client({
 });
 
 
-export type ElasticDocumentType  = {id:string,kind:string,embedding:any};
 
-export type ElasticDocumentResult  = {id:string,kind:string,score:number | null | undefined};
+export type ElasticDocumentParameters  = {id:string,sendedId:string,kind:string,embedding:any};
+
+export type ElasticDocumentType  = {sendedId:string,kind:string,embedding:any,createdAt:string | null | undefined,updatedAt:string | null | undefined};
+
+export type ElasticDocumentResult  = {id:string | undefined,sendedId:string,kind:string,score:number | null | undefined,createdAt:string | null | undefined,updatedAt:string | null | undefined};
 
 export async function CreateIndex() : Promise<boolean>{
     const indexName = process.env.INDEX_NAME ?? "documents"
+    
+    if(await elastic.indices.exists({index:indexName})){
+        return true;
+    }
 
     const indices = await elastic.indices.create({
         index:indexName,
@@ -43,15 +50,21 @@ export async function CreateIndex() : Promise<boolean>{
 }
 
 
-export async function CreateEmbedIndex(document: ElasticDocumentType ): Promise<boolean> {
+
+
+
+export async function CreateEmbedIndex(document: ElasticDocumentParameters ): Promise<boolean> {
     
     const indexName = process.env.INDEX_NAME ?? "documents"
 
+    const documentSended : ElasticDocumentType = {sendedId:document.sendedId,kind:document.kind,embedding:document.embedding,
+        createdAt:new Date().toISOString(),updatedAt:null
+    } 
 
     const index = await elastic.index({
         index:indexName,
         id:document.id,
-        document:{...document,createdAt:new Date().toISOString()}
+        document:documentSended
     })
 
     if(index.result == "created") return true;
@@ -59,13 +72,17 @@ export async function CreateEmbedIndex(document: ElasticDocumentType ): Promise<
     return false;
 }
 
-export async function UpdateEmbedIndex(document: ElasticDocumentType ): Promise<boolean> {
+export async function UpdateEmbedIndex(document: ElasticDocumentParameters): Promise<boolean> {
     const indexName = process.env.INDEX_NAME ?? "documents"
+
+     const documentSended : ElasticDocumentType = {sendedId:document.sendedId,kind:document.kind,embedding:document.embedding,
+        updatedAt:new Date().toISOString(),createdAt:null
+    } 
 
     const update = await elastic.update({
         index:indexName,
         id:document.id,
-        doc:{...document,updatedAt:new Date().toISOString()}
+        doc:documentSended
     });
 
     if(update.result == "updated") return true;
@@ -97,7 +114,8 @@ export async function UpdateEmbedIndex(document: ElasticDocumentType ): Promise<
     if(index._source!=null){
         const data = index._source as any
 
-        const result : ElasticDocumentType  = {kind:data.kind,id:data.id,embedding:data.embedding}
+        const result : ElasticDocumentType  = {kind:data.kind,sendedId:data.id,embedding:data.embedding,createdAt:data.createdAt,updatedAt:data.updatedAt
+        }
 
         return result;
     }
@@ -106,7 +124,7 @@ export async function UpdateEmbedIndex(document: ElasticDocumentType ): Promise<
 
  }
 
-  export async function SearchEmbedIndex(document: ElasticDocumentType,ids:string[]): Promise<ElasticDocumentResult[] | null> {
+  export async function SearchEmbedIndex(appEmbedding: any,ids:string[]): Promise<ElasticDocumentResult[] | null> {
     const indexName = process.env.INDEX_NAME ?? "documents"
 
     const result = await elastic.search({
@@ -115,18 +133,13 @@ export async function UpdateEmbedIndex(document: ElasticDocumentType ): Promise<
 
     knn:{
         field:"embedding",
-
-        query_vector:document.embedding,
-
+        query_vector:appEmbedding,
         k:3,
-
         num_candidates:3,
-
         filter:{
             ids:{
                 values:ids
             }
-
         }
     }
 
@@ -136,7 +149,7 @@ export async function UpdateEmbedIndex(document: ElasticDocumentType ): Promise<
         result.hits.hits.map((hit)=>{
             if(hit!=null && hit._source != null){
             const source:any = hit._source
-            const result : ElasticDocumentResult = {id:source.id,kind:source.kind,score:hit._score}
+            const result : ElasticDocumentResult = {id:hit._id,sendedId:source.id,kind:source.kind,score:hit._score,createdAt:source.createdAt,updatedAt:source.updatedAt}
             results.push(result)
             }
         })

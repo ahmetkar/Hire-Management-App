@@ -57,6 +57,8 @@ model staff {
   department    department @relation(fields: [departmentId], references: [id])
   jobId         String?    @db.ObjectId
   position      jobs?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  staffPrompts     AIPrompts[] @relation("PromptStaff")
+  
 }
 
 model jobapplication {
@@ -92,13 +94,29 @@ model jobapplication {
   disapprover       users?   @relation("DisapprovedApplications", fields: [disApproverId], references: [id])
   jobId             String?  @db.ObjectId
   position          jobs?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  appPrompts     AIPrompts[] @relation("PromptApplication")
 }
+
+
+model AIPrompts {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  kind String
+  applicationId String? @db.ObjectId
+  application   jobapplication?           @relation("PromptApplication", fields: [applicationId], references: [id], onDelete: SetNull)
+  staffId String? @db.ObjectId
+  staff   staff?           @relation("PromptStaff", fields: [staffId], references: [id], onDelete: SetNull)
+  promptText String
+  responseText String
+  elasticId String
+}
+
 
 model department {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   name       String?
   users      users[]
   staff      staff[]
+  jobs       jobs[]
   addingdate DateTime @default(now())
 }
 
@@ -107,7 +125,6 @@ model jobs {
   jobtitle          String
   jobrequirements   String
   jobnotes          String
-  department        String
   position          String
   mounthlywage      Int?
   weeklypayment     Int?
@@ -120,6 +137,9 @@ model jobs {
   createdByUser     users            @relation("CreatorJob", fields: [createdByUserId], references: [id])
   applications      jobapplication[]
   staff             staff[]
+  departmentId      String          @db.ObjectId
+  department     department      @relation(fields: [departmentId], references: [id])
+
 }
 
 model settings {
