@@ -1,6 +1,7 @@
 import { Request,Response,NextFunction } from "express";
 import {prisma}  from "@hrmanagement/prisma"
 import { ValidationError } from "@hrmanagement/error-handler";
+import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helpers";
 
 
 
@@ -90,7 +91,7 @@ export const getNotifications = async (req:any,res:Response,next:NextFunction) =
 
             const myId = req.headers["x-user-id"]
     
-            console.log("my id : ",myId)
+
             try {
                 
 
@@ -100,14 +101,14 @@ export const getNotifications = async (req:any,res:Response,next:NextFunction) =
                 const skip = (page-1) * limit
 
                     
-                  const [notifications,count] = await Promise.all([ prisma.notifications.findMany({skip,take:limit,orderBy:{
+                  const [notifications,count] = await Promise.all([ getOrSetRedisCache(`notifications:${myId}:${page}:${limit}`,`cache-tag:notifications:${myId}`,()=>prisma.notifications.findMany({skip,take:limit,orderBy:{
                         id:'desc'
                   },
                                 where:{
                                     toWhoId:myId
                                 }
-                                }),
-                                prisma.notifications.count()
+                                }),60*60),
+                            getOrSetRedisCache(`notifications:count:${myId}`,`cache-tag:notifications:${myId}`,()=>prisma.notifications.count(),60*60)
                     ])
                     
                     if(notifications){
@@ -152,6 +153,7 @@ export const createNotification = async (req:Request,res:Response,next:NextFunct
 
 
                     if(notification){
+                        invalidateCacheTagKeys(`cache-tag:notifications:${toWhoId}`)
                         res.status(201).json({
                         success:true,
                         message:"Notification created successfully.",    

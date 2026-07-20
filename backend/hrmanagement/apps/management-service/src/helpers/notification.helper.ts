@@ -1,5 +1,6 @@
 import {prisma}  from "@hrmanagement/prisma"
 import { Prisma } from "@prisma/client";
+import { getOrSetRedisCache, invalidateCacheTagKeys } from "./redis.helpers";
 
 
 
@@ -49,31 +50,56 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
                 return staff.id
             })
             let datas : Prisma.notificationsCreateManyInput[] = []
+
+            let count = 0
             if(byWhoId!=""){
-                    datas = ids.map((id)=>({
-                            title:title,
-                            desc:desc,
-                            bywhoId:byWhoId,
-                            toWhoId:id, 
-                            href:href,
-                            date:date
-                    }))
+                    ids.forEach(async (id)=>{
+                            const notification =  {
+                                
+                                title:title,
+                                desc:desc,
+                                bywhoId:byWhoId,
+                                toWhoId:id, 
+                                href:href,
+                                date:date
+                            }
+                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
+                                data:notification
+                            }),60*60)
+
+                     if(notificationAdd){
+                        count+=1
+                     }
+                    })
+                   
             }else {
-                   datas  = ids.map((id)=>({
-                    title:title,
-                    desc:desc,
-                    toWhoId:id, 
-                    href:href,
-                    date:date
-                    }))
+                    ids.forEach(async (id)=>{
+                            const notification =  {
+                                
+                                title:title,
+                                desc:desc,
+                                toWhoId:id, 
+                                href:href,
+                                date:date
+                            }
+                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
+                                data:notification
+                            }),60*60)
+
+                     if(notificationAdd){
+                        count+=1
+                     }
+                    })
             }
 
-            const notifications = await prisma.notifications.createMany({
-                                data:datas
-                            })
+            
     
-    
-            if(notifications){
+            
+            if(ids.length == count){
+                ids.forEach((id)=>{
+                    invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
+                })
+                
                 console.log("Notification sended to users",ids.toString())           
             }else {
                console.log("Notification cannot sended to user ")             
@@ -153,32 +179,51 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
             })
 
 
-            let datas : Prisma.notificationsCreateManyInput[] = []
+            let count = 0
             if(byWhoId!=""){
-                    datas = ids.map((id)=>({
-                            title:title,
-                            desc:desc,
-                            bywhoId:byWhoId,
-                            toWhoId:id, 
-                            href:href,
-                            date:date
-                    }))
-            }else {
-                   datas  = ids.map((id)=>({
-                    title:title,
-                    desc:desc,
-                    toWhoId:id, 
-                    href:href,
-                    date:date
-                    }))
-            }
+                    ids.forEach(async (id)=>{
+                            const notification =  {
+                                
+                                title:title,
+                                desc:desc,
+                                bywhoId:byWhoId,
+                                toWhoId:id, 
+                                href:href,
+                                date:date
+                            }
+                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
+                                data:notification
+                            }),60*60)
 
-            const notifications = await prisma.notifications.createMany({
-                                data:datas
-                            })
+                     if(notificationAdd){
+                        count+=1
+                     }
+                    })
+                   
+            }else {
+                    ids.forEach(async (id)=>{
+                            const notification =  {
+                                
+                                title:title,
+                                desc:desc,
+                                toWhoId:id, 
+                                href:href,
+                                date:date
+                            }
+                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
+                                data:notification
+                            }),60*60)
+
+                     if(notificationAdd){
+                        count+=1
+                     }
+                    })
+            }
     
-    
-            if(notifications){
+            if(count == ids.length){
+                 ids.forEach((id)=>{
+                    invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
+                })
                 console.log("Notification sended to users",ids.toString())           
             }else {
                console.log("Notification cannot sended to user ")             
