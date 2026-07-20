@@ -236,7 +236,7 @@ const Page = () => {
           setFound(true);
           }else {
            
-         
+            
           const staff = await getStaff(id.toString());
 
           if (staff) {

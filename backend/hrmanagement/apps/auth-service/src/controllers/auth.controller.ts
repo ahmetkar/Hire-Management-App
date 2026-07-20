@@ -299,7 +299,7 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
         
 
         const accessToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId},process.env.ACCESS_TOKEN_SECRET as string,{
-            expiresIn:"15m"
+            expiresIn:"2h"
         })
 
         const refreshToken = jwt.sign({id: user.id,role:user.role,sessionId:sessionId},process.env.REFRESH_TOKEN_SECRET as string,{
@@ -316,8 +316,7 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
                         sessionId:sessionId,
                             }),"EX",7*24*60*60)
 
-
-                            
+  
 
         res.status(200).json({
             message:"Login successful",
@@ -340,19 +339,19 @@ export const logoutUser =  async (req:any,res:Response,next:NextFunction) => {
                 const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET as string) as TokenPayload
                 if(decoded.sessionId){
                     await redis.del(`session:${decoded.sessionId}`)
-                    
+                    clearCookie(res,"refresh_token","/");
+                    clearCookie(res,"access_token","/");
+
+                     res.status(200).json({
+                            message:"Logout successful",
+                    })
                 }
-            }   
+            }    
 
-            clearCookie(res,"refresh_token","/");
-            clearCookie(res,"access_token","/");
-
-           
-
-            res.status(200).json({
-                message:"Logout successful",
-            })
-        
+                res.status(404).json({
+                     message:"Logout not successful",
+                })
+                    
     }catch(error){
 
         return next(error);
@@ -383,7 +382,7 @@ export const refreshToken = async (req:any,res:Response,next:NextFunction) => {
             return new AuthError("Forbidden ! User not found !")
         }
 
-        const newAccessToken = jwt.sign({id:decoded.id,role:decoded.role,sessionId:decoded.sessionId},process.env.ACCESS_TOKEN_SECRET as string,{expiresIn:"15m"})
+        const newAccessToken = jwt.sign({id:decoded.id,role:decoded.role,sessionId:decoded.sessionId},process.env.ACCESS_TOKEN_SECRET as string,{expiresIn:"2h"})
         
         setCookie(res,"access_token",newAccessToken);
 

@@ -4,6 +4,15 @@ import { ValidationError } from "@hrmanagement/error-handler";
 import { publishJobAppCreated } from "../events/producers/jobAppCreated.producers";
 import { publishJobAppDenied } from "../events/producers/jobAppDenied.producers";
 import { publishJobAppApproved } from "../events/producers/jobAppApproved.producers";
+import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
+import crypto from "crypto"
+
+enum JobAppStatus {
+    NEW="new",
+    WAITING="waiting",
+    APPROVED="approved",
+    DISAPPROVED="disapproved"
+}
 
 
 export const searchAllJobApplication = async (req:Request,res:Response,next:NextFunction) => {
@@ -15,14 +24,15 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
             const type = req.query.type
             const searchstr = req.query.searchstr?.toString()
             
-            let whereclause = {}
-            if(type == "new"){
+             let whereclause = {}
+
+            if(type == JobAppStatus.NEW){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:false}
-            }else if(type == "waiting"){
+            }else if(type == JobAppStatus.WAITING){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
-            }else if(type == "approved"){
+            }else if(type == JobAppStatus.APPROVED){
                 whereclause = {disapproved:false,managerapproved:true}
-            }else if(type == "disapproved") {
+            }else if(type == JobAppStatus.DISAPPROVED) {
                 whereclause = {disapproved:true}
             }
 
@@ -30,12 +40,11 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
 
             try {
 
-                    
-                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${type}:${searchstr}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true,appPrompts:true}}),
-                        prisma.jobapplication.count({where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]}})
+                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true,appPrompts:true}}),60*60),
+                        getOrSetRedisCache(`jobapp:count:${type}:${searchstr}`,`cache-tag:jobapp:${type}`,()=>prisma.jobapplication.count({where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]}}),60*60)
                     ])
 
                     if(data){
@@ -66,13 +75,13 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
             
             let whereclause = {}
 
-            if(type == "new"){
+            if(type == JobAppStatus.NEW){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:false}
-            }else if(type == "waiting"){
+            }else if(type == JobAppStatus.WAITING){
                 whereclause = {disapproved:false,managerapproved:false,staffapproved:true}
-            }else if(type == "approved"){
+            }else if(type == JobAppStatus.APPROVED){
                 whereclause = {disapproved:false,managerapproved:true}
-            }else if(type == "disapproved") {
+            }else if(type == JobAppStatus.DISAPPROVED) {
                 whereclause = {disapproved:true}
             }
 
@@ -80,13 +89,13 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
             const skip = (page-1) * limit
 
             try {
- 
-                    
-                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${type}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>
+                        prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause},include : {position:true,appPrompts:true}}),
-                        prisma.jobapplication.count({where:{...whereclause}})
+                        },where:{...whereclause},include : {position:true,appPrompts:true}})
+                        ,60*60),
+                        getOrSetRedisCache(`jobapp:count:${type}`,`cache-tag:jobapp:${type}`,()=>prisma.jobapplication.count({where:{...whereclause}}),60*60)
                     ])
 
                     if(data){
@@ -122,14 +131,16 @@ export const getMultipileJobApplication = async (req:Request,res:Response,next:N
 
             const skip = (_page-1) * _limit
 
+            const idlistkey = crypto.createHash("sha256").update(JSON.stringify(idList)).digest("hex")
+
+
             try {
  
-                    
-                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${idlistkey}:${_page}:${_limit}`,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({
                         skip:skip,take:_limit,orderBy:{
                             appdate:'desc'
-                        },where:{id:{in:idList}},include : {position:true,appPrompts:true}}),
-                        prisma.jobapplication.count({where:{id:{in:idList}}})
+                        },where:{id:{in:idList}},include : {position:true,appPrompts:true}}),60*60),
+                        getOrSetRedisCache(`jobapp:count:${idlistkey}`,`cache-tag:jobapp`,()=>prisma.jobapplication.count({where:{id:{in:idList}}}),60*60)
                     ])
 
                     if(data){
@@ -166,16 +177,14 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
 
                 
                     
-                    const [data,total] = await Promise.all([prisma.jobs.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache(`job:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
                         skip,take:limit,orderBy:{
                             createdate:'desc'
                         }
-                    })
+                    }),6*60*60)
                     ,
-                    prisma.jobs.count()
+                    getOrSetRedisCache(`job:count`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
                     ])
-
-
 
                     if(data){
                         res.status(201).json({
@@ -206,7 +215,7 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
             try {
                 
                     
-                    const job = await prisma.jobapplication.findMany({where:{id:id},include:{appPrompts:true}})
+                    const job = getOrSetRedisCache(`jobapp:${id}`,`cache-tag:jobapp:${id}`,async ()=>await prisma.jobapplication.findMany({where:{id:id},include:{appPrompts:true}}),60*60)
                     if(job){
                         res.status(201).json({
                         success:true,
@@ -231,7 +240,7 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
             try {
     
                     if(req.headers["x-user-id"]){
-                        const job = await prisma.jobs.findUnique({where:{id:id},include:{department:true}})
+                        const job = getOrSetRedisCache(`job:${id}`,`cache-tag:job:${id}`,async ()=>await prisma.jobs.findUnique({where:{id:id},include:{department:true}}),6*60*60)
                         if(job){
                             res.status(201).json({
                             success:true,
@@ -285,29 +294,37 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
     
             try {
                     let whereclause = {}
+                    let redisfilterkey = "jobapp"
                     if(jobId!=""){ 
                         whereclause = {...whereclause,jobId:jobId}
+                        redisfilterkey = redisfilterkey+`:${jobId}`
                     }
                     if(name!=""){
                         whereclause = {...whereclause,name:name}
+                        redisfilterkey = redisfilterkey+`:${name}`
                     }
 
                     if(email!=""){
                         whereclause = {...whereclause,email:email}
+                        redisfilterkey = redisfilterkey+`:${email}`
                     }
 
                     if(phone_number!=""){
                         whereclause = {...whereclause,phone_number:phone_number}
+                        redisfilterkey = redisfilterkey+`:${phone_number}`
                     }
 
                     if(city!=""){
                         whereclause = {...whereclause,city:city}
+                        redisfilterkey = redisfilterkey+`:${city}`
                     }
+
+                    const rediskey = redisfilterkey+`:${page}:${limit}`
                     
-                    const [job,total] = await Promise.all([prisma.jobapplication.findMany({skip,take:limit,orderBy:{
+                    const [job,total] = await Promise.all([getOrSetRedisCache(rediskey,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({skip,take:limit,orderBy:{
                         appdate:"desc"
-                    },where:whereclause,include:{appPrompts:true}}),
-                    prisma.jobapplication.count()
+                    },where:whereclause,include:{appPrompts:true}}),60*60),
+                    getOrSetRedisCache(`jobapp:count:${redisfilterkey}`,`cache-tag:jobapp`,()=>prisma.jobapplication.count(),60*60)
                     ])
                     if(job){
                         res.status(201).json({
@@ -336,33 +353,42 @@ export const getJobByFilter = async (req:Request,res:Response,next:NextFunction)
 
      const skip = (page-1) * limit
 
-     const {id,title,position,department,userId} = req.body;
+     const {id,title,position,departmentId,userId} = req.body;
+
+     let redisfilterkey = "job"
     
             try {
                     let whereclause = {}
                     if(id!=""){ 
                         whereclause = {...whereclause,id:id}
+                        redisfilterkey = redisfilterkey+`:${id}`
                     }
                     if(title!=""){
                         whereclause = {...whereclause,title:title}
+                        redisfilterkey = redisfilterkey+`:${title}`
                     }
 
                     if(position!=""){
                         whereclause = {...whereclause,position:position}
+                        redisfilterkey = redisfilterkey+`:${position}`
                     }
 
-                    if(department!=""){
-                        whereclause = {...whereclause,department:department}
+                    if(departmentId!=""){
+                        whereclause = {...whereclause,departmentId:departmentId}
+                        redisfilterkey = redisfilterkey+`:${departmentId}`
                     }
 
                     if(userId!=""){
                         whereclause = {...whereclause,responsibleUserId:userId}
+                        redisfilterkey = redisfilterkey+`:${userId}`
                     }
+
+                    const rediskey = redisfilterkey+`:${page}:${limit}`
                     
-                    const [job,total] = await Promise.all([ prisma.jobs.findMany({skip,take:limit,orderBy:{
+                    const [job,total] = await Promise.all([getOrSetRedisCache(rediskey,`cache-tag:job`,()=>prisma.jobs.findMany({skip,take:limit,orderBy:{
                         createdate:"desc"
-                    },where:whereclause}),
-                    prisma.jobs.count()
+                    },where:whereclause}),6*60*60),
+                    getOrSetRedisCache(`job:count:${redisfilterkey}`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
                      ])
 
                     if(job){
@@ -429,7 +455,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                         publishJobAppCreated({
                         key:job.id,jobAppId:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress===undefined ? "" : ipadress,message:"Application created"
                         })
-
+                        invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.NEW}`)
                         res.status(201).json({
                         success:true,
                         
@@ -478,7 +504,8 @@ export const denyJobApplication = async (req:any,res:Response,next:NextFunction)
 
                         publishJobAppDenied({key:denyjob.id,deniedById:deniedById,role:role,jobAppId:denyjob.id,jobId:denyjob.jobId!,
                             name:denyjob.name,email:denyjob.email,message:"Job application denied"})
-
+                        
+                        invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.DISAPPROVED}`)
                         res.status(201).json({
                         
                         data:{success:true,message:"Successfully disapproved !"}
@@ -526,6 +553,7 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
                             managerapproved:true
                         }
                     })
+                    invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.APPROVED}`)
                     }else if(role== "staff" && (!existingJob.staffapproved)) {
                          job = await prisma.jobapplication.update({
                         where:{id:id},
@@ -535,11 +563,14 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
                             staffapproved:true      
                         }
                     })
+                    invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.WAITING}`)
                     }
 
                     if(job){
                         publishJobAppApproved({key:id,approverId:approverId,role:role,jobAppId:id,jobId:job.jobId!,
                             name:job.name,email:job.email,message:"Job application approved"})
+
+                        
                         res.status(201).json({
                          data:{success:true,message:"Successfully approved !"}
                         
@@ -588,6 +619,8 @@ export const createJob = async (req:any,res:Response,next:NextFunction) => {
                         }
                     })
                     if(job){
+                        invalidateCacheTagKeys("cache-tag:job")
+
                         res.status(201).json({
                         success:true,
                         message:"Job created successfully.",
@@ -616,6 +649,7 @@ export const updateJob = async (req:Request,res:Response,next:NextFunction) => {
     }
 
      try {
+     
 
                     let wageclause = {}
                     if(mounthlywage!=""){
@@ -641,6 +675,9 @@ export const updateJob = async (req:Request,res:Response,next:NextFunction) => {
                         }
                     })
                     if(job){
+                        invalidateCacheTagKeys("cache-tag:job")
+                        invalidateCacheTagKeys(`cache-tag:job:${jobId}`)
+                       
                         res.status(201).json({
                         success:true,
                         message:"Job updated successfully.",
@@ -672,6 +709,7 @@ export const deleteJob = async (req:Request,res:Response,next:NextFunction) => {
                 where:{id:id}
             })
             if(deleted){
+                invalidateCacheTagKeys(`cache-tag:job:${id}`)
                    res.status(201).json({
                         success:true,
                         message:"Job deleted successfully !"

@@ -3,7 +3,8 @@ import { ValidationError } from "@hrmanagement/error-handler";
 import {prisma}  from "@hrmanagement/prisma"
 import bcrypt  from "bcryptjs"
 import { Request,Response,NextFunction } from "express";
-
+import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
+import crypto from "crypto"
 
 export const getStaffByFilter = async (req:any,res:Response,next:NextFunction) => {
 
@@ -171,10 +172,10 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
                         const skip = (page-1) * limit
 
 
-                        const [staff,total] = await Promise.all([ prisma.staff.findMany({skip,take:limit,orderBy:{
+                        const [staff,total] = await Promise.all([ getOrSetRedisCache(`staff:${page}:${limit}`,`cache-tag:staff`,()=>prisma.staff.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
-                        },include:{staffPrompts:true,position:true,department:true}}),
-                        prisma.staff.count()
+                        },include:{staffPrompts:true,position:true,department:true}}),2*60*60),
+                        getOrSetRedisCache(`staff:count`,`cache-tag:staff`,()=>prisma.staff.count(),2*60*60)
 
                         ])
                         if(staff){
@@ -215,10 +216,12 @@ export const getMultipileStaff = async (req:any,res:Response,next:NextFunction) 
                         return next(new ValidationError("Id List is not valid"))
                     }
 
-                    const [staff,total] = await Promise.all([ prisma.staff.findMany({skip,take:limit,orderBy:{
+                     const idlistkey = crypto.createHash("sha256").update(JSON.stringify(idList)).digest("hex")
+
+                    const [staff,total] = await Promise.all([getOrSetRedisCache(`staff:${idlistkey}:${_page}:${_limit}`,`cache-tag:staff`,()=> prisma.staff.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
-                        },where:{id:{in:idList}},include:{staffPrompts:true,position:true,department:true}}),
-                        prisma.staff.count({where:{id:{in:idList}}})
+                        },where:{id:{in:idList}},include:{staffPrompts:true,position:true,department:true}}),2*60*60),
+                        getOrSetRedisCache(`staff:count:${idlistkey}`,`cache-tag:staff`,()=>prisma.staff.count({where:{id:{in:idList}}}),2*60*60)
                     ])
                     
                     if(staff){
@@ -249,7 +252,7 @@ export const getStaff = async (req:any,res:Response,next:NextFunction) => {
                     try {
                         
 
-                        const staff = await prisma.staff.findUnique({where:{id:id},include:{staffPrompts:true,position:true,department:true}})
+                        const staff = getOrSetRedisCache(`staff:${id}`,`cache-tag:staff:${id}`,async ()=>await prisma.staff.findUnique({where:{id:id},include:{staffPrompts:true,position:true,department:true}}),2*60*60)
 
 
                         if(staff){
@@ -377,6 +380,8 @@ export const staffUpdate = async(req:any,res:Response,next:NextFunction) => {
                     })
     }
                     if(staff){
+                        invalidateCacheTagKeys(`cache-tag:staff`)
+                        invalidateCacheTagKeys(`cache-tag:staff:${staffId}`)
                         res.status(201).json({
                         success:true,
                         message:"Staff updated successfully",
@@ -410,6 +415,7 @@ export const staffDelete = async (req:any,res:Response,next:NextFunction) => {
                                             where:{id:existingStaff.id}
                                         })
                                         if(deletestaff){
+                                            invalidateCacheTagKeys(`cache-tag:staff:${existingStaff.id}`)
                                             res.status(201).json({
                                                     success:true,
                                                     message:"Staff deleted successfully !"
@@ -431,6 +437,7 @@ export const staffDelete = async (req:any,res:Response,next:NextFunction) => {
                                             where:{id:staffId}
                                         })
                                         if(deletestaff){
+                                            invalidateCacheTagKeys(`cache-tag:staff:${staffId}`)
                                             res.status(201).json({
                                                     success:true,
                                                     message:"Staff deleted successfully !"
