@@ -8,6 +8,8 @@ import { randomUUID } from "crypto";
 export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFunction) => {
 
 
+    let success = false
+
      const role = req.headers["x-user-role"]
 
     if(role!="admin" && role!="staff"){
@@ -80,10 +82,11 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         ))
 
         if(errorExists){
-            return res.status(501).json({message:"AI promptu veritabanına kaydedilirken sorun oluştu.",successList:successList
+            return res.status(501).json({message:"AI promptu veritabanına kaydedilirken sorun oluştu.",success:success,successList:successList
             })
         }else {
-            return res.status(201).json({message:"AI promptu başarıyla kaydedildi.",successList:successList
+            success=true
+            return res.status(201).json({message:"AI promptu başarıyla kaydedildi.",success:success,successList:successList
             })
         }
 
@@ -436,9 +439,9 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
     const embeddingResponse = await getEmbedding(responseText)
 
      if(response){
-        return res.status(201).json({prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
+        return res.status(201).json({sendedId:id,prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
      }else {
-        return res.status(404).json({message:"Response içeriği alma başarısız",prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
+        return res.status(404).json({message:"Response içeriği alma başarısız",sendedId:id,prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
      }
      
 
@@ -464,7 +467,7 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
     }
     
     
-    let resultdict  = {}
+    const resultarr : {sendedId:string,prompt:string,result:string,embedding:Record<string,unknown> | null}[]  = []
     let resultcount = 0
     let errorsList = {}
   
@@ -492,6 +495,7 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
             return;
         }
 
+        
         const jobInfoApp = await prisma.jobs.findUnique({where:{id:appInfo.jobId}})
 
         if(!jobInfoApp) {
@@ -561,7 +565,6 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         const messageOutput = response.outputs.find(output=>output.type == "message.output")
         
         if (!messageOutput || !("content" in messageOutput)) {
-            resultdict = {...resultdict,[id]:{}}
             errorsList = {...errorsList,[id]:"resultfault"}
             return;
         }
@@ -580,12 +583,11 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
              const embeddingResponse = await getEmbedding(responseText)
              if(embeddingResponse){
                 resultcount+=1
-                resultdict = {...resultdict,[id]:{sendedId:id,prompt:prompt,result:responseText,embedding:embeddingResponse}}
+                resultarr.push({sendedId:id,prompt:prompt,result:responseText,embedding:embeddingResponse})
              }else {
-                resultdict = {...resultdict,[id]:{sendedId:id,prompt:prompt,result:responseText,embedding:null}}
+                resultarr.push({sendedId:id,prompt:prompt,result:responseText,embedding:null})
              }
         }else {
-            resultdict = {...resultdict,[id]:{}}
             errorsList = {...errorsList,[id]:"resultfault"}
             return;
             
@@ -598,10 +600,10 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         ))
     
     if(resultcount==0 || errorExists){
-        return res.status(404).json({result:resultdict,errors:errorsList});
+        return res.status(404).json({result:resultarr,errors:errorsList});
     }
 
-    return res.status(201).json({result:resultdict});
+    return res.status(201).json({result:resultarr});
 }
 
 

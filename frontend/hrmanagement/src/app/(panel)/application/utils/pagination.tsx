@@ -7,9 +7,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 type Props = {
   currentPage: number;
   totalPages: number;
+  pname:string | "page";
 };
 
-export default function Pagination({ currentPage, totalPages }: Props) {
+export default function Pagination({pname="page", currentPage, totalPages }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -19,7 +20,7 @@ export default function Pagination({ currentPage, totalPages }: Props) {
 
     const params = new URLSearchParams(searchParams.toString());
 
-    params.set("page", String(page));
+    params.set(pname, String(page));
 
     router.push(`${pathname}?${params.toString()}`);
   };

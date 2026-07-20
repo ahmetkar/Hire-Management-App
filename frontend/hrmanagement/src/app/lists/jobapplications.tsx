@@ -86,6 +86,17 @@ export const getJobApps = async (page:number,limit:number,type:string): Promise<
     return jobapps
 }   
 
+
+export const getMultipileJobApps = async (idList:string[],page:number,limit:number): Promise<JobAppsResponse> => {
+    const response = await axiosInstance.post<JobAppsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-multipile-application`,{
+        idList:idList,
+        page:page,
+        limit:limit
+    })
+    const jobapps =  response.data
+    return jobapps
+}   
+
 export const getJobApp = async (id:string): Promise<JobApp> => {
 
     const response = await axiosInstance.get<JobAppResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-one-application/${id}`)

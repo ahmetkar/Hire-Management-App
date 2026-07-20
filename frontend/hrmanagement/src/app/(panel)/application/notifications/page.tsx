@@ -66,7 +66,7 @@ const Page = () => {
                       </table>
                     </div>
                   </div> 
-                   <Pagination currentPage={notifications.page} totalPages={notifications.totalPages} ></Pagination>
+                   <Pagination pname="page" currentPage={notifications.page} totalPages={notifications.totalPages} ></Pagination>
                 </div> 
      
     </div>

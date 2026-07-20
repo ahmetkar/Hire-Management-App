@@ -110,6 +110,50 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
 
 }
 
+
+export const getMultipileJobApplication = async (req:Request,res:Response,next:NextFunction) => {
+
+           const {page,limit,idList} = req.body
+
+
+            const _page = Math.max(Number(page) || 1 ,1)
+            const _limit = Math.min(Number(limit) || 10 ,100)
+
+
+            const skip = (_page-1) * _limit
+
+            try {
+ 
+                    
+                    const [data,total] = await Promise.all([prisma.jobapplication.findMany({
+                        skip:skip,take:_limit,orderBy:{
+                            appdate:'desc'
+                        },where:{id:{in:idList}},include : {position:true,appPrompts:true}}),
+                        prisma.jobapplication.count({where:{id:{in:idList}}})
+                    ])
+
+                    if(data){
+                        res.status(201).json({
+                        success:true,
+                        message:"Applications found !",
+                        data: data,
+                        page:_page,
+                        limit:_limit,
+                        total:total,
+                        totalPages:Math.ceil(total/_limit)
+                        });
+                    }else {
+                       return next(new ValidationError("Job Application Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+
+}
+
+
 export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => {
      
 

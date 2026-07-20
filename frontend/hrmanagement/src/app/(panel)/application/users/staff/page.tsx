@@ -266,7 +266,7 @@ const Page = () => {
                           ))}
                         </tbody>
                       </table>
-                         <Pagination currentPage={staffResponse.page} totalPages={staffResponse.totalPages} ></Pagination>
+                         <Pagination pname="page" currentPage={staffResponse.page} totalPages={staffResponse.totalPages} ></Pagination>
                     </div>
                   </div>
                 </div> 

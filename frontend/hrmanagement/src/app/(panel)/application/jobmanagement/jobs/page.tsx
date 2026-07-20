@@ -4,7 +4,7 @@ import { getJobs,Job,JobsResponse } from '@/app/lists/jobs';
 import React, { useEffect, useState } from 'react'
 import Pagination from '../../utils/pagination';
 import { useSearchParams } from 'next/navigation';
-const page = () => {
+const Page = () => {
 
   const [activeId,setActiveId] = useState("")
 
@@ -100,7 +100,7 @@ const page = () => {
                         </tbody>
                       </table>
 
-                      <Pagination currentPage={jobResponse.page} totalPages={jobResponse.totalPages} ></Pagination>
+                      <Pagination pname="page" currentPage={jobResponse.page} totalPages={jobResponse.totalPages} ></Pagination>
                      
                     </div>
                   </div>
@@ -112,4 +112,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
