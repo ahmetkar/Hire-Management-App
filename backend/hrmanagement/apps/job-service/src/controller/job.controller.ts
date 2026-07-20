@@ -34,7 +34,7 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
                     const [data,total] = await Promise.all([prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true}}),
+                        },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true,appPrompts:true}}),
                         prisma.jobapplication.count({where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]}})
                     ])
 
@@ -85,7 +85,7 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
                     const [data,total] = await Promise.all([prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
-                        },where:{...whereclause},include : {position:true}}),
+                        },where:{...whereclause},include : {position:true,appPrompts:true}}),
                         prisma.jobapplication.count({where:{...whereclause}})
                     ])
 
@@ -162,7 +162,7 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
             try {
                 
                     
-                    const job = await prisma.jobapplication.findMany({where:{id:id}})
+                    const job = await prisma.jobapplication.findMany({where:{id:id},include:{appPrompts:true}})
                     if(job){
                         res.status(201).json({
                         success:true,
@@ -187,7 +187,7 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
             try {
     
                     if(req.headers["x-user-id"]){
-                        const job = await prisma.jobs.findUnique({where:{id:id}})
+                        const job = await prisma.jobs.findUnique({where:{id:id},include:{department:true}})
                         if(job){
                             res.status(201).json({
                             success:true,
@@ -198,7 +198,7 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
                             return next(new ValidationError("Job Not Found"))
                         }
                     }else {
-                        const job = await prisma.jobs.findUnique({where:{id:id}})
+                        const job = await prisma.jobs.findUnique({where:{id:id},include:{department:true}})
                         if(job){
                             res.status(201).json({
                             success:true,
@@ -262,7 +262,7 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
                     
                     const [job,total] = await Promise.all([prisma.jobapplication.findMany({skip,take:limit,orderBy:{
                         appdate:"desc"
-                    },where:whereclause}),
+                    },where:whereclause,include:{appPrompts:true}}),
                     prisma.jobapplication.count()
                     ])
                     if(job){
@@ -511,7 +511,7 @@ export const approveJobApplication = async (req:any,res:Response,next:NextFuncti
 export const createJob = async (req:any,res:Response,next:NextFunction) => {
 
 
-     const {jobtitle,jobrequirements,jobnotes,department,position,mounthlywage,weeklypayment,dailypayment,expiredate,responsibleUserId} = req.body;
+     const {jobtitle,jobrequirements,jobnotes,departmentId,position,mounthlywage,weeklypayment,dailypayment,expiredate,responsibleUserId} = req.body;
 
     console.log(req)
     var createdByUserId = req.headers["x-user-id"]
@@ -534,7 +534,7 @@ export const createJob = async (req:any,res:Response,next:NextFunction) => {
                             jobtitle:jobtitle,
                             jobrequirements:jobrequirements,
                             jobnotes:jobnotes,
-                            department:department,
+                            departmentId:departmentId,
                             position:position,
                             ...wageclause,
                             createdByUserId:createdByUserId,
@@ -563,7 +563,7 @@ export const createJob = async (req:any,res:Response,next:NextFunction) => {
 
 export const updateJob = async (req:Request,res:Response,next:NextFunction) => {
 
-    const {jobId,jobtitle,jobrequirements,jobnotes,department,position,mounthlywage,weeklypayment,dailypayment,expiredate,responsibleUserId} = req.body;
+    const {jobId,jobtitle,jobrequirements,jobnotes,departmentId,position,mounthlywage,weeklypayment,dailypayment,expiredate,responsibleUserId} = req.body;
  
     const existingJob = await prisma.jobs.findUnique({where:{id:jobId}})
 
@@ -589,7 +589,7 @@ export const updateJob = async (req:Request,res:Response,next:NextFunction) => {
                             jobtitle:jobtitle,
                             jobrequirements:jobrequirements,
                             jobnotes:jobnotes,
-                            department:department,
+                            departmentId:departmentId,
                             position:position,
                             ...wageclause,
                             expiredate:expiredate,

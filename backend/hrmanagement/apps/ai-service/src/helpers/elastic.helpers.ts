@@ -26,6 +26,9 @@ export async function CreateIndex() : Promise<boolean>{
                 kind:{
                     type:"text"
                 },
+                sendedId:{
+                    type:"text"
+                },
                 createdAt:{
                     type:"text"
                 },
@@ -114,7 +117,7 @@ export async function UpdateEmbedIndex(document: ElasticDocumentParameters): Pro
     if(index._source!=null){
         const data = index._source as any
 
-        const result : ElasticDocumentType  = {kind:data.kind,sendedId:data.id,embedding:data.embedding,createdAt:data.createdAt,updatedAt:data.updatedAt
+        const result : ElasticDocumentType  = {kind:data.kind,sendedId:data.sendedId,embedding:data.embedding,createdAt:data.createdAt,updatedAt:data.updatedAt
         }
 
         return result;
@@ -149,7 +152,7 @@ export async function UpdateEmbedIndex(document: ElasticDocumentParameters): Pro
         result.hits.hits.map((hit)=>{
             if(hit!=null && hit._source != null){
             const source:any = hit._source
-            const result : ElasticDocumentResult = {id:hit._id,sendedId:source.id,kind:source.kind,score:hit._score,createdAt:source.createdAt,updatedAt:source.updatedAt}
+            const result : ElasticDocumentResult = {id:hit._id,sendedId:source.sendedId,kind:source.kind,score:hit._score,createdAt:source.createdAt,updatedAt:source.updatedAt}
             results.push(result)
             }
         })

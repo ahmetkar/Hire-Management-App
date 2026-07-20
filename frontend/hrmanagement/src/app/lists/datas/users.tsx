@@ -23,6 +23,12 @@ type OneUserResponse = {
     data:User
 }
 
+export type AIPrompt =  {
+    kind:string;
+    responseText:string;
+}
+
+
 export type Staff = {
       id:string;
       name:string;
@@ -44,6 +50,7 @@ export type Staff = {
       selfbio:string;
       departmentId:string;
       signupdate:string;
+      staffPrompts:AIPrompt[]
 }
 
 
@@ -60,6 +67,10 @@ export type StaffUser = {
 
 type OneStaffResponse = {
     data:Staff | StaffUser
+}
+
+type MultipileStaffResponse = {
+    data:Staff[]
 }
 
 
@@ -147,6 +158,14 @@ export const getStaff = async (id:string): Promise<Staff> => {
     const response = await axiosInstance.get<OneStaffResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-staff/${id}`)
     const dep =  response.data
     return dep.data as Staff
+}
+
+export const getMultipileStaff = async (ids:string[]): Promise<Staff[]> => {
+    const response = await axiosInstance.post<MultipileStaffResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-multipile-staff/`,{
+        idList:ids
+    })
+    const dep =  response.data
+    return dep.data
 }
 
 export const getStaffAndUser = async (userId:string): Promise<StaffUser> => {

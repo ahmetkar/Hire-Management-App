@@ -2,9 +2,10 @@
 import { getJobApp,JobApp } from '@/app/lists/jobapplications'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { approveJobApp, disapproveJobApp } from '@/app/actions/jobapplication';
+import { AIResponse, approveJobApp, disapproveJobApp, saveAIAnswerRequest, sendAIPromptRequest, sendAnalyisRequest } from '@/app/actions/jobapplication';
 import Modal from '@/app/components/Modal';
 import useUser from '@/app/utils/useUser';
+import { getMultipileStaff, getStaff } from '@/app/lists/datas/users';
 
 
 const Page = () => {
@@ -21,13 +22,29 @@ const Page = () => {
   const [failureTitle,setFailureTitle] = useState("")
   const [failureDesc,setFailureDesc] = useState("")
   const [successDesc,setSuccessDesc] = useState("")
+  const [newAnswerIsExist,setNewAnswerIsExist] = useState(false)
+  const [aiAnswerSuccess,setAIAnswerSuccess] = useState(false)
+  const [answerLoading,setAnswerLoading] = useState(false)
+  const [saveLoading,setSaveLoading] = useState(false)
+
+  const [analysisLoading,setAnalysisLoading] = useState(false)
+  const [analysisExist,setAnalysisExist] = useState(false)  
+  const [analysisKind,setAnalysisKind] = useState("oldest")
+
+  const [aiResponse,setAIResponse] = useState<AIResponse>({
+    prompt:"",
+    airesponse:"",
+    embedding:null
+  })
+
+  type AnalysisType = {score:number,name:string,signupdate:string,airesponse:string}
+
+  const [analysisResponse,setAnalysisResponse] = useState<AnalysisType[]>([])
+
 
   const {isLoading,user} = useUser()
 
 
-
-
-  console.log(user)
 
     useEffect(() => {
           getJobApp(id!.toString())
@@ -69,7 +86,83 @@ const Page = () => {
                       setShowFailureModal(true)
                   }); 
               }
-  
+
+              const sendAIRequest = (appId:string) => {
+                    setAnswerLoading(true)
+                    sendAIPromptRequest(appId).then((data)=>{
+                      if(data){
+                        setAIAnswerSuccess(true)
+                        setNewAnswerIsExist(true)
+                        setAnswerLoading(false)
+                        setAIResponse(data)
+                      }
+                    }).catch((err)=>{
+                      setAIAnswerSuccess(false)
+                      console.log("ai response error ",err)
+                      setAnswerLoading(false)
+                    })
+              }
+
+              const saveAIAnswer = (appId:string) =>{
+                  if(aiResponse.embedding!=null){
+                  setSaveLoading(true)
+                  saveAIAnswerRequest(appId,aiResponse.prompt,aiResponse.airesponse,aiResponse.embedding).then((data)=>{
+                      console.log(data)
+                      setSaveLoading(false)
+                  }).catch((err)=>{
+                    console.log(err)
+                    setSaveLoading(false)
+                  })
+                  }
+              }
+
+              const sendAnalysis = (appId:string) => {
+                setAnalysisLoading(true)
+                if(analysisKind!=""){
+                    sendAnalyisRequest(analysisKind,appId).then((data)=>{
+                      
+                        console.log(analysisKind," => ",data!.results)
+                        if(data!=null && data.results!=null && data.results.length >0){
+                          const ids = data.results.map((i)=>(i.sendedId))
+
+                          getMultipileStaff(ids).then((datas)=>{
+                            console.log(datas)
+                            const analysisList : AnalysisType[] = []
+                            datas.map((d)=>{
+                                const anResultForId = data.results.find((x)=>x.sendedId == d.id)
+                                if(anResultForId !=undefined){
+                                  const prompt = d.staffPrompts.at(-1)
+                                  if(prompt!=undefined){
+                                    analysisList.push({name:d.name,signupdate:d.signupdate.split("T")[0],score:anResultForId.score!,airesponse:prompt.responseText})
+                                  }
+                                }
+                            })
+                           if(analysisList.length > 0){
+                              setAnalysisExist(true)
+                              setAnalysisLoading(false)
+                              setAnalysisResponse(analysisList)
+                           }else {
+                            setAnalysisLoading(false)
+                           }
+                           setAnalysisKind("oldest")  
+
+                          }).catch((err)=>{
+
+                            console.log(err)
+                            setAnalysisLoading(false)
+                          })
+                        }
+                        
+
+                    }).catch((err)=>{
+                      console.log(err)
+                      setAnalysisLoading(false)
+                    })
+                }
+
+              } 
+
+             
 
   return (
 
@@ -97,19 +190,109 @@ const Page = () => {
                   <div className="card shadow">
                     <div className="card-body justify-content-center">
                       <h5 className="card-title">CV Analizi</h5>
-                            <div className="row">
-                            <button className="col-md-12 btn btn-info" type="submit">AI ile Analiz Et</button><br /><br />
-                            </div>
-                            <div className="row mt-4">
-                            <p>Özet burada görünür..</p>
+                          
+                            <div className="row mt-4 justify-content-center pl-3 pr-3">
+                            {answerLoading==true ? ("Cevap alınıyor..") : (
+                              <p>{jobApp.appPrompts!=null && jobApp.appPrompts!=undefined && jobApp.appPrompts.length>0 ? (jobApp.appPrompts.at(-1)!=null &&
+                                jobApp.appPrompts.at(-1)!=undefined ? (jobApp.appPrompts.at(-1)!.responseText) : ("")) : (
+                              (aiAnswerSuccess==true && aiResponse!=null ? (aiResponse.airesponse) : ("AI Değerledirmesi yok"))
+                            )}</p>
+                            )}
+                            
                             </div>
                             <div className="row mt-4 justify-content-center">
-                            <button className="col-md-6 btn btn-info" type="submit">Cevabı Kaydet</button>
-                            <button className="col-md-6 btn btn-danger" type="submit">Cevabı Gizle</button>
+                             {(jobApp.appPrompts==null || jobApp.appPrompts==undefined || jobApp.appPrompts.length==0 || jobApp.appPrompts.at(-1)==null || jobApp.appPrompts.at(-1)==undefined) && (newAnswerIsExist==false)  ? (<button onClick={()=>sendAIRequest(jobApp.id)} className="col-md-12 btn btn-info" type="submit">AI ile Analiz Et</button>):(<>
+                               <button onClick={()=>sendAIRequest(jobApp.id)} className="col-md-12 btn btn-primary" type="submit">AI ile Tekrar Analiz et</button>
+                             </>)}
+                             {newAnswerIsExist==true ? (
+                              ((saveLoading==true) ? ("Cevap kaydediliyor...") : (
+                                <button onClick={()=>saveAIAnswer(jobApp.id)} className="col-md-12 btn btn-info mb-2" type="submit">Cevabı Kaydet</button>
+                              ))
+                            ):("")}
                             </div>
                     </div>
                   </div>
                 </div>
+                {(jobApp.appPrompts!=null && jobApp.appPrompts!=undefined && jobApp.appPrompts.length>0) ? (
+                  <div className="col-md-12 mb-4">
+                  <div className="card shadow">
+                    <div className="card-body justify-content-center">
+                      <h5 className="card-title">CV Karşılaştırma</h5>
+                            <div className="row mt-4 pl-3 pr-3">
+                            <p>Eğer isterseniz iş başvurusunun AI Analizini halihazırda işe alınmış insanların analizleri ile karşılaştırabilirsiniz.</p>
+                            </div>
+                            
+                            {(analysisExist==true) ? (
+                              
+                <div className="col-md-12 my-1">
+                  <div className="card shadow">
+                    <div className="card-body">
+                      <h5 className="card-title">Analiz Sonuçları</h5>
+                      
+                      <table className="table table-hover">
+                        <thead className="thead-dark">
+                          <tr>
+                            <th>Benzerlik Oranı</th>
+                            <th>İsim</th>
+                            <th>Giriş tarihi</th>
+                            <th>Personel için AI Analizi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(analysisResponse.length > 0 ? (
+                            (analysisResponse.map((anr)=>(
+                            <tr key={anr.name}>
+                            <td>
+                              <div className="progress progress-sm" style={{height:"3px"}}>
+                                <div
+                                className="progress-bar"
+                                role="progressbar"
+                                style={{ width: `${anr.score*100-2}%` }}
+                                aria-valuenow={anr.score*100-2}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                              ></div>
+                              </div>
+                            </td>
+                            <td>{anr.name}</td>
+                            <td>{anr.signupdate}</td>
+                            <td>{anr.airesponse} </td>
+                          </tr>
+                            )))
+                            
+                          ) : ("Analiz bulunamadı.."))}
+                         
+                        
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> 
+                            ) : ("")}
+                           
+                            <div className="row mt-4 justify-content-center">
+                              {(analysisLoading==true ? ("Analiz yapılıyor...") : (
+                                  <>
+                                  
+                                  <div className="form-group col-md-12 mb-3">
+                             
+                                    <select onChange={(e)=>{
+                                      console.log("Seçildi:", e.target.value);
+                                      setAnalysisKind(e.target.value)}}   className="form-control" id="simple-select2">
+                                      <option value="oldest">Bu iş başvurusunu aynı pozisyondaki en kıdemli kişilerle karşılaştır.</option>
+                                      <option  value="newest">Bu iş başvurusunu aynı pozisyondaki en yeni kişilerle karşılaştır.</option>
+                                    </select> 
+                                </div>
+                                 <button onClick={()=>{sendAnalysis(jobApp.id)}} className="col-md-12 btn btn-info mb-2" type="submit">Karşlılaştırma Yap</button>
+                                  </>
+                                ))}
+                               
+                            </div>
+                    </div>
+                  </div>
+                </div>
+                ) : ("")}
+                
 
             <div className="col-12">
              

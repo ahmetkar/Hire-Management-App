@@ -1,4 +1,4 @@
 1-ai frontend yapılacak,departmentId,jobId nin personel,jobapp ve job eklerken durumuna bakılacak
-2-select sorguları ve ai,job application,personel oluşturma için redis cache+bullmq eklemeleri
+2-select sorguları ve ai,job application,personel oluşturma için redis cache+bullmq eklemeleri,bir kişi için ardarda ai promptu kaydetme engelleme,frontend sadece ai promptların en sonunu getirme
 3-cdn ekle
 4-dockerize et ve load balancer ekle

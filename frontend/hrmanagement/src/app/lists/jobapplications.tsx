@@ -17,6 +17,11 @@ export type Job =  {
  createdByUserId:string;
 }
 
+export type AIPrompt =  {
+    kind:string;
+    responseText:string;
+}
+
 export type JobApp =  {
  id: string;
  name:string;
@@ -41,6 +46,7 @@ export type JobApp =  {
  staffapproved:boolean;
  managerapproved:boolean;
  disapproved:boolean;
+ appPrompts:AIPrompt[];
 }
 
 export type JobAppResponse =  {

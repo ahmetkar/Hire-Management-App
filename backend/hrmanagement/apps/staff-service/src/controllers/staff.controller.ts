@@ -198,6 +198,34 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
 }
 
 
+export const getMultipileStaff = async (req:any,res:Response,next:NextFunction) => {
+    try {
+                    const {idList} = req.body
+
+                    if(!idList){
+                        return next(new ValidationError("Id List is not valid"))
+                    }
+
+                    const staff = await prisma.staff.findMany({where:{id:{in:idList}},include:{staffPrompts:true}})
+
+                    
+                    if(staff){
+                                
+                                res.status(201).json({
+                                success:true,
+                                message:"Staff found !",
+                                data: staff,
+                                })
+                            }else {
+                                return next(new ValidationError("Staff Not Found"))
+                            }
+    
+                }catch(error){
+                    return next(error);
+                }
+}
+
+
 
 export const getStaff = async (req:any,res:Response,next:NextFunction) => {
 

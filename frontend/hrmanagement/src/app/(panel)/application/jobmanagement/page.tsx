@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import Pagination from '../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
-import { approveJobApp, disapproveJobApp } from '@/app/actions/jobapplication';
+import { approveJobApp, disapproveJobApp, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
 
 
 const Page = () => {
@@ -22,7 +22,10 @@ const [successTitle,setSuccessTitle] = useState("")
 const [failureTitle,setFailureTitle] = useState("")
 const [failureDesc,setFailureDesc] = useState("")
 const [successDesc,setSuccessDesc] = useState("")
+const [checkedIds,setCheckedIds] = useState<string[]>([])
 
+const [aiPromptsExist,setAIPromptsExist] = useState(false) 
+const [aiPromptsLoading,setAIPromptsLoading] = useState(false) 
 
      const [jobAppResponse, setJobAppResponse] = useState<JobAppsResponse>({
         data: [],
@@ -55,6 +58,7 @@ const [successDesc,setSuccessDesc] = useState("")
 
 
       const setLimit = (e:React.ChangeEvent<HTMLSelectElement>) => {
+        setCheckedIds([])
         const l  = e.target.value
         const searchParams = new URLSearchParams(params.toString())
       
@@ -69,7 +73,7 @@ const [successDesc,setSuccessDesc] = useState("")
       }
 
       const setNType = (e:React.ChangeEvent<HTMLSelectElement>) => {
-        
+        setCheckedIds([])
         const l  = e.target.value
         setType(l)
         const searchParams = new URLSearchParams(params.toString())
@@ -87,6 +91,7 @@ const [successDesc,setSuccessDesc] = useState("")
 
 
       const doSearch = (e:React.ChangeEvent<HTMLInputElement>)=>{
+        setCheckedIds([])
         const searchstr  = e.target.value
         const searchParams = new URLSearchParams(params.toString())
       
@@ -131,6 +136,40 @@ const [successDesc,setSuccessDesc] = useState("")
               setShowFailureModal(true)
           }); 
       }
+
+      const handleCheckboxChange = (id: string, checked: boolean) => {
+        setCheckedIds((prev) => {
+          if (checked) {
+            if (prev.includes(id)) return prev;
+
+            return [...prev, id];
+          }
+
+          return prev.filter((item) => item !== id);
+        });
+
+       
+        }
+
+         const sendMultipilePrompt = ()=>{
+          setAIPromptsLoading(true)
+          sendMultipileAIPromptRequest(checkedIds).then((data)=>{
+            setAIPromptsExist(true)
+            setAIPromptsLoading(false)
+            console.log(data)
+          }).catch((err)=>{
+            console.log(err)
+            setAIPromptsLoading(false)
+          })
+
+        }
+
+
+        const saveMultipilePrompt = ()=>{
+
+          
+
+};
  
   return (
     <div>
@@ -178,10 +217,18 @@ const [successDesc,setSuccessDesc] = useState("")
                           </div>
                         </form>
                       </div>
-                     
+                      <div className="row mb-4">
+                      <p className="col-md-8">Seçili satır: {checkedIds.length}</p>
+                      {(aiPromptsExist== true) ? (<button onClick={()=>{}} className="col-md-2 btn btn-info" type="submit">Analiz Edilenleri Kaydet</button>) : ("")}
+                      {(aiPromptsLoading==true ? ("Seçili Satırlar İçin AI Analizi Yapılıyor...") : (
+                        
+                        <button onClick={()=>{sendMultipilePrompt()}} className={`${aiPromptsExist== true ? ("col-md-2") : ("col-md-4")} btn btn-secondary`} type="submit">Seçili Satırları AI ile Analiz Et</button>
+                      ))}
+                      </div>
                       <table className="table table-borderless table-hover">
                         <thead>
                           <tr>
+                            <td></td>
                             <td>
                               <div className="custom-control custom-checkbox">
                                 
@@ -205,7 +252,10 @@ const [successDesc,setSuccessDesc] = useState("")
                             <React.Fragment key={uap.id}>
                             
                             <tr>
-                                 
+                            <td><div className="custom-control custom-checkbox">
+                            <input checked={checkedIds.includes(uap.id)} onChange={(e)=>{handleCheckboxChange(uap.id,e.target.checked)}} type="checkbox" className="custom-input" id="customCheck1-1" />
+                        
+                          </div></td>
                             <td>
                               <Modal show={showApproveModal} title="Onaylamak üzeresiniz." message="Onaylamak istediğinize emin misiniz ?" 
                             confirmText='Onayla' cancelText='Vazgeç' setConfirm={true} onConfirm={()=>directApprove(uap.id)} onCancel={()=>setShowApproveModal(false)} />
@@ -330,7 +380,7 @@ const [successDesc,setSuccessDesc] = useState("")
                                 <p className='mb-0'>
                                 <small className="mb-0">
                                 <strong>AI Değerlendirmesi :</strong> 
-                                Deneme açıklama
+                                {uap.appPrompts!=null && uap.appPrompts!=undefined && uap.appPrompts.length>0 ? uap.appPrompts[0].responseText : "AI Değerlendirmesi bulunamadı."}
                               </small>
                                 </p>
 

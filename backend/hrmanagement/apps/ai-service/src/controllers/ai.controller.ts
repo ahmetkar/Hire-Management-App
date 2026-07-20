@@ -129,6 +129,7 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
             return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
         }
 
+
         const saveprompt = await prisma.aIPrompts.create({data:{kind:kind,applicationId:appInfo.id,promptText:prompt,responseText:result,elasticId:elasticId}})
 
             if(saveprompt){
@@ -199,12 +200,9 @@ export const SearchForOldestStaff = async (req:Request,res:Response,next:NextFun
     }
 
 
-    console.log(foundOldest)
-    
     //En sonuncu promptu al
     const embedIndexIdList = await Promise.all(foundOldest.map(async (s)=>{
         const getPrompt = s.staffPrompts.at(-1)
-        console.log(s.staffPrompts)
         if(getPrompt != undefined){
          if(await GetEmbedIndex(getPrompt.elasticId)==null){
             return null
@@ -217,19 +215,21 @@ export const SearchForOldestStaff = async (req:Request,res:Response,next:NextFun
     }
     ))
 
-    console.log(embedIndexIdList)
-
     if(embedIndexIdList.every(item=>item == null)){
         return res.status(404).json({message:"Personeller için Elastic Search kayıtları bulunamadı."})
     }
      const embedIndexIdListNotNull = embedIndexIdList.filter((el)=>el!=null)
 
+    console.log(appInfo.appPrompts)
     const getAppPrompt = appInfo.appPrompts.at(-1)
+    
     
     if(getAppPrompt==undefined){
         return res.status(404).json({message:"Application için prompt kaydı yok."})
     }
+    console.log(getAppPrompt)
     const appEmbeddingGet = await GetEmbedIndex(getAppPrompt.elasticId)
+    console.log(appEmbeddingGet)
     const appEmbedding = appEmbeddingGet!=null ? appEmbeddingGet.embedding : null
 
     if(appEmbedding==null){
@@ -405,7 +405,7 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
      if(!personInfo.jobId || !personInfo.university || !personInfo.abilities || !personInfo.unidepartment || !personInfo.address ||
             !personInfo.graduatedate || !personInfo.selfbio || !personInfo.county || !personInfo.city || !jobInfo.jobtitle || !jobInfo.jobrequirements
     ){
-            console.log(personInfo)
+            console.log(personInfo) 
             console.log(jobInfo)
             return res.status(404).json({message:"Personel veya iş başvurusu bilgileri bulunamadı."})
     }
