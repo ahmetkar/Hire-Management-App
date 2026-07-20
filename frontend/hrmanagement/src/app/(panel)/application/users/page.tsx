@@ -1,6 +1,6 @@
 "use client";
 
-import { getUsers, searchUsers, UserResponse} from '@/app/lists/datas/users';
+import { getUsers, searchUsers, StaffResponse, UserResponse} from '@/app/lists/datas/users';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Pagination from '../utils/pagination';
@@ -10,20 +10,19 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 
 const Page = () => {
 
-  const defaultLimit = 4
-  const [activeId,setActiveId] = useState("")
+    const defaultLimit = 4
+    const [activeId,setActiveId] = useState("")
 
-  const [showDeleteModal,setShowDeleteModal] = useState(false)
-  const [showSuccessModal,setShowSuccessModal] = useState(false)
-  const [showFailureModal,setShowFailureModal] = useState(false)
-  const [successTitle,setSuccessTitle] = useState("")
-  const [failureTitle,setFailureTitle] = useState("")
-  const [failureDesc,setFailureDesc] = useState("")
-  const [successDesc,setSuccessDesc] = useState("")
-   const [detailForId,setDetailForId] = useState("")
-  
-  
-       const [users,setUsers] = useState<UserResponse>({
+    const [showDeleteModal,setShowDeleteModal] = useState(false)
+    const [showSuccessModal,setShowSuccessModal] = useState(false)
+    const [showFailureModal,setShowFailureModal] = useState(false)
+    const [successTitle,setSuccessTitle] = useState("")
+    const [failureTitle,setFailureTitle] = useState("")
+    const [failureDesc,setFailureDesc] = useState("")
+    const [successDesc,setSuccessDesc] = useState("")
+    const [detailForId,setDetailForId] = useState("")
+
+    const [users,setUsers] = useState<UserResponse>({
           data:[],
           total: 0,
           page: 1,
@@ -36,9 +35,8 @@ const Page = () => {
        const page = Number(params.get("page")) || 1
        const limit = Number(params.get("limit") || defaultLimit)
        const searchStr = params.get("search")
+
   
-     
-    
        useEffect(() => {
           if(searchStr != null){
           searchUsers(searchStr,page,limit)
@@ -52,7 +50,7 @@ const Page = () => {
          
         }, [page,limit,searchStr]);
 
-
+        
 
         const deleteUser = async (id:string)=>{
             const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/user-delete/${id}`)
@@ -67,9 +65,8 @@ const Page = () => {
             }
         }
 
-  
-  
 
+  
 
   return (
     <div>
@@ -77,8 +74,10 @@ const Page = () => {
                                     confirmText='' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowSuccessModal(false)} />
         <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
                                     confirmText='' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
-       
-          <div className="row justify-content-center">
+
+        
+
+            <div className="row justify-content-center">
             <div className="col-12">
               <h2 className="mb-2 page-title">Kullanıcılar</h2>
               <p className="card-text"> </p>
@@ -87,7 +86,10 @@ const Page = () => {
                 <div className="col-md-12">
                   <div className="card shadow">
                     <div className="card-body">
-               
+
+                      <div className="row mb-4">
+                   
+                      <div className='col-md-12'>
                       <table className="table datatables" id="dataTable-1">
                         <thead>
                           <tr>
@@ -197,6 +199,8 @@ const Page = () => {
                         </tbody>
                       </table>
                         <Pagination pname="page" currentPage={users.page} totalPages={users.totalPages} ></Pagination>
+                      </div>
+                      </div>
 
                     </div>
                   </div>
@@ -204,6 +208,8 @@ const Page = () => {
               </div> 
             </div> 
           </div> 
+       
+        
         </div>
   )
 }

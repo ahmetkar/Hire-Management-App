@@ -22,12 +22,11 @@ const [successTitle,setSuccessTitle] = useState("")
 const [failureTitle,setFailureTitle] = useState("")
 const [failureDesc,setFailureDesc] = useState("")
 const [successDesc,setSuccessDesc] = useState("")
+
+
 const [checkedIds,setCheckedIds] = useState<string[]>([])
-
 const [checkedSaveIds,setCheckedSaveIds] = useState<string[]>([])
-
 const [aiPromptsExist,setAIPromptsExist] = useState(false) 
-
 const [aiPromptsFail,setAIPromptsFail] = useState(false) 
 const [aiPromptsLoading,setAIPromptsLoading] = useState(false) 
 
@@ -326,7 +325,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
         <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
                             confirmText='Tamam' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
         
-        {aiPromptsExist && aiJobResponses!=undefined ? (
+        {aiPromptsExist && aiJobResponses.data!=undefined ? (
 
           <div>
             
@@ -655,7 +654,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                                 <p className='mb-0'>
                                 <small className="mb-0">
                                 <strong>AI Değerlendirmesi :</strong> 
-                                {uap.appPrompts!=null && uap.appPrompts!=undefined && uap.appPrompts.length>0 ? uap.appPrompts[0].responseText : "AI Değerlendirmesi bulunamadı."}
+                                 {uap.appPrompts!=null && uap.appPrompts!=undefined && uap.appPrompts.length>0  ?( uap.appPrompts.at(-1)?.responseText) : ("AI Değerlendirmesi bulunamadı.")}
                               </small>
                                 </p>
 

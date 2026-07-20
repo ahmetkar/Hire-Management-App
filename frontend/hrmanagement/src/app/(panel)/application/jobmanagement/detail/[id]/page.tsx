@@ -32,6 +32,7 @@ const Page = () => {
   const [analysisKind,setAnalysisKind] = useState("oldest")
 
   const [aiResponse,setAIResponse] = useState<AIResponse>({
+    sendedId:"",
     prompt:"",
     airesponse:"",
     embedding:null
@@ -125,10 +126,10 @@ const Page = () => {
                         if(data!=null && data.results!=null && data.results.length >0){
                           const ids = data.results.map((i)=>(i.sendedId))
 
-                          getMultipileStaff(ids).then((datas)=>{
+                          getMultipileStaff(ids,1,10).then((datas)=>{
                             console.log(datas)
                             const analysisList : AnalysisType[] = []
-                            datas.map((d)=>{
+                            datas.data.map((d)=>{
                                 const anResultForId = data.results.find((x)=>x.sendedId == d.id)
                                 if(anResultForId !=undefined){
                                   const prompt = d.staffPrompts.at(-1)

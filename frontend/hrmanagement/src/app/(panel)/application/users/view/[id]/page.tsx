@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { getStaff, getStaffAndUser, getUser, Staff, StaffUser, User } from '@/app/lists/datas/users';
 
-const page = () => {
+const Page = () => {
 
   const {id} = useParams()
 
@@ -32,195 +32,9 @@ const page = () => {
      const [job,setJob] = useState("")
      const [position,setPosition] = useState<string>("");
 
+     const [aiResponseForStaff,setAIResponseForStaff] = useState<string>("")
+
     const [found,setFound] = useState<boolean>(false);
-
-    
-  useEffect(() => {
-  const fetchData = async () => {
-    try {
-      if (id !== undefined) {
-        try {
-        const user = await getUser(id.toString());
-
-        if (user) {
-          if (user.role === "staff") {
-            const data1 = await getStaffAndUser(user.id);
-
-            setStage("userandstaff");
-
-            if (data1.staffInfo?.city) {
-              const countiesData = await getCounties(Number(data1.staffInfo.city));
-              setCounties(countiesData);
-            }
-
-
-
-            
-
-            resetUserAndStaff({
-              userId:user.id,
-              name: user.name,
-              email: user.email,
-              phone_number: data1.staffInfo.phone_number ?? "",
-              birthdate: data1.staffInfo.birthdate
-                ? data1.staffInfo.birthdate.split("T")[0]
-                : "",
-              university: data1.staffInfo.university,
-              unidepartment: data1.staffInfo.unidepartment,
-              graduatedate: data1.staffInfo.graduatedate
-                ? data1.staffInfo.graduatedate.split("T")[0]
-                : "",
-              address: data1.staffInfo.address ?? "",
-              city: data1.staffInfo.city,
-              country: data1.staffInfo.country ?? "",
-              jobId: data1.staffInfo.jobId ?? "",
-              county: data1.staffInfo.county ?? "",
-              postcode: data1.staffInfo.postcode ?? "",
-              githublink: data1.staffInfo.githublink ?? "",
-              linkedinlink: data1.staffInfo.linkedinlink ?? "",
-              abilities: [],
-              selfbio: data1.staffInfo.selfbio ?? "",
-              departmentId: data1.staffInfo.departmentId ?? "",
-              password: "",
-              repassword: "",
-            });
-
-            if(data1.staffInfo?.jobId){
-               const abilitydata = await getJobInfos(data1.staffInfo.jobId)
-               setAbilities(abilitydata[0].split(","))
-            }
-
-            if(data1.staffInfo.abilities){
-              setActiveAbilities(data1.staffInfo.abilities.split(","))
-            }
-            console.log(activeAbilities)
-
-            setFound(true);
-            
-          }else {
-
-          setStage("onlyuser");
-
-          resetUser({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            departmentId: user.departmentId,
-          });
-
-          setFound(true);
-          }
-          
-        }
-        }
-        catch(error){
-          console.log(error)
-        }finally {
-          if(!found){
-            console.log("staffa geldi")
-        const staff = await getStaff(id.toString());
-
-        if (staff) {
-          setStage("onlystaff");
-          setFound(true);
-
-          
-            if (staff?.city) {
-              const countiesData = await getCounties(Number(staff.city));
-              setCounties(countiesData);
-            }
-
-          resetStaff({
-            staffId:staff.id,
-            name: staff.name,
-            email: staff.email,
-            phone_number: staff.phone_number ?? "",
-            birthdate: staff.birthdate
-              ? staff.birthdate.split("T")[0]
-              : "",
-            university: staff.university ?? "",
-            unidepartment: staff.unidepartment ?? "",
-            graduatedate: staff.graduatedate
-              ? staff.graduatedate.split("T")[0]
-              : "",
-            address: staff.address ?? "",
-            city: staff.city ?? "",
-            country: staff.country ?? "",
-            jobId: staff.jobId ?? "",
-            county: staff.county ?? "",
-            postcode: staff.postcode ?? "",
-            githublink: staff.githublink ?? "",
-            linkedinlink: staff.linkedinlink ?? "",
-            abilities: staff.abilities ? staff.abilities.split(",") : [],
-            selfbio: staff.selfbio ?? "",
-            departmentId: staff.departmentId ?? "",
-          });
-
-          if(staff.jobId){
-               const abilitydata = await getJobInfos(staff.jobId)
-               setAbilities(abilitydata[0].split(","))
-            }
-
-            if(staff.abilities){
-              setActiveAbilities(staff.abilities.split(","))
-            }
-        }
-          }
-        }
-        
-      }
-    
-    } catch (error) {
-      console.error(error);
-    }
-  
-  };
-
-  fetchData();
-
-
-  const fetchOtherData = async () => {
-      const [universitiesData, citiesData, departmentsData, jobsData] =
-        await Promise.all([
-          getUniversities(),
-          getCities(),
-          getDepartments(),
-          getJobs(1, 50),
-        ]);
-
-      setUniversities(universitiesData);
-      setCities(citiesData);
-      setDepartments(departmentsData);
-      setJobs(jobsData);
-  }
-
-  fetchOtherData()
-  
-}, []);
-    
-     
-
-
-      useEffect(() => { 
-
-       if(cityPlate){
-          getCounties(cityPlate)
-                  .then((data) => setCounties(data))
-                  .catch((error) => console.error(error))
-       }
-     }, [cityPlate]);
-
-
-    useEffect(() => { 
-      
-        if(job!=""){
-        getJobInfos(job)
-        .then((data) => setAbilities(data[0].split(",")))
-        .catch((error) => console.error(error));
-        }
-       
-     }, [job]);
-  
 
      type UserFormData = {
       name:string;
@@ -348,6 +162,201 @@ const page = () => {
      });
 
      
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      if (id !== undefined) {
+        try {
+        const user = await getUser(id.toString());
+
+        if (user) {
+          if (user.role === "staff") {
+       
+            const data1 = await getStaffAndUser(id.toString());
+
+            if(data1){
+    
+            setStage("userandstaff");
+
+            if (data1.staffInfoOne?.city) {
+              const countiesData = await getCounties(Number(data1.staffInfoOne.city));
+              setCounties(countiesData);
+            }
+
+            resetUserAndStaff({
+              userId:user.id,
+              name: user.name,
+              email: user.email,
+              phone_number: data1.staffInfoOne.phone_number ?? "",
+              birthdate: data1.staffInfoOne.birthdate
+                ? data1.staffInfoOne.birthdate.split("T")[0]
+                : "",
+              university: data1.staffInfoOne.university,
+              unidepartment: data1.staffInfoOne.unidepartment,
+              graduatedate: data1.staffInfoOne.graduatedate
+                ? data1.staffInfoOne.graduatedate.split("T")[0]
+                : "",
+              address: data1.staffInfoOne.address ?? "",
+              city: data1.staffInfoOne.city,
+              country: data1.staffInfoOne.country ?? "",
+              jobId: data1.staffInfoOne.jobId ?? "",
+              county: data1.staffInfoOne.county ?? "",
+              postcode: data1.staffInfoOne.postcode ?? "",
+              githublink: data1.staffInfoOne.githublink ?? "",
+              linkedinlink: data1.staffInfoOne.linkedinlink ?? "",
+              abilities: [],
+              selfbio: data1.staffInfoOne.selfbio ?? "",
+              departmentId: data1.staffInfoOne.departmentId ?? "",
+              password: "",
+              repassword: "",
+            });
+
+            if(data1.staffInfoOne?.jobId){
+               const abilitydata = await getJobInfos(data1.staffInfoOne.jobId)
+               setAbilities(abilitydata[0].split(","))
+            }
+
+            if(data1.staffInfoOne.abilities){
+              setActiveAbilities(data1.staffInfoOne.abilities.split(","))
+            }
+            console.log(activeAbilities)
+
+            }
+          }else if(user.role === "admin") {
+
+          setStage("onlyuser");
+
+          resetUser({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            departmentId: user.departmentId,
+          });
+
+          setFound(true);
+          }else {
+           
+         
+          const staff = await getStaff(id.toString());
+
+          if (staff) {
+          setStage("onlystaff");
+          setFound(true);
+
+          
+            if (staff?.city) {
+              const countiesData = await getCounties(Number(staff.city));
+              setCounties(countiesData);
+            }
+            if(staff.staffPrompts!=undefined){
+              const prompt = staff.staffPrompts.at(-1)
+              if(prompt!=undefined){
+                  setAIResponseForStaff(prompt.responseText)
+              }
+          }
+            
+
+          resetStaff({
+            staffId:staff.id,
+            name: staff.name,
+            email: staff.email,
+            phone_number: staff.phone_number ?? "",
+            birthdate: staff.birthdate
+              ? staff.birthdate.split("T")[0]
+              : "",
+            university: staff.university ?? "",
+            unidepartment: staff.unidepartment ?? "",
+            graduatedate: staff.graduatedate
+              ? staff.graduatedate.split("T")[0]
+              : "",
+            address: staff.address ?? "",
+            city: staff.city ?? "",
+            country: staff.country ?? "",
+            jobId: staff.jobId ?? "",
+            county: staff.county ?? "",
+            postcode: staff.postcode ?? "",
+            githublink: staff.githublink ?? "",
+            linkedinlink: staff.linkedinlink ?? "",
+            abilities: staff.abilities ? staff.abilities.split(",") : [],
+            selfbio: staff.selfbio ?? "",
+            departmentId: staff.departmentId ?? "",
+          });
+
+          if(staff.jobId){
+               const abilitydata = await getJobInfos(staff.jobId)
+               setAbilities(abilitydata[0].split(","))
+            }
+
+            if(staff.abilities){
+              setActiveAbilities(staff.abilities.split(","))
+            }
+        }
+          
+          }
+          
+        }
+        }
+        catch(error){
+          console.log(error)
+        }finally {
+          
+        }
+        
+      }
+    
+    } catch (error) {
+      console.error(error);
+    }
+  
+  };
+
+  fetchData();
+
+
+  const fetchOtherData = async () => {
+      const [universitiesData, citiesData, departmentsData, jobsData] =
+        await Promise.all([
+          getUniversities(),
+          getCities(),
+          getDepartments(),
+          getJobs(1, 50),
+        ]);
+
+      setUniversities(universitiesData);
+      setCities(citiesData);
+      setDepartments(departmentsData);
+      setJobs(jobsData);
+  }
+
+  fetchOtherData()
+  
+}, []);
+    
+     
+
+
+      useEffect(() => { 
+
+       if(cityPlate){
+          getCounties(cityPlate)
+                  .then((data) => setCounties(data))
+                  .catch((error) => console.error(error))
+       }
+     }, [cityPlate]);
+
+
+    useEffect(() => { 
+      
+        if(job!=""){
+        getJobInfos(job)
+        .then((data) => setAbilities(data[0].split(",")))
+        .catch((error) => console.error(error));
+        }
+       
+     }, [job]);
+  
+
+    
   
     const onUserSubmit = (data:UserFormData) => {
       addUserMutation.mutate(data)
@@ -445,8 +454,14 @@ const page = () => {
         <div className="container-fluid">
           <div className="row justify-content-center">
             <div className="col-12 col-lg-10 col-xl-8">
-             <h2 className="h3 mb-4 page-title"> Kullanıcı ve Personel Bilgilerini Güncelleme</h2>             
-             
+               {(stage == "onlyuser") ? (
+                <h2 className="h3 mb-4 page-title"> Kullanıcı Bilgilerini Güncelleme</h2>  
+               ) : (stage=="onlystaff") ? (
+                <h2 className="h3 mb-4 page-title"> Personel Bilgilerini Güncelleme</h2>  
+               ) : (stage=="userandstaff") ? (
+                <h2 className="h3 mb-4 page-title"> Kayıtlı Personel Bilgilerini Güncelleme</h2>  
+               ) : ("")}       
+                
 
                 {(stage == "onlyuser") ? (
                   
@@ -547,7 +562,16 @@ const page = () => {
                   </div>
                   <button type="submit" className="btn btn-primary">Kullanıcı Ekle</button>
                 </form>
-                ) : ( (stage == "onlystaff") ? (  
+                ) : ( (stage == "onlystaff") ? (
+                  <div className='row'>
+                  <div className="col-md-12 mb-4">
+                  <h6 className="card-title">Personel için AI Analizi</h6>
+                          
+                            <textarea value={aiResponseForStaff!="" ? aiResponseForStaff : ("Bu personel için ai değerlendirmesi yok.")} rows={4}
+                             className="form-control" disabled>
+                            </textarea>
+                </div>
+                <div className="col-md-12 py-2">
                   <form onSubmit={handleSubmitStaff(onStaffSubmit)}>
                     
                   
@@ -853,7 +877,7 @@ const page = () => {
                       <label htmlFor="validationTextarea1">Biyografisi : </label>
                             <textarea className="form-control" id="validationTextarea1" placeholder="Take a note here" required rows={3}
                             {...registerStaff("selfbio")}
-                            ></textarea>
+                            disabled></textarea>
                             <div className="invalid-feedback">
                               {errorsStaff.selfbio && (
                           <p className='text-red-500 text-sm'>{String(errorsStaff.selfbio.message)}</p>
@@ -869,6 +893,8 @@ const page = () => {
                     
                     <button type="submit" className="btn btn-primary">Personel Ekle</button>
                   </form>
+                  </div>
+                  </div>
                 ) : (
                 (stage == "userandstaff") ? (
                   <form onSubmit={handleSubmitUserAndStaff(onUserAndStaffSubmit)}>
@@ -1176,7 +1202,7 @@ const page = () => {
                      <label htmlFor="validationTextarea1">Biyografisi : </label>
                           <textarea className="form-control" id="validationTextarea1" placeholder="Take a note here" required rows={3}
                           {...registerUserAndStaff("selfbio")}
-                          ></textarea>
+                          disabled></textarea>
                           <div className="invalid-feedback">
                              {errorsUserAndStaff.selfbio && (
                         <p className='text-red-500 text-sm'>{String(errorsUserAndStaff.selfbio.message)}</p>
@@ -1262,4 +1288,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

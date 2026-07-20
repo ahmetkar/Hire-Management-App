@@ -173,7 +173,7 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
 
                         const [staff,total] = await Promise.all([ prisma.staff.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
-                        }}),
+                        },include:{staffPrompts:true,position:true,department:true}}),
                         prisma.staff.count()
 
                         ])
@@ -200,14 +200,26 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
 
 export const getMultipileStaff = async (req:any,res:Response,next:NextFunction) => {
     try {
-                    const {idList} = req.body
+
+
+                    const {idList,page,limit} = req.body
+
+
+                      const _page = Math.max(Number(page) || 1 ,1)
+                      const _limit = Math.min(Number(limit) || 10 ,100)
+                        
+                     const skip = (_page-1) * _limit
+
 
                     if(!idList){
                         return next(new ValidationError("Id List is not valid"))
                     }
 
-                    const staff = await prisma.staff.findMany({where:{id:{in:idList}},include:{staffPrompts:true}})
-
+                    const [staff,total] = await Promise.all([ prisma.staff.findMany({skip,take:limit,orderBy:{
+                            signupdate:"desc"
+                        },where:{id:{in:idList}},include:{staffPrompts:true,position:true,department:true}}),
+                        prisma.staff.count({where:{id:{in:idList}}})
+                    ])
                     
                     if(staff){
                                 
@@ -215,6 +227,10 @@ export const getMultipileStaff = async (req:any,res:Response,next:NextFunction) 
                                 success:true,
                                 message:"Staff found !",
                                 data: staff,
+                                total:total,
+                                page:_page,
+                                limit:_limit,
+                                totalPages:Math.ceil(total/limit)
                                 })
                             }else {
                                 return next(new ValidationError("Staff Not Found"))
@@ -231,8 +247,9 @@ export const getStaff = async (req:any,res:Response,next:NextFunction) => {
 
                     const {id} = req.params
                     try {
+                        
 
-                        const staff = await prisma.staff.findUnique({where:{id:id} })
+                        const staff = await prisma.staff.findUnique({where:{id:id},include:{staffPrompts:true,position:true,department:true}})
 
 
                         if(staff){

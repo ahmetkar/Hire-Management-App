@@ -1,5 +1,22 @@
 import axiosInstance from "@/app/utils/axiosInstance"
 
+export type Job =  {
+ id: string;
+ jobtitle: string;
+ jobrequirements: string;
+ jobnotes: string;
+ department: string;
+ position: string;
+ mounthlywage: number | null;
+ weeklypayment: number | null;
+ dailypayment: number | null;
+ expiredate: Date;
+ createdate: Date;
+ responsibleUserId:string;
+ createdByUserId:string;
+}
+
+
 export type User =  {
 id:string,
 name:string,
@@ -28,6 +45,9 @@ export type AIPrompt =  {
     responseText:string;
 }
 
+export type Department = {
+    name:string
+}
 
 export type Staff = {
       id:string;
@@ -41,14 +61,16 @@ export type Staff = {
       address:string;
       city:string;
       country:string;
-      jobId:string;
+      jobId:string | null;
+      position:Job | null;
       county:string;
       postcode:string;
       githublink:string;
       linkedinlink:string;
       abilities:string;
       selfbio:string;
-      departmentId:string;
+      departmentId:string | null;
+      department:Department | null;
       signupdate:string;
       staffPrompts:AIPrompt[]
 }
@@ -69,9 +91,7 @@ type OneStaffResponse = {
     data:Staff | StaffUser
 }
 
-type MultipileStaffResponse = {
-    data:Staff[]
-}
+
 
 
 export type StaffResponse =  {
@@ -89,6 +109,7 @@ export type StaffUserResponse =  {
     total:number,
     totalPages:number
 }
+
 
 
 
@@ -160,16 +181,21 @@ export const getStaff = async (id:string): Promise<Staff> => {
     return dep.data as Staff
 }
 
-export const getMultipileStaff = async (ids:string[]): Promise<Staff[]> => {
-    const response = await axiosInstance.post<MultipileStaffResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-multipile-staff/`,{
-        idList:ids
+
+export const getMultipileStaff = async (ids:string[],page:number,limit:number): Promise<StaffResponse> => {
+    const response = await axiosInstance.post<StaffResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-multipile-staff/`,{
+        idList:ids,
+        page:page,
+        limit:limit
     })
     const dep =  response.data
-    return dep.data
+    return dep
 }
 
 export const getStaffAndUser = async (userId:string): Promise<StaffUser> => {
     const response = await axiosInstance.get<OneStaffResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-user-and-staff/${userId}`)
     const dep =  response.data
-    return dep.data as StaffUser
+    const staffuser = dep.data as StaffUser
+    staffuser.staffInfoOne = staffuser.staffInfo[0]
+    return staffuser
 }
