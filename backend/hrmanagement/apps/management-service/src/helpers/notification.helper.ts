@@ -51,10 +51,9 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
             })
             let datas : Prisma.notificationsCreateManyInput[] = []
 
-            let count = 0
             if(byWhoId!=""){
-                    ids.forEach(async (id)=>{
-                            const notification =  {
+                    datas = ids.map((id)=>{
+                            return  {
                                 
                                 title:title,
                                 desc:desc,
@@ -63,18 +62,12 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
                                 href:href,
                                 date:date
                             }
-                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
-                                data:notification
-                            }),60*60)
-
-                     if(notificationAdd){
-                        count+=1
-                     }
+                     
                     })
                    
             }else {
-                    ids.forEach(async (id)=>{
-                            const notification =  {
+                    datas = ids.map( (id)=>{
+                            return {
                                 
                                 title:title,
                                 desc:desc,
@@ -82,20 +75,18 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
                                 href:href,
                                 date:date
                             }
-                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
-                                data:notification
-                            }),60*60)
-
-                     if(notificationAdd){
-                        count+=1
-                     }
+                     
                     })
             }
 
+
+            const add = await prisma.notifications.createMany({
+                                data:datas
+            })
+
+        
             
-    
-            
-            if(ids.length == count){
+            if(add){
                 ids.forEach((id)=>{
                     invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
                 })
@@ -179,10 +170,11 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
             })
 
 
-            let count = 0
+            let datas : Prisma.notificationsCreateManyInput[] = []
+
             if(byWhoId!=""){
-                    ids.forEach(async (id)=>{
-                            const notification =  {
+                    datas = ids.map((id)=>{
+                            return  {
                                 
                                 title:title,
                                 desc:desc,
@@ -191,18 +183,12 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
                                 href:href,
                                 date:date
                             }
-                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
-                                data:notification
-                            }),60*60)
-
-                     if(notificationAdd){
-                        count+=1
-                     }
+                     
                     })
                    
             }else {
-                    ids.forEach(async (id)=>{
-                            const notification =  {
+                    datas = ids.map( (id)=>{
+                            return {
                                 
                                 title:title,
                                 desc:desc,
@@ -210,17 +196,17 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
                                 href:href,
                                 date:date
                             }
-                     const notificationAdd = await getOrSetRedisCache(`notifications:${id}:${date}`,`cache-tag:notifications:${id}`,async ()=>await prisma.notifications.create({
-                                data:notification
-                            }),60*60)
-
-                     if(notificationAdd){
-                        count+=1
-                     }
+                     
                     })
             }
+
+
+            const add = await prisma.notifications.createMany({
+                                data:datas
+            })
+
     
-            if(count == ids.length){
+            if(add){
                  ids.forEach((id)=>{
                     invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
                 })
