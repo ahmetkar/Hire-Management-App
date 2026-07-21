@@ -8,7 +8,10 @@ import helmet from 'helmet';
 import { limiter } from './middlewares/rate-limiter.middleware';
 import { verifyToken } from './middlewares/auth.middleware';
 import { authorizeRoles } from './utils/authorizeRoles';
+import http from "http"
+import {Server} from "socket.io"
 
+import { startQueueEvents } from './queueEvents/queueEvent';
 
 const app = express();
 
@@ -134,8 +137,29 @@ app.use("/management",verifyToken,authorizeRoles(["admin","staff"]),createProxy(
 app.use("/ai-service",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/ai-service",process.env.AI_SERVICE_URL!));
 
 
+
+const server1 = http.createServer(app)
+
+
+export const io = new Server(server1,{cors:{
+  origin:"http://localhost:3000"
+}})
+
+io.on("connection",async (socket)=>{
+  console.log("Socket bağlandı",socket.id)
+
+  socket.on("join-job",async (jobId)=>{
+    socket.join(jobId)
+    console.log(socket.id," katıldı ",jobId)
+  
+  })
+})
+
+startQueueEvents(io)
+
 const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
+const server = server1.listen(port, async () => {
+
   console.log(`Listening at http://localhost:${port}/api`);
   
 });

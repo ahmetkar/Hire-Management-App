@@ -9,6 +9,7 @@ import {getCities,City} from '../../../lists/cities';
 import {getCounties,County} from '../../../lists/counties';
 import { getDepartments } from '../../../lists/unidepartments';
 import { getJobInfos } from '../../../lists/jobs';
+import { socket } from '@/app/utils/socket';
 
 
 
@@ -16,7 +17,6 @@ const Page = () => {
 
 
   const {id} = useParams()
-  console.log(id)
   
 
    const [universities, setUniversities] = useState<University[]>([]);
@@ -27,8 +27,47 @@ const Page = () => {
    const [abilities, setAbilities] = useState<string[]>([]);
    const [position,setPosition] = useState<string>("");
 
+   const [jobId,setJobId] = useState("")
+
+   const [progress,setProgress] = useState<"progress" |"completed" | "failed" | "none">("none")
+
+   
   useEffect(() => {
-    getUniversities()
+
+    socket.on("connect", () => {
+  console.log("CONNECTED", socket.id);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("DISCONNECTED", reason);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log("CONNECT ERROR", err);
+    });
+
+    socket.onAny((event,...args)=>{
+      console.log("Socket event : ",event,args)
+    })
+
+    const completedHandler = () => {
+        setProgress("completed");
+    };
+
+    const progressHandler = () => {
+        setProgress("progress");
+    };
+
+    const failedHandler = () => {
+        setProgress("failed");
+    };
+
+    socket.on("job-completed", completedHandler);
+    socket.on("job-progress", progressHandler);
+    socket.on("job-failed", failedHandler);
+
+
+     getUniversities()
       .then((data) => setUniversities(data))
       .catch((error) => console.error(error));
 
@@ -54,8 +93,15 @@ const Page = () => {
         .catch((error) => console.error(error));
     }
 
-  }, []);
+    return () => {
+        socket.off("job-completed", completedHandler);
+        socket.off("job-progress", progressHandler);
+        socket.off("job-failed", failedHandler);
+    };
 
+}, []);
+
+ 
 
   useEffect(() => { 
 
@@ -124,15 +170,36 @@ const Page = () => {
 
           const citystr = cities.find((city)=> city.plateCode == data.city)
           data.city = citystr!.name
+
+
+
           const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/create-job-application`,data)
+
           return response.data
+          
+          
         } 
 
     },
     onSuccess:(data)=>{
-        setServerError(null);
-        console.log(data)
-        router.push("/success")
+        if(data){
+              const jobId = data.id
+              setJobId(jobId)
+              console.log("workera eklendi",jobId)
+              console.log("socket:", socket);
+              console.log("connected:", socket.connected);
+              if (socket.connected) {
+                socket.emit("join-job", jobId);
+              } else {
+                socket.connect();
+
+                socket.once("connect", () => {
+                    socket.emit("join-job", jobId);
+                });
+              }
+              
+          } 
+       setServerError(null);
     
     },
     onError: (error:AxiosError) => {
@@ -143,12 +210,15 @@ const Page = () => {
     
   })
 
+  useEffect(() => {
+    console.log("Progress:", progress);
+}, [progress]);
+
 
   return (
     <div>
-      
-
-       <form onSubmit={handleSubmit(onSubmit)}>
+      {(progress == "progress") ? ("İş başvurunuz gönderiliyor..") : (progress=="completed" ? ("İş başvuruz başarıyla gönderildi.") : (progress=="failed" ? ("İş başvrusunu gönderme işlemi başarısız oldu.") : (
+        <form onSubmit={handleSubmit(onSubmit)}>
         <div className="row justify-content-center">
             <div className="col-12">
               <h2 className="page-title">İş Başvurusu Yapın</h2>
@@ -471,6 +541,8 @@ const Page = () => {
 
       
     </form>
+      )))}
+       
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { publishJobAppDenied } from "../events/producers/jobAppDenied.producers"
 import { publishJobAppApproved } from "../events/producers/jobAppApproved.producers";
 import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
 import crypto from "crypto"
+import { jobAppQueue } from "../queues/job.queue";
 
 enum JobAppStatus {
     NEW="new",
@@ -424,8 +425,31 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
 
      try {
+        const data = {name:name,
+                            email:email,
+                            phone_number:phone_number,
+                            city:city,
+                            jobId:jobId,
+                            country:country,
+                            county:county,
+                            address:address,
+                            postcode:postcode,
+                            university:university,
+                            unidepartment:unidepartment,
+                            unifaculty:unifaculty,
+                            graduatedate:graduatedate,
+                            githublink:githublink,
+                            linkedinlink:linkedinlink,
+                            abilities:abilitiesstr,
+                            selfbio:selfbio,
+                            birthdate:birthdate,
+                            agreeterms:agreeterms,
+                            appdate:appdate,
+                            ipadress:ipadress,}
+                            
+            const jobApp = await jobAppQueue.add("job-app-create",{data:data})
                     
-                    const job = await prisma.jobapplication.create({
+                    /*const job = await prisma.jobapplication.create({
                         data:{
                             name:name,
                             email:email,
@@ -449,16 +473,19 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             appdate:appdate,
                             ipadress:ipadress,
                         }
-                    })
-                    if(job){
+                    })*/
 
-                        publishJobAppCreated({
+
+                    if(jobApp.id){
+
+                       /* publishJobAppCreated({
                         key:job.id,jobAppId:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress===undefined ? "" : ipadress,message:"Application created"
                         })
-                        invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.NEW}`)
+                        invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.NEW}`)*/
+
                         res.status(201).json({
-                        success:true,
-                        
+                            status:"waiting",
+                            id:jobApp.id                        
                         });
                     }else {
                        return next(new ValidationError("Job Application Cannot Send"))

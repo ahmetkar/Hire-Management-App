@@ -49,6 +49,7 @@ export const startKafkaJobAppCreatedConsumer = async () => {
                 SendJobNotificationToStaff("",data.jobId,data.jobAppId,"created");
                 SendJobNotificationToManager("",data.jobId,data.jobAppId,"created");
 
+
             }catch(error){
                 console.error("Kafka mesajı işlenemedi ",error);
                 isStarted = false;

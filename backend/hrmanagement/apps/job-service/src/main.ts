@@ -5,6 +5,8 @@ import cors from "cors"
 import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
 import init from './init';
+import "./workers/job.worker"
+
 
 
 const app = express();
@@ -20,6 +22,8 @@ app.use(cors({
 
 app.use(cookieParser())
 app.use(express.json())
+
+
 
 
 app.get("/health", (req, res) => {
