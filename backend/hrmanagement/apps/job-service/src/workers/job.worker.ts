@@ -35,7 +35,7 @@ const worker = new Worker("job-app-create",async(job)=>{
         return {success:true}
     }
      await redis.set(`jobappstatus:${job.id}`,"failed","EX",300)  
-    return {success:false}
+     throw new Error("Job application ekleme başarıssız oldu")
 },{connection:redis,concurrency:5})
 
 

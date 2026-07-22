@@ -51,8 +51,7 @@ const worker1 = new Worker("send-notification-staff",async(job)=>{
                 console.log("Notification sended to users",data.ids.toString())  
                  return {success:true}         
             }else {
-               console.log("Notification cannot sended to user ")     
-                return {success:false}        
+               throw new Error("Bildirim işlemlerinde sorun oluştu")     
             }
 },{connection:redis,concurrency:5})
 
@@ -101,7 +100,7 @@ const worker2 = new Worker("send-notification-manager",async(job)=>{
                 })
                 console.log("Notification sended to users",data.ids.toString())           
             }else {
-               console.log("Notification cannot sended to user ")             
+               throw new Error("Bildirim işlemlerinde sorun oluştu")               
             }
 
 },{connection:redis,concurrency:5})

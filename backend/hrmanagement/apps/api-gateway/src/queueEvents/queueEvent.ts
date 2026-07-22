@@ -60,5 +60,69 @@ export async function startQueueEvents(io:Server){
         }
     })
 
+    const queueEventsForSendPrompt = new QueueEvents("send-prompt",{connection:redis})
+
+   
+
+    queueEventsForSendPrompt.on("completed",async ({jobId,returnvalue})=>{
+        console.log("completed",jobId,returnvalue)
+        const status = await redis.get(`sendpromptstatus:${jobId}`)
+        if(status == "completed"){
+            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+        }
+   
+        
+    })
+
+     queueEventsForSendPrompt.on("failed",async ({jobId,failedReason})=>{
+        console.log("failed",jobId,failedReason) 
+        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        
+    })
+
+
+
+    const queueEventsForSavePrompt = new QueueEvents("save-prompt",{connection:redis})
+
+   
+
+    queueEventsForSavePrompt.on("completed",async ({jobId,returnvalue})=>{
+        console.log("completed",jobId,returnvalue)
+        const status = await redis.get(`savepromptstatus:${jobId}`)
+        if(status == "completed"){
+            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+        }
+   
+        
+    })
+
+     queueEventsForSavePrompt.on("failed",async ({jobId,failedReason})=>{
+        console.log("failed",jobId,failedReason)
+        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        
+    })
+
+
+     const queueEventsForElasticSearch = new QueueEvents("elastic-search",{connection:redis})
+
+   
+
+    queueEventsForElasticSearch.on("completed",async ({jobId,returnvalue})=>{
+        console.log("completed",jobId,returnvalue)
+        const status = await redis.get(`elasticstatus:${jobId}`)
+        if(status == "completed"){
+            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+        }
+   
+        
+    })
+
+     queueEventsForElasticSearch.on("failed",async ({jobId,failedReason})=>{
+        console.log("failed",jobId,failedReason) 
+        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        
+    })
+
+
 
 }

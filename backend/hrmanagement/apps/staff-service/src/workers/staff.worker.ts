@@ -27,7 +27,7 @@ const staff = await prisma.staff.create({data:{
                         return {success:true}
                     }else {
                         await redis.set(`staffstatus:${job.id}`,"failed","EX",300) 
-                        return {success:false}
+                        throw new Error("Personel ekleme başarısız oldu.")
                     }
     
 },{connection:redis,concurrency:5})

@@ -1,8 +1,6 @@
 import { Request,Response,NextFunction } from "express";
-import {prisma}  from "@hrmanagement/prisma"
-import { CreateEmbedIndex, CreateIndex, GetEmbedIndex, SearchEmbedIndex } from "../helpers/elastic.helpers";
-
 import { aiPromptQueue } from "../queue/aiprompt.queue";
+import { elasticSearchQueue } from "../queue/elasticsearch.queue";
 
 
 export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFunction) => {
@@ -119,78 +117,21 @@ export const SearchForOldestStaff = async (req:Request,res:Response,next:NextFun
 
     const {applicationId} = req.body
 
-    const appInfo = await prisma.jobapplication.findUnique({where:{id:applicationId},include:{appPrompts:true}})
 
-    if(!appInfo){
-        return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-    }
-    if(appInfo.jobId==null){
-        return res.status(404).json({message:"İş başvurusu iş bilgilerinde sorun var."})
-    }
-
-    if(appInfo.appPrompts == null){
-        return res.status(404).json({message:"Personel için prompt bilgisi yok."})
-    }
-
-    const jobInfo = await prisma.jobs.findUnique({where:{id:appInfo.jobId}})
-
-    if(!jobInfo){
-        return res.status(404).json({message:"İş başvurusundaki iş bilgisi bulunamadı."})
-    }
-
-    const foundOldest = await prisma.staff.findMany({where:{jobId:appInfo.jobId,staffPrompts:{
-        some:{}
-    }},orderBy:{signupdate:"asc"},take:10,include:{staffPrompts:true}})
-
-    if(!foundOldest){
-        return res.status(404).json({message:"Personel bilgileri bulunamadı."})
-    }
-
-
-    //En sonuncu promptu al
-    const embedIndexIdList = await Promise.all(foundOldest.map(async (s)=>{
-        const getPrompt = s.staffPrompts.at(-1)
-        if(getPrompt != undefined){
-         if(await GetEmbedIndex(getPrompt.elasticId)==null){
-            return null
-         }else {
-            return getPrompt.elasticId
-         }
-        }else {
-            return null
-        }
-    }
-    ))
-
-    if(embedIndexIdList.every(item=>item == null)){
-        return res.status(404).json({message:"Personeller için Elastic Search kayıtları bulunamadı."})
-    }
-     const embedIndexIdListNotNull = embedIndexIdList.filter((el)=>el!=null)
-
-    console.log(appInfo.appPrompts)
-    const getAppPrompt = appInfo.appPrompts.at(-1)
-    
-    
-    if(getAppPrompt==undefined){
-        return res.status(404).json({message:"Application için prompt kaydı yok."})
-    }
-    console.log(getAppPrompt)
-    const appEmbeddingGet = await GetEmbedIndex(getAppPrompt.elasticId)
-    console.log(appEmbeddingGet)
-    const appEmbedding = appEmbeddingGet!=null ? appEmbeddingGet.embedding : null
-
-    if(appEmbedding==null){
-        return res.status(404).json({message:"Application için elastic search kaydı yok."})
-    }
+    const data = {applicationId:applicationId}
 
    
-    const search = await SearchEmbedIndex(appEmbedding,embedIndexIdListNotNull);
+    const elasticJob = await elasticSearchQueue.add("oldest-search",{data:data})
 
-    if(search){
-        return res.status(201).json({message:"Arama başarıyla sonuçlandı",results:search})
-    }else {
-        return res.status(404).json({message:"Arama başarısız."})
-    }
+       
+    if(elasticJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:elasticJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Elastic oldeststaff search isteği kuyruğa eklenemedi."})
+       }
 
 
 }
@@ -207,72 +148,21 @@ export const SearchForNewestStaff = async (req:Request,res:Response,next:NextFun
 
     const {applicationId} = req.body
 
-    const appInfo = await prisma.jobapplication.findUnique({where:{id:applicationId},include:{appPrompts:true}})
-
-    if(!appInfo){
-        return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-    }
-    if(appInfo.jobId==null){
-        return res.status(404).json({message:"İş başvurusu iş bilgilerinde sorun var."})
-    }
-
-    if(appInfo.appPrompts == null){
-        return res.status(404).json({message:"Personel için prompt bilgisi yok."})
-    }
-    const jobInfo = await prisma.jobs.findUnique({where:{id:appInfo.jobId}})
-
-    if(!jobInfo){
-        return res.status(404).json({message:"İş başvurusundaki iş bilgisi bulunamadı."})
-    }
-
-    const foundNewest = await prisma.staff.findMany({where:{jobId:appInfo.jobId,staffPrompts:{
-        some:{}
-    }},orderBy:{signupdate:"desc"},take:10,include:{staffPrompts:true}})
-
-    if(!foundNewest){
-        return res.status(404).json({message:"Personel bilgileri bulunamadı."})
-    }
-    
-    //En sonuncu promptu al
-    const embedIndexIdList = await Promise.all(foundNewest.map((s)=>{
-        const getPrompt = s.staffPrompts.at(-1)
-        if(getPrompt != undefined){
-         if(GetEmbedIndex(getPrompt.elasticId)==null){
-            return null
-         }else {
-            return getPrompt.elasticId
-         }
-        }else {
-            return null
-        }
-    }
-    ))
-
-    if(embedIndexIdList.every(item=>item == null)){
-        return res.status(404).json({message:"Personeller için Elastic Search kayıtları bulunamadı."})
-    }
-     const embedIndexIdListNotNull = embedIndexIdList.filter((el)=>el!=null)
-
-    const getAppPrompt = appInfo.appPrompts.at(-1)
-    
-    if(getAppPrompt==undefined){
-        return res.status(404).json({message:"Application için prompt kaydı yok."})
-    }
-    const appEmbeddingGet = await GetEmbedIndex(getAppPrompt.elasticId)
-    const appEmbedding = appEmbeddingGet!=null ? appEmbeddingGet.embedding : null
-
-    if(appEmbedding==null){
-        return res.status(404).json({message:"Application için elastic search kaydı yok."})
-    }
+    const data = {applicationId:applicationId}
 
    
-    const search = await SearchEmbedIndex(appEmbedding,embedIndexIdListNotNull);
+       const elasticJob = await elasticSearchQueue.add("newest-search",{data:data})
 
-    if(search){
-        return res.status(201).json({message:"Arama başarıyla sonuçlandı",results:search})
-    }else {
-        return res.status(404).json({message:"Arama başarısız."})
-    }
+       
+        if(elasticJob.id){
+              res.status(201).json({
+                        status:"waiting",
+                        id:elasticJob.id                        
+                });
+       }else {
+            return res.status(404).json({message:"Elastic newest staff search isteği kuyruğa eklenemedi."})
+       }
+
 
 }
 
