@@ -7,6 +7,8 @@ import { verifyInternalRequest } from './middlewares/verify.middleware';
 import { JobAppCreatedConsumerShutdown,startKafkaJobAppCreatedConsumer } from './consumers/jobAppCreated.consumer';
 import { JobAppApprovedConsumerShutdown, startKafkaJobAppApprovedConsumer } from './consumers/jobAppApproved.consumer';
 import { JobAppDeniedConsumerShutdown, startKafkaJobAppDeniedConsumer } from './consumers/jobAppDenied.consumer';
+import "./workers/management.worker"
+
 
 const app = express();
 

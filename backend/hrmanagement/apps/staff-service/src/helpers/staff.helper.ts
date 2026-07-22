@@ -1,5 +1,6 @@
 import { ValidationError } from "@hrmanagement/error-handler";
 import {prisma}  from "@hrmanagement/prisma"
+import { staffQueue } from "../queue/staff.queue";
 
 const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
@@ -20,11 +21,13 @@ export const AddApprovedJobApplicationToStaff = async (jobAppId:string,jobId:str
 
         const job = await prisma.jobs.findUnique({where:{id:jobId}})
 
+
         if(job && jobApp){
 
+
         var signupdate = new Date().toISOString()
-        const staff = await prisma.staff.create({data:{
-                                        name:jobApp.name,
+
+        const data = {name:jobApp.name,
                                         email:jobApp.email,
                                         phone_number:jobApp.phone_number,
                                         city:jobApp.city,
@@ -43,16 +46,18 @@ export const AddApprovedJobApplicationToStaff = async (jobAppId:string,jobId:str
                                         selfbio:jobApp.selfbio,
                                         birthdate:jobApp.birthdate,
                                         signupdate:signupdate,
-                                        departmentId:"6a4249b2b1459f6e87f6795c"
-                            }
-                        })
-                        
+                                        departmentId:job.departmentId}
 
-                            if(staff){
-                                console.log("New staff created from approved job application")
-                            }else {
-                            console.log("New staff cannot created from approved job application")
-                            }
+
+                        const staffJob = await staffQueue.add("staff-create",{data:data})
+                                            
+                        
+                        if(staffJob.id){
+                                console.log("Staff job",staffJob.id," added from job application")
+                        }else {
+                                console.log("Staff job cannot added from job application")
+                        }
+        
                         }
 }
 

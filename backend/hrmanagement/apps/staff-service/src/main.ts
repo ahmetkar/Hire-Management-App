@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
 
 import { JobAppApprovedConsumerShutdown, startKafkaJobAppApprovedConsumer } from './consumers/jobAppApproved.consumer';
-
+import "./workers/staff.worker"
 
 const app = express();
 

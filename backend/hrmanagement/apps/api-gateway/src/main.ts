@@ -148,11 +148,17 @@ export const io = new Server(server1,{cors:{
 io.on("connection",async (socket)=>{
   console.log("Socket bağlandı",socket.id)
 
-  socket.on("join-job",async (jobId)=>{
-    socket.join(jobId)
-    console.log(socket.id," katıldı ",jobId)
-  
-  })
+  socket.on(
+  "join-job",
+  async ({ queueName, jobId }: { queueName: string; jobId: string }) => {
+    const room = `${queueName}:${jobId}`;
+
+    socket.join(room);
+
+    console.log(`${socket.id} joined ${room}`);
+  }
+);
+
 })
 
 startQueueEvents(io)

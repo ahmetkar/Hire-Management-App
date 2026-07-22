@@ -5,6 +5,7 @@ import bcrypt  from "bcryptjs"
 import { Request,Response,NextFunction } from "express";
 import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
 import crypto from "crypto"
+import { staffQueue } from "../queue/staff.queue";
 
 export const getStaffByFilter = async (req:any,res:Response,next:NextFunction) => {
 
@@ -469,11 +470,15 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
 
     var signupdate = new Date().toISOString()
     var abilitiesstr = abilities.join(",")
-   
+    
+
+    
         
      try {  
                 if(password!=undefined){
                 const hashedPassword = await bcrypt.hash(password,10)
+                
+
                 const user = await prisma.users.create({ data:{
                                 name:name,
                                 email:email,
@@ -481,7 +486,7 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                                 password:hashedPassword,
                                 staffInfo:{
                                     create:{
-                                    name:name,
+                                     name:name,
                                     email:email,
                                     phone_number:phone_number,
                                     city:city,
@@ -521,7 +526,8 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                        return next(new ValidationError("Staff Cannot Created"))
                     }
                 }else {
-                     const staff = await prisma.staff.create({data:{
+
+                    var data = {
                                 name:name,
                                 email:email,
                                 phone_number:phone_number,
@@ -542,17 +548,23 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                                 birthdate:birthdate,
                                 signupdate:signupdate,
                                 departmentId:departmentId
-                    }
-                })
+                 }
 
-                     if(staff){
+                  const staffJob = await staffQueue.add("staff-create",{data:data})
+                    
+
+                   if(staffJob.id){
+
+                      
                         res.status(201).json({
-                        success:true,
-                        message:"Staff created successfully",
+                            status:"waiting",
+                            id:staffJob.id                        
                         });
                     }else {
                        return next(new ValidationError("Staff Cannot Created"))
                     }
+
+                     
                 }
 
                    

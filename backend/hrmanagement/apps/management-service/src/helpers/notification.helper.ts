@@ -1,6 +1,6 @@
 import {prisma}  from "@hrmanagement/prisma"
-import { Prisma } from "@prisma/client";
-import { getOrSetRedisCache, invalidateCacheTagKeys } from "./redis.helpers";
+import { managementStaffQueue } from "../queue/managementstaff.queue";
+import { managementManagerQueue } from "../queue/managementmanager.queue";
 
 
 
@@ -49,54 +49,16 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
             ids = staffs.map((staff)=>{
                 return staff.id
             })
-            let datas : Prisma.notificationsCreateManyInput[] = []
-
-            if(byWhoId!=""){
-                    datas = ids.map((id)=>{
-                            return  {
-                                
-                                title:title,
-                                desc:desc,
-                                bywhoId:byWhoId,
-                                toWhoId:id, 
-                                href:href,
-                                date:date
-                            }
-                     
-                    })
-                   
-            }else {
-                    datas = ids.map( (id)=>{
-                            return {
-                                
-                                title:title,
-                                desc:desc,
-                                toWhoId:id, 
-                                href:href,
-                                date:date
-                            }
-                     
-                    })
-            }
-
-
-            const add = await prisma.notifications.createMany({
-                                data:datas
-            })
-
-        
             
-            if(add){
-                ids.forEach((id)=>{
-                    invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
-                })
-                
-                console.log("Notification sended to users",ids.toString())           
-            }else {
-               console.log("Notification cannot sended to user ")             
-            }
+            const data = {ids:ids,byWhoId:byWhoId,title:title,desc:desc,href:href,date:date}
+            const managementJob = await managementStaffQueue.add("send-notification-staff",{data:data})
+
+              if(managementJob.id){
+                console.log("staff notification job",managementJob.id," kuyruğa eklendi.")
+                }else {
+                    console.log("işlem kuyruğa eklenemedi")
+                }
                    
-    
             }catch(error){
                    console.log("Notification cannot sended to user ",error)    
             }
@@ -170,50 +132,16 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
             })
 
 
-            let datas : Prisma.notificationsCreateManyInput[] = []
 
-            if(byWhoId!=""){
-                    datas = ids.map((id)=>{
-                            return  {
-                                
-                                title:title,
-                                desc:desc,
-                                bywhoId:byWhoId,
-                                toWhoId:id, 
-                                href:href,
-                                date:date
-                            }
-                     
-                    })
+            const data = {ids:ids,byWhoId:byWhoId,title:title,desc:desc,href:href,date:date}
+            const managementJob = await managementManagerQueue.add("send-notification-manager",{data:data})
+
+              if(managementJob.id){
+                console.log("management notification job ",managementJob.id," kuyruğa eklendi.")
+                }else {
+                    console.log("işlem kuyruğa eklenemedi")
+                }
                    
-            }else {
-                    datas = ids.map( (id)=>{
-                            return {
-                                
-                                title:title,
-                                desc:desc,
-                                toWhoId:id, 
-                                href:href,
-                                date:date
-                            }
-                     
-                    })
-            }
-
-
-            const add = await prisma.notifications.createMany({
-                                data:datas
-            })
-
-    
-            if(add){
-                 ids.forEach((id)=>{
-                    invalidateCacheTagKeys(`cache-tag:notifications:${id}`)
-                })
-                console.log("Notification sended to users",ids.toString())           
-            }else {
-               console.log("Notification cannot sended to user ")             
-            }
                    
     
             }catch(error){

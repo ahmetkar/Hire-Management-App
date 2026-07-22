@@ -189,12 +189,12 @@ const Page = () => {
               console.log("socket:", socket);
               console.log("connected:", socket.connected);
               if (socket.connected) {
-                socket.emit("join-job", jobId);
+                socket.emit("join-job", {queueName:"jobappQueue",jobId});
               } else {
                 socket.connect();
 
                 socket.once("connect", () => {
-                    socket.emit("join-job", jobId);
+                    socket.emit("join-job", {queueName:"jobappQueue",jobId});
                 });
               }
               
