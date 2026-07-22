@@ -1,14 +1,12 @@
 import { Request,Response,NextFunction } from "express";
 import {prisma}  from "@hrmanagement/prisma"
-import {generatePrompt,getEmbedding, PromptInput, sendPromptToAgent} from "../helpers/ai.helpers"
 import { CreateEmbedIndex, CreateIndex, GetEmbedIndex, SearchEmbedIndex } from "../helpers/elastic.helpers";
-import { randomUUID } from "crypto";
+
+import { aiPromptQueue } from "../queue/aiprompt.queue";
 
 
 export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFunction) => {
 
-
-    let success = false
 
      const role = req.headers["x-user-role"]
 
@@ -23,78 +21,39 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         return res.status(404).json({message:"Verilen bilgilerde sorun var."})
     }
 
-    if(await CreateIndex()){
-        
-        let successList = {}
+    const data = {kind:kind,infoList:infoList}
 
-        infoList.map(async (info : any)=>{
-            const elasticId = randomUUID()
+    
+    if(kind == "application"){
 
-            const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:info.sendedId,kind:kind,embedding:info.embedding});
+       const aiJob = await aiPromptQueue.add("app-multi-save",{data:data})
 
-            if(!elasticResult){
-                //return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-                successList = {...successList,[info.sendedId]:"elasticfault"}
-                return;
-            }
-            
-            if(kind == "application"){
-            const appInfo = await prisma.jobapplication.findUnique({where:{id:info.sendedId}})
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Job app Ai  multi save isteği kuyruğa eklenemedi."})
+       }
 
-            if(!appInfo){
-                //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
+    }else if(kind == "staff") {
+      
+        const aiJob = await aiPromptQueue.add("staff-multi-save",{data:data})
 
-                successList = {...successList,[info.sendedId]:"jobappfault"}
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Staff Ai  multi save isteği kuyruğa eklenemedi."})
+       }
+      
 
-                return;
-            }
-
-            const saveprompt = await prisma.aIPrompts.create({data:{kind:kind,applicationId:appInfo.id,promptText:info.prompt,responseText:info.result,elasticId:elasticId}})
-
-                if(saveprompt){
-                   successList = {...successList,[info.sendedId]:"added"}
-                }else {
-                   successList = {...successList,[info.sendedId]:"notadded"}
-                }
-
-
-            }else if(kind == "staff"){
-                const personInfo = await prisma.staff.findUnique({where:{id:info.sendedId}})
-
-                if(!personInfo){
-                    //return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-
-                    successList = {...successList,[info.sendedId]:"stafffault"}
-                    return;
-                }
-                const saveprompt = await prisma.aIPrompts.create({data:{kind:kind,staffId:personInfo.id,promptText:info.prompt,responseText:info.result,elasticId:elasticId}})
-                    if(saveprompt){
-                    successList = {...successList,[info.sendedId]:"added"}
-                    }else {
-                       successList = {...successList,[info.sendedId]:"notadded"}
-                    }
-            }
-        })
-            
-        const errors = ["notadded","stafffault","jobappfault","elasticfault"]
-        const errorExists = Object.values(successList).some((value)=>(
-           errors.includes(value as string)
-        ))
-
-        if(errorExists){
-            return res.status(501).json({message:"AI promptu veritabanına kaydedilirken sorun oluştu.",success:success,successList:successList
-            })
-        }else {
-            success=true
-            return res.status(201).json({message:"AI promptu başarıyla kaydedildi.",success:success,successList:successList
-            })
-        }
-
-    }else {
-
-         return res.status(501).json({message:"ElasticSearch indexi oluşturulurken sorun oluştu."})
     }
 
+    return res.status(404).json({message:"Parametrelerde hata var."});
    
 
 }
@@ -110,58 +69,43 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
      
     }
 
-   const {kind,sendedId,prompt,result,embedding} = req.body
+   const {kind,sendedId,result} = req.body
 
    
+   const data = {sendedId:sendedId,result:result,kind:kind}
 
+       if(kind == "application"){
 
-   if(await CreateIndex()){
-        //index oluştu devam et
-        const elasticId = randomUUID()
+       const aiJob = await aiPromptQueue.add("app-one-save",{data:data})
 
-        const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:sendedId,kind:kind,embedding:embedding});
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Job app Ai save isteği kuyruğa eklenemedi."})
+       }
 
-        if(!elasticResult){
-            return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-        }
-        
-        if(kind == "application"){
-        const appInfo = await prisma.jobapplication.findUnique({where:{id:sendedId}})
+    }else if(kind == "staff") {
+      
+        const aiJob = await aiPromptQueue.add("staff-one-save",{data:data})
 
-        if(!appInfo){
-            return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-        }
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Staff Ai save isteği kuyruğa eklenemedi."})
+       }
+      
 
+    }
 
-        const saveprompt = await prisma.aIPrompts.create({data:{kind:kind,applicationId:appInfo.id,promptText:prompt,responseText:result,elasticId:elasticId}})
-
-            if(saveprompt){
-                return res.status(201).json({message:"AI Promptu başarıyla kaydedildi."})
-            }else {
-                    return res.status(501).json({message:"AI promptu veritabanına kaydedilirken sorun oluştu."})
-            }
-
-
-        }else if(kind == "staff"){
-            const personInfo = await prisma.staff.findUnique({where:{id:sendedId}})
-
-            if(!personInfo){
-                return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-            }
-            const saveprompt = await prisma.aIPrompts.create({data:{kind:kind,staffId:personInfo.id,promptText:prompt,responseText:result,elasticId:elasticId}})
-                if(saveprompt){
-                return res.status(201).json({message:"AI Promptu başarıyla kaydedildi."})
-                }else {
-                    return res.status(501).json({message:"AI promptu veritabanına kaydedilirken sorun oluştu."})
-                }
-        }
-
-   }else {
-    return res.status(501).json({message:"ElasticSearch indexi oluşturulurken sorun oluştu."})
-   }
+    return res.status(404).json({message:"Parametrelerde hata var."});
 
    
-    return next();
 }
 
 export const SearchForOldestStaff = async (req:Request,res:Response,next:NextFunction) => {
@@ -350,100 +294,39 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
         return res.status(404).json({message:"İd ve kind bilgisi alınmadı."})
     }
 
-    let personInfo = null
-    let jobInfo = null
+    const data = {id:id,role:role};
 
     if(kind == "application"){
 
-        const appInfo = await prisma.jobapplication.findUnique({where:{id:id}})
+       const aiJob = await aiPromptQueue.add("app-one-prompt",{data:data})
 
-        if(!appInfo){
-            return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-        }
-
-        if(!appInfo.jobId
-        ){
-
-            return res.status(404).json({message:"İş başvurusunda iş bilgisi bulunamadı."})
-        }
-
-        const jobInfoApp = await prisma.jobs.findUnique({where:{id:appInfo.jobId}})
-
-        if(!jobInfoApp) {
-            return res.status(404).json({message:"İş başvurusu yapan kullanıcı için iş bilgisi bulunamadı."})
-        }
-
-        personInfo = appInfo
-        jobInfo = jobInfoApp
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Job app Ai prompt isteği kuyruğa eklenemedi."})
+       }
 
     }else if(kind == "staff") {
-        const staffInfo = await prisma.staff.findUnique({where:{id:id}})
+      
+        const aiJob = await aiPromptQueue.add("staff-one-prompt",{data:data})
 
-        if(!staffInfo){
-            return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-        }
-
-       if(!staffInfo.jobId){
-
-            return res.status(404).json({message:"Personel bilgileri arasında iş bilgisi bulunamadı."})
-        }
-
-        const jobInfoStaff = await prisma.jobs.findUnique({where:{id:staffInfo.jobId}})
-
-        if(!jobInfoStaff) {
-            return res.status(404).json({message:"Personel için için iş bilgisi bulunamadı."})
-        }
-
-        personInfo = staffInfo
-        jobInfo = jobInfoStaff
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Staff Ai prompt isteği kuyruğa eklenemedi."})
+       }
+      
 
     }
 
+    return res.status(404).json({message:"Parametrelerde hata var."});
 
-    if(personInfo==null || jobInfo==null){
-        console.log(kind," ",id)
-        return res.status(404).json({message:"Personel veya iş başvurusu bilgisi bulunamadı."})
-    }
-
-     if(!personInfo.jobId || !personInfo.university || !personInfo.abilities || !personInfo.unidepartment || !personInfo.address ||
-            !personInfo.graduatedate || !personInfo.selfbio || !personInfo.county || !personInfo.city || !jobInfo.jobtitle || !jobInfo.jobrequirements
-    ){
-            console.log(personInfo) 
-            console.log(jobInfo)
-            return res.status(404).json({message:"Personel veya iş başvurusu bilgileri bulunamadı."})
-    }
-
-    const promptInput : PromptInput = {
-        name:personInfo.name,university:personInfo.university,unidepartment:personInfo.unidepartment
-            ,graduatedate:personInfo.graduatedate.toISOString(),abilities:personInfo.abilities,address:personInfo.address,birthdate:personInfo.birthdate.toISOString()
-            ,selfbio:personInfo.selfbio,city:personInfo.city,county:personInfo.county,jobtitle:jobInfo.jobtitle,jobrequirements:jobInfo.jobrequirements
-    }
-
-    const prompt = generatePrompt(promptInput)
-    const response = await sendPromptToAgent(role,prompt);
-
-    const messageOutput = response.outputs.find(output=>output.type == "message.output")
-
-    if (!messageOutput || !("content" in messageOutput)) {
-         return res.status(404).json({message:"AI agentten gelen response da sorun var."})
-    }
-
-    const responseText =
-        typeof messageOutput.content === "string"
-            ? messageOutput.content
-            : messageOutput.content
-                .filter(chunk => chunk.type === "text")
-                .map(chunk => ("text" in chunk ? chunk.text : ""))
-                .join("");
-                
-    const embeddingResponse = await getEmbedding(responseText)
-
-     if(response){
-        return res.status(201).json({sendedId:id,prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
-     }else {
-        return res.status(404).json({message:"Response içeriği alma başarısız",sendedId:id,prompt:prompt,airesponse:responseText,embedding:embeddingResponse})
-     }
-     
 
 }
 
@@ -466,144 +349,40 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         return res.status(404).json({message:"İş başvurusu veya personel için verilen bilgilerin formatı yanlış."})
     }
     
-    
-    const resultarr : {sendedId:string,prompt:string,result:string,embedding:Record<string,unknown> | null}[]  = []
-    let resultcount = 0
-    let errorsList = {}
-  
-    await Promise.all(idList.map( async (id : string)=>{
-          
-       
-    let personInfo = null
-    let jobInfo = null
+    const data = {idList:idList,role:role}
 
     if(kind == "application"){
 
-        const appInfo = await prisma.jobapplication.findUnique({where:{id:id}})
+       const aiJob = await aiPromptQueue.add("app-multi-prompt",{data:data})
 
-        if(!appInfo){
-            //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"jobappfault"}
-            return;
-        }
-
-        if(!appInfo.jobId
-        ){
-
-            //return res.status(404).json({message:"İş başvurusunda iş bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"jobappfault"}
-            return;
-        }
-
-        
-        const jobInfoApp = await prisma.jobs.findUnique({where:{id:appInfo.jobId}})
-
-        if(!jobInfoApp) {
-            //return res.status(404).json({message:"İş başvurusu yapan kullanıcı için iş bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"jobfault"}
-            return;
-        }
-
-        personInfo = appInfo
-        jobInfo = jobInfoApp
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Job app Ai prompt multi isteği kuyruğa eklenemedi."})
+       }
 
     }else if(kind == "staff") {
-        const staffInfo = await prisma.staff.findUnique({where:{id:id}})
+      
+        const aiJob = await aiPromptQueue.add("staff-multi-prompt",{data:data})
 
-        if(!staffInfo){
-            //return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"stafffault"}
-            return;
-        }
-
-       if(!staffInfo.jobId){
-
-            //return res.status(404).json({message:"Personel bilgileri arasında iş bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"stafffault"}
-            return;
-        }
-
-        const jobInfoStaff = await prisma.jobs.findUnique({where:{id:staffInfo.jobId}})
-
-        if(!jobInfoStaff) {
-            //return res.status(404).json({message:"Personel için için iş bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"jobfault"}
-            return;
-        }
-
-        personInfo = staffInfo
-        jobInfo = jobInfoStaff
+       if(aiJob.id){
+              res.status(201).json({
+                            status:"waiting",
+                            id:aiJob.id                        
+                        });
+       }else {
+            return res.status(404).json({message:"Staff Ai multi prompt isteği kuyruğa eklenemedi."})
+       }
+      
 
     }
 
-        if(personInfo==null || jobInfo==null){
-            //return res.status(404).json({message:"Personel veya iş başvurusu bilgisi bulunamadı."})
-            errorsList = {...errorsList,[id]:"infofault"}
-            return;
-        }
-
-        if(!personInfo.jobId || !personInfo.university || !personInfo.abilities || !personInfo.unidepartment || !personInfo.address ||
-                !personInfo.graduatedate || !personInfo.selfbio || !personInfo.county || !personInfo.city || !jobInfo.jobtitle || !jobInfo.jobrequirements
-        ){
-
-                //return res.status(404).json({message:"Personel veya iş başvurusu bilgileri bulunamadı."})
-
-            errorsList = {...errorsList,[id]:"infofault"}
-            return;
-        }
-
-        const promptInput : PromptInput = {
-            name:personInfo.name,university:personInfo.university,unidepartment:personInfo.unidepartment
-                ,graduatedate:personInfo.graduatedate.toISOString(),abilities:personInfo.abilities,address:personInfo.address,birthdate:personInfo.birthdate.toISOString()
-                ,selfbio:personInfo.selfbio,city:personInfo.city,county:personInfo.county,jobtitle:jobInfo.jobtitle,jobrequirements:jobInfo.jobrequirements
-        }
-        
-
-         const prompt = generatePrompt(promptInput)
-        const response = await sendPromptToAgent(role,prompt);
-
-        const messageOutput = response.outputs.find(output=>output.type == "message.output")
-        
-        if (!messageOutput || !("content" in messageOutput)) {
-            errorsList = {...errorsList,[id]:"resultfault"}
-            return;
-        }
-
-        const responseText =
-            typeof messageOutput.content === "string"
-                ? messageOutput.content
-                : messageOutput.content
-                    .filter(chunk => chunk.type === "text")
-                    .map(chunk => ("text" in chunk ? chunk.text : ""))
-                    .join("");
-                    
-       
-        
-        if(responseText){
-             const embeddingResponse = await getEmbedding(responseText)
-             if(embeddingResponse){
-                resultcount+=1
-                resultarr.push({sendedId:id,prompt:prompt,result:responseText,embedding:embeddingResponse})
-             }else {
-                resultarr.push({sendedId:id,prompt:prompt,result:responseText,embedding:null})
-             }
-        }else {
-            errorsList = {...errorsList,[id]:"resultfault"}
-            return;
-            
-        }
-    }));
-
-    const errors = ["resultfault","stafffault","infofault","jobappfault","elasticfault","jobfault"]
-    const errorExists = Object.values(errorsList).some((value)=>(
-           errors.includes(value as string)
-        ))
-    
-    if(resultcount==0 || errorExists){
-        return res.status(404).json({result:resultarr,errors:errorsList});
-    }
-
-    return res.status(201).json({result:resultarr});
+    return res.status(404).json({message:"Parametrelerde hata var."});
+   
+   
 }
 
 
