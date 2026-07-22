@@ -4,6 +4,4 @@ Bu uygulamanın amacı iş başvurularının  alınıp uygulama panelinde ai age
 sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta-büyük ölçekli işletmelerin ihtiyacı için ölçeklenebilir halde programlanacaktır.
 
 Şu ana kadar frontend işlemleri,backend de job servisi,management(bildirim ve yönetim) servisi,staff(personel) servisi ve auth servisi yapılmıştır. Kafka entegrasyonu sağlanmıştır. 
-
-Geriye ai agent ile entegre olarak iş başvurularının değerlendirilmesi özellikleri ve redis,bullmq ile cache işlemleri,cdn ile statik içerik sunumu hızlandırma en son load balancer ile dockerize edilmiş
-instanceler arası dağıtımın sağlanması özellikleri kalmıştır ve eklenecektir.
+Redis,bullmq cache ve queue entegrasyonuda eklenmiştir. Hatalar çözülüp 1 gün içeriside canlıya alınıp yük testi yapılacak ve detaylı açıklama eklenecektir.
