@@ -10,7 +10,7 @@ import Pagination from "../(panel)/application/utils/pagination";
 
 export default function Home() {
 
-      const [tabNu,setTabNu] = useState<Number>(0)
+      const [tabNu,setTabNu] = useState<number>(0)
       const defaultLimit = 5
 
        const [jobsResponse, setJobResponse] = useState<JobsResponse>({
@@ -38,7 +38,35 @@ export default function Home() {
           
          
         }, [page,limit]);
-  
+
+
+        const now = new Date();
+
+        const latestJobs = jobsResponse.data.filter(job => {
+              const diff = now.getTime() - job.createdate.getTime();
+              const diffDays = diff / (1000 * 60 * 60 * 24);
+
+                return diffDays <= 7;
+        });
+
+
+        const startOfWeek = new Date(now);
+        const day = now.getDay(); // Pazar=0, Pazartesi=1
+
+        const diff = day === 0 ? 6 : day - 1;
+
+        startOfWeek.setDate(now.getDate() - diff);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+      const thisWeekJobs = jobsResponse.data.filter(
+        job => job.createdate >= startOfWeek
+      );
+
+      const currentYear = new Date().getFullYear();
+
+      const thisYearJobs = jobsResponse.data.filter(
+        job => job.createdate.getFullYear() === currentYear
+      );
 
   return (
      <div>
@@ -61,7 +89,7 @@ export default function Home() {
                       <a onClick={()=>setTabNu(1)}  className="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Bu Haftaki İlanlar</a>
                     </li>
                     <li className="nav-item">
-                      <a onClick={()=>setTabNu(2)}  className="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Bu Ay/Yıla Ait İlanlar</a>
+                      <a onClick={()=>setTabNu(2)}  className="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Bu Yıla Ait Tüm İlanlar</a>
                     </li>
                   </ul>
                 </div>
@@ -85,8 +113,8 @@ export default function Home() {
                 </thead>
                 <tbody>
 
-                  {(jobsResponse.data ? (
-                    (jobsResponse.data.map((j)=>(
+                  {(latestJobs ? (
+                    (latestJobs.map((j)=>(
                        <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
@@ -98,7 +126,7 @@ export default function Home() {
                       <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
                     <td className="text-muted">{j.mounthlywage}</td>
-                    <td className="text-muted">{j.department}</td>
+                    <td className="text-muted">{j.department.name}</td>
                     <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
                   </tr>
@@ -109,13 +137,13 @@ export default function Home() {
                   
                 </tbody>
               </table>
-              <Pagination currentPage={jobsResponse.page} totalPages={jobsResponse.totalPages} ></Pagination>
+              <Pagination pname="page" currentPage={jobsResponse.page} totalPages={jobsResponse.totalPages} ></Pagination>
               </div>
                 ):  (tabNu==1) ?  (
                  <table className="table table-borderless table-striped">
                 <thead>
                   <tr>
-                    <th>1</th>
+                    <th></th>
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
                     <th>Konum</th>
@@ -125,22 +153,26 @@ export default function Home() {
                 </thead>
                 <tbody>
                 
-                  <tr>
+                  {(thisWeekJobs ? (
+                    (thisWeekJobs.map((j)=>(
+                       <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
                         <span className="fe fe-briefcase fe-16 text-muted"></span>
                       </div>
                       
                     </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
+                    <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
+                      <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
+                    <td className="text-muted">{j.mounthlywage}</td>
+                    <td className="text-muted">{j.department.name}</td>
+                    <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
                   </tr>
-                
+                    )))
+                   
+                  ) : (<div></div>))}
              
 
 
@@ -152,7 +184,7 @@ export default function Home() {
                   <table className="table table-borderless table-striped">
                 <thead>
                   <tr>
-                    <th>2</th>
+                    <th></th>
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
                     <th>Konum</th>
@@ -162,22 +194,26 @@ export default function Home() {
                 </thead>
                 <tbody>
               
-
-                  <tr>
+               {(thisYearJobs ? (
+                    (thisYearJobs.map((j)=>(
+                       <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
                         <span className="fe fe-briefcase fe-16 text-muted"></span>
                       </div>
                       
                     </td>
-                    <th scope="row">  <Link href='#'>.NET Backend Developer </Link><br />
-                      <span className="badge badge-light text-muted">Folder</span>
+                    <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
+                      <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">35.800 ₺</td>
-                    <td className="text-muted">Gaziantep,Türkiye</td>
-                    <td className="text-muted">Mar 17, 2026</td>
+                    <td className="text-muted">{j.mounthlywage}</td>
+                    <td className="text-muted">{j.department.name}</td>
+                    <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
                   </tr>
+                    )))
+                   
+                  ) : (<div></div>))}
 
                   
                 </tbody>
