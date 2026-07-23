@@ -1,2 +1,1 @@
-1-departmentId,jobId nin personel,jobapp ve job eklerken durumuna bakılacak,user güncelleme ve userandstaff güncellemeye tekrar bakılacak
-2-dockerize et ve load balancer ekle
+1-dockerize et ve load balancer ekle

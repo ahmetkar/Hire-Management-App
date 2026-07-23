@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { socket } from '@/app/utils/socket';
+import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
 
 const Page = () => {
 
@@ -20,6 +21,7 @@ const Page = () => {
      const [cityPlate,setCityPlate] = useState<number>(0)
      const [counties, setCounties] = useState<County[]>([]);
      const [departments, setDepartments] = useState<string[]>([]);
+     const [departments1, setDepartments1] = useState<Department[]>([]);
      const [abilities, setAbilities] = useState<string[]>([]);
      const [jobs, setJobs] = useState<JobsResponse>();
      const [job,setJob] = useState("")
@@ -38,6 +40,11 @@ const Page = () => {
       getDepartments()
         .then((data) => setDepartments(data))
         .catch((error) => console.error(error));
+
+
+      getDepartments1(1,10)
+              .then((data) => setDepartments1(data.data as Department[]))
+              .catch((error) => console.error(error));
   
   
     }, []);
@@ -55,6 +62,7 @@ const Page = () => {
         getJobs(1,50)
         .then((data) => setJobs(data))
         .catch((error) => console.error(error));
+        
        
 
        if(job != ""){
@@ -159,7 +167,6 @@ const Page = () => {
     const addUserMutation = useMutation({
       mutationFn: async (data:UserFormData) => {
 
-        data.departmentId = "6a405c705b7bde7b9931b1af"
         const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/user-register`,data)
 
         return response.data
@@ -184,7 +191,6 @@ const Page = () => {
 
         data.birthdate = data.birthdate ? new Date(`${data.birthdate}T00:00:00.000Z`).toISOString(): ""
         data.graduatedate = data.graduatedate ? new Date(`${data.graduatedate}T00:00:00.000Z`).toISOString(): ""
-        data.departmentId = "6a405c705b7bde7b9931b1af"
 
         const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/staff-create`,data)
 
@@ -211,7 +217,7 @@ const Page = () => {
 
         data.birthdate = data.birthdate ? new Date(`${data.birthdate}T00:00:00.000Z`).toISOString(): ""
         data.graduatedate = data.graduatedate ? new Date(`${data.graduatedate}T00:00:00.000Z`).toISOString(): ""
-        data.departmentId = "6a405c705b7bde7b9931b1af"
+
 
         const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/staff-create`,data)
 
@@ -355,9 +361,20 @@ const Page = () => {
 
                   <div className="form-group">
                         <label htmlFor="simpleinput">Departman : </label>
-                            <input type="text" className="form-control" id="validationSelect2" 
-                              {...registerUser("departmentId",{required: "Departman bilgisi gereklidir."})}
-                              />
+                            <select className="form-control" id="simple-select2"
+                          {...registerUser("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
+                              
+                
+                            </optgroup>
+                          
+                          </select>
+                            
+                        
                               
                               <div className="invalid-feedback"> 
                                 {errorsUser.departmentId && (
@@ -521,9 +538,18 @@ const Page = () => {
                     <div className="form-row">
                       <div className="form-group col-md-6">
                         <label htmlFor="simpleinput">Departman : </label>
-                            <input type="text" className="form-control" id="validationSelect2" 
-                              {...registerStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
-                              />
+                            <select className="form-control" id="simple-select2"
+                          {...registerStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
+                              
+                
+                            </optgroup>
+                          
+                          </select>
                               
                               <div className="invalid-feedback"> 
                                 {errorsStaff.departmentId && (
@@ -843,10 +869,18 @@ const Page = () => {
                   <div className="form-row">
                      <div className="form-group col-md-6">
                       <label htmlFor="simpleinput">Departman : </label>
-                           <input type="text" className="form-control" id="validationSelect2" 
-                            {...registerUserAndStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
-                            />
-                            
+                            <select className="form-control" id="simple-select2"
+                          {...registerUserAndStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
+                              
+                
+                            </optgroup>
+                          
+                          </select>
                             <div className="invalid-feedback"> 
                                {errorsUserAndStaff.departmentId && (
                         <p className='text-red-500 text-sm'>{String(errorsUserAndStaff.departmentId.message)}</p>

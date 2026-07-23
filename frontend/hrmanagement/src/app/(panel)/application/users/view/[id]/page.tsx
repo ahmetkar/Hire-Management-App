@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { getStaff, getStaffAndUser, getUser, Staff, StaffUser, User } from '@/app/lists/datas/users';
+import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
 
 const Page = () => {
 
@@ -21,6 +22,7 @@ const Page = () => {
 
   const [stage,setStage] = useState("")
    const [universities, setUniversities] = useState<University[]>([]);
+    const [departments1, setDepartments1] = useState<Department[]>([]);
      const [cities, setCities] = useState<City[]>([]);
      const [cityPlate,setCityPlate] = useState<number>(0)
      const [counties, setCounties] = useState<County[]>([]);
@@ -329,6 +331,10 @@ const Page = () => {
   }
 
   fetchOtherData()
+
+    getDepartments1(1,10)
+                .then((data) => setDepartments1(data.data as Department[]))
+                .catch((error) => console.error(error));
   
 }, []);
     
@@ -507,9 +513,18 @@ const Page = () => {
 
                   <div className="form-group">
                         <label htmlFor="simpleinput">Departman : </label>
-                            <input type="text" className="form-control" id="validationSelect2" 
-                              {...registerUser("departmentId",{required: "Departman bilgisi gereklidir."})}
-                              />
+                               <select className="form-control" id="simple-select2"
+                          {...registerUser("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
+                              
+                
+                            </optgroup>
+                          
+                          </select>
                               
                               <div className="invalid-feedback"> 
                                 {errorsUser.departmentId && (
@@ -680,10 +695,18 @@ const Page = () => {
                     <div className="form-row">
                       <div className="form-group col-md-6">
                         <label htmlFor="simpleinput">Departman : </label>
-                            <input type="text" className="form-control" id="validationSelect2" 
-                              {...registerStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
-                              />
+                              <select className="form-control" id="simple-select2"
+                          {...registerStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
                               
+                
+                            </optgroup>
+                          
+                          </select>
                               <div className="invalid-feedback"> 
                                 {errorsStaff.departmentId && (
                           <p className='text-red-500 text-sm'>{String(errorsStaff.departmentId.message)}</p>
@@ -1005,9 +1028,18 @@ const Page = () => {
                   <div className="form-row">
                      <div className="form-group col-md-6">
                       <label htmlFor="simpleinput">Departman : </label>
-                           <input type="text" className="form-control" id="validationSelect2" 
-                            {...registerUserAndStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
-                            />
+                              <select className="form-control" id="simple-select2"
+                          {...registerUserAndStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
+                          >
+                            <optgroup label="">
+                              {departments1.map((dep,index)=>(
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
+                              ))}  
+                              
+                
+                            </optgroup>
+                          
+                          </select>
                             
                             <div className="invalid-feedback"> 
                                {errorsUserAndStaff.departmentId && (

@@ -76,7 +76,7 @@ const Page = () => {
                               setActiveId(activeId==s.id ? s.id.substring(0,5) : s.id)
                             }}>{activeId == s.id ? s.id: s.id.substring(0,5)}</a></td>
                             <td>{s.jobtitle}</td>
-                            <td>{s.department}</td>
+                            <td>{s.department.name}</td>
                             <td>{s.position}</td>
                             <td>{s.createdate.toString()}</td>
                             <td>{s.expiredate.toString()}</td>  
