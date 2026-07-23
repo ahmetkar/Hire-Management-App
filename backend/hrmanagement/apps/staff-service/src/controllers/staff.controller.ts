@@ -7,6 +7,24 @@ import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.hel
 import crypto from "crypto"
 import { staffQueue } from "../queue/staff.queue";
 
+import { Prisma, staff} from "@prisma/client";
+
+
+type StaffWithDepartment = Prisma.staffGetPayload<{
+    include: {
+        department: true;
+    };
+}>;
+
+
+type StaffWithDepartmentPositionPrompts = Prisma.staffGetPayload<{
+    include: {
+        department: true;
+        staffPrompts:true;
+        position:true;
+    };
+}>;
+
 export const getStaffByFilter = async (req:any,res:Response,next:NextFunction) => {
 
       try {
@@ -173,7 +191,7 @@ export const getAllStaff = async (req:any,res:Response,next:NextFunction) => {
                         const skip = (page-1) * limit
 
 
-                        const [staff,total] = await Promise.all([ getOrSetRedisCache(`staff:${page}:${limit}`,`cache-tag:staff`,()=>prisma.staff.findMany({skip,take:limit,orderBy:{
+                        const [staff,total] = await Promise.all([ getOrSetRedisCache<StaffWithDepartmentPositionPrompts[]>(`staff:${page}:${limit}`,`cache-tag:staff`,()=>prisma.staff.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
                         },include:{staffPrompts:true,position:true,department:true}}),2*60*60),
                         getOrSetRedisCache(`staff:count`,`cache-tag:staff`,()=>prisma.staff.count(),2*60*60)
@@ -219,7 +237,7 @@ export const getMultipileStaff = async (req:any,res:Response,next:NextFunction) 
 
                      const idlistkey = crypto.createHash("sha256").update(JSON.stringify(idList)).digest("hex")
 
-                    const [staff,total] = await Promise.all([getOrSetRedisCache(`staff:${idlistkey}:${_page}:${_limit}`,`cache-tag:staff`,()=> prisma.staff.findMany({skip,take:limit,orderBy:{
+                    const [staff,total] = await Promise.all([getOrSetRedisCache<StaffWithDepartmentPositionPrompts[]>(`staff:${idlistkey}:${_page}:${_limit}`,`cache-tag:staff`,()=> prisma.staff.findMany({skip,take:limit,orderBy:{
                             signupdate:"desc"
                         },where:{id:{in:idList}},include:{staffPrompts:true,position:true,department:true}}),2*60*60),
                         getOrSetRedisCache(`staff:count:${idlistkey}`,`cache-tag:staff`,()=>prisma.staff.count({where:{id:{in:idList}}}),2*60*60)
@@ -253,7 +271,7 @@ export const getStaff = async (req:any,res:Response,next:NextFunction) => {
                     try {
                         
 
-                        const staff = getOrSetRedisCache(`staff:${id}`,`cache-tag:staff:${id}`,async ()=>await prisma.staff.findUnique({where:{id:id},include:{staffPrompts:true,position:true,department:true}}),2*60*60)
+                        const staff = await getOrSetRedisCache<StaffWithDepartmentPositionPrompts | null>(`staff:${id}`,`cache-tag:staff:${id}`,async ()=>await prisma.staff.findUnique({where:{id:id},include:{staffPrompts:true,position:true,department:true}}),2*60*60)
 
 
                         if(staff){

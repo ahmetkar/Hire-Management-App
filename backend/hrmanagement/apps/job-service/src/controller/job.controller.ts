@@ -7,6 +7,29 @@ import { publishJobAppApproved } from "../events/producers/jobAppApproved.produc
 import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
 import crypto from "crypto"
 import { jobAppQueue } from "../queues/job.queue";
+import { jobapplication,jobs,AIPrompts, Prisma } from "@prisma/client";
+
+
+type JobWithDepartment = Prisma.jobsGetPayload<{
+    include: {
+        department: true;
+    };
+}>;
+
+
+type JobAppWithPrompts = Prisma.jobapplicationGetPayload<{
+    include: {
+        appPrompts: true;
+    };
+}>;
+
+
+type JobAppWithPromptsPosition = Prisma.jobapplicationGetPayload<{
+    include: {
+        appPrompts: true;
+        position:true;
+    };
+}>;
 
 enum JobAppStatus {
     NEW="new",
@@ -41,7 +64,7 @@ export const searchAllJobApplication = async (req:Request,res:Response,next:Next
 
             try {
 
-                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${type}:${searchstr}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>prisma.jobapplication.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache<jobapplication[]>(`jobapp:${type}:${searchstr}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
                         },where:{...whereclause, OR : [{name:{contains:searchstr}},{email:{contains:searchstr}}]},include : {position:true,appPrompts:true}}),60*60),
@@ -90,7 +113,7 @@ export const getAllJobApplication = async (req:Request,res:Response,next:NextFun
             const skip = (page-1) * limit
 
             try {
-                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${type}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>
+                    const [data,total] = await Promise.all([getOrSetRedisCache<JobAppWithPromptsPosition[]>(`jobapp:${type}:${page}:${limit}`,`cache-tag:jobapp:${type}`,()=>
                         prisma.jobapplication.findMany({
                         skip:skip,take:limit,orderBy:{
                             appdate:'desc'
@@ -137,7 +160,7 @@ export const getMultipileJobApplication = async (req:Request,res:Response,next:N
 
             try {
  
-                    const [data,total] = await Promise.all([getOrSetRedisCache(`jobapp:${idlistkey}:${_page}:${_limit}`,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache<JobAppWithPromptsPosition[]>(`jobapp:${idlistkey}:${_page}:${_limit}`,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({
                         skip:skip,take:_limit,orderBy:{
                             appdate:'desc'
                         },where:{id:{in:idList}},include : {position:true,appPrompts:true}}),60*60),
@@ -178,7 +201,7 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
 
                 
                     
-                    const [data,total] = await Promise.all([getOrSetRedisCache(`job:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache<jobs[]>(`job:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
                         skip,take:limit,orderBy:{
                             createdate:'desc'
                         }
@@ -216,7 +239,7 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
             try {
                 
                     
-                    const job = getOrSetRedisCache(`jobapp:${id}`,`cache-tag:jobapp:${id}`,async ()=>await prisma.jobapplication.findMany({where:{id:id},include:{appPrompts:true}}),60*60)
+                    const job = await getOrSetRedisCache<JobAppWithPrompts[]>(`jobapp:${id}`,`cache-tag:jobapp:${id}`,async ()=>await prisma.jobapplication.findMany({where:{id:id},include:{appPrompts:true}}),60*60)
                     if(job){
                         res.status(201).json({
                         success:true,
@@ -241,8 +264,8 @@ export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
             try {
     
                     if(req.headers["x-user-id"]){
-                        const job = getOrSetRedisCache(`job:${id}`,`cache-tag:job:${id}`,async ()=>await prisma.jobs.findUnique({where:{id:id},include:{department:true}}),6*60*60)
-                        if(job){
+                        const job = await getOrSetRedisCache<JobWithDepartment | null>(`job:${id}`,`cache-tag:job:${id}`,async ()=>await prisma.jobs.findUnique({where:{id:id},include:{department:true}}),6*60*60)
+                        if(job!=null){
                             res.status(201).json({
                             success:true,
                             message:"Job found !",
@@ -322,7 +345,7 @@ export const getJobApplicationByFilter = async (req:Request,res:Response,next:Ne
 
                     const rediskey = redisfilterkey+`:${page}:${limit}`
                     
-                    const [job,total] = await Promise.all([getOrSetRedisCache(rediskey,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({skip,take:limit,orderBy:{
+                    const [job,total] = await Promise.all([getOrSetRedisCache<JobAppWithPrompts[]>(rediskey,`cache-tag:jobapp`,()=>prisma.jobapplication.findMany({skip,take:limit,orderBy:{
                         appdate:"desc"
                     },where:whereclause,include:{appPrompts:true}}),60*60),
                     getOrSetRedisCache(`jobapp:count:${redisfilterkey}`,`cache-tag:jobapp`,()=>prisma.jobapplication.count(),60*60)
@@ -386,7 +409,7 @@ export const getJobByFilter = async (req:Request,res:Response,next:NextFunction)
 
                     const rediskey = redisfilterkey+`:${page}:${limit}`
                     
-                    const [job,total] = await Promise.all([getOrSetRedisCache(rediskey,`cache-tag:job`,()=>prisma.jobs.findMany({skip,take:limit,orderBy:{
+                    const [job,total] = await Promise.all([getOrSetRedisCache<jobs[]>(rediskey,`cache-tag:job`,()=>prisma.jobs.findMany({skip,take:limit,orderBy:{
                         createdate:"desc"
                     },where:whereclause}),6*60*60),
                     getOrSetRedisCache(`job:count:${redisfilterkey}`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)

@@ -2,10 +2,11 @@
 import { getJobApp,JobApp } from '@/app/lists/jobapplications'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { AIResponse, approveJobApp, disapproveJobApp, saveAIAnswerRequest, sendAIPromptRequest, sendAnalyisRequest } from '@/app/actions/jobapplication';
+import { AIResponse, AnalysisResponse, approveJobApp, disapproveJobApp, saveAIAnswerRequest, sendAIPromptRequest, sendAnalyisRequest } from '@/app/actions/jobapplication';
 import Modal from '@/app/components/Modal';
 import useUser from '@/app/utils/useUser';
 import { getMultipileStaff, getStaff } from '@/app/lists/datas/users';
+import { connectSocket, socket } from '@/app/utils/socket';
 
 
 const Page = () => {
@@ -27,15 +28,14 @@ const Page = () => {
   const [answerLoading,setAnswerLoading] = useState(false)
   const [saveLoading,setSaveLoading] = useState(false)
 
+
   const [analysisLoading,setAnalysisLoading] = useState(false)
   const [analysisExist,setAnalysisExist] = useState(false)  
   const [analysisKind,setAnalysisKind] = useState("oldest")
 
   const [aiResponse,setAIResponse] = useState<AIResponse>({
     sendedId:"",
-    prompt:"",
     airesponse:"",
-    embedding:null
   })
 
   type AnalysisType = {score:number,name:string,signupdate:string,airesponse:string}
@@ -53,6 +53,121 @@ const Page = () => {
             .catch((error) => console.error(error));  
             
             console.log(jobApp)
+
+             socket.on("connect", () => {
+              console.log("CONNECTED", socket.id);
+                });
+            
+                socket.on("disconnect", (reason) => {
+                  console.log("DISCONNECTED", reason);
+                });
+            
+                socket.on("connect_error", (err) => {
+                  console.log("CONNECT ERROR", err);
+                });
+            
+                socket.onAny((event,...args)=>{
+                  console.log("Socket event : ",event,args)
+                })
+            
+                const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                    console.log(payload)
+                    setAIAnswerSuccess(true)
+                    setNewAnswerIsExist(true)
+                    setAnswerLoading(false)
+                    setAIResponse(payload.result as AIResponse)
+                };
+            
+               
+            
+                const sendFailedHandler = (payload : {jobId:string,error:string}) => {
+                    console.log(payload)
+                     setAnswerLoading(false)
+                     setAIAnswerSuccess(false)
+                };
+
+
+                const saveCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                    console.log(payload)
+                    setSaveLoading(false)
+                   
+                };
+            
+                   const saveFailedHandler = (payload : {jobId:string,error:string}) => {
+                    console.log(payload)
+                     setSaveLoading(false)
+                    
+                };
+               
+            
+                const elasticFailedHandler = (payload : {jobId:string,error:string}) => {
+                    console.log(payload)
+                    setAnalysisLoading(false)
+                };
+
+
+                 const elasticCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                    console.log(payload)
+                    setAnalysisLoading(false)
+                     const data = payload.result as AnalysisResponse
+                        console.log(analysisKind," => ",data!.results)
+                        if(data!=null && data.results!=null && data.results.length >0){
+                          const ids = data.results.map((i)=>(i.sendedId))
+
+                          getMultipileStaff(ids,1,10).then((datas)=>{
+                            console.log(datas)
+                            const analysisList : AnalysisType[] = []
+                            datas.data.map((d)=>{
+                                const anResultForId = data.results.find((x)=>x.sendedId == d.id)
+                                if(anResultForId !=undefined){
+                                  const prompt = d.staffPrompts.at(-1)
+                                  if(prompt!=undefined){
+                                    analysisList.push({name:d.name,signupdate:d.signupdate.split("T")[0],score:anResultForId.score!,airesponse:prompt.responseText})
+                                  }
+                                }
+                            })
+                           if(analysisList.length > 0){
+                              setAnalysisExist(true)
+                              setAnalysisLoading(false)
+                              setAnalysisResponse(analysisList)
+                           }else {
+                            setAnalysisLoading(false)
+                           }
+                           setAnalysisKind("oldest")  
+                          
+                          }).catch((err)=>{
+
+                            console.log(err)
+                            setAnalysisLoading(false)
+                          })
+                        }
+                };
+            
+            
+                socket.on("sendprompt-completed", sendCompletedHandler);
+                socket.on("sendprompt-failed", sendFailedHandler);
+
+
+                socket.on("saveprompt-completed", saveCompletedHandler);
+                socket.on("saveprompt-failed", saveFailedHandler);
+
+
+                socket.on("elastic-completed", elasticCompletedHandler);
+                socket.on("elastic-failed", elasticFailedHandler);
+
+                 return () => {
+                    socket.off("sendprompt-completed", sendCompletedHandler);
+                    socket.off("sendprompt-failed", sendFailedHandler);
+
+                    
+                    socket.off("saveprompt-completed", saveCompletedHandler);
+                    socket.off("saveprompt-failed", saveFailedHandler);
+
+                      socket.off("elastic-completed", elasticCompletedHandler);
+                      socket.off("elastic-failed", elasticFailedHandler);
+                  };
+              
+
         }, []);
 
 
@@ -88,14 +203,18 @@ const Page = () => {
                   }); 
               }
 
+
+
               const sendAIRequest = (appId:string) => {
                     setAnswerLoading(true)
-                    sendAIPromptRequest(appId).then((data)=>{
-                      if(data){
-                        setAIAnswerSuccess(true)
-                        setNewAnswerIsExist(true)
-                        setAnswerLoading(false)
-                        setAIResponse(data)
+                    sendAIPromptRequest(appId).then((id)=>{
+                      if(id){
+                        const jobId = id
+                        connectSocket(jobId,"aiSendQueue",()=>{
+                          setAnswerLoading(false);
+                        })
+                        //websocket işlemleri
+                        
                       }
                     }).catch((err)=>{
                       setAIAnswerSuccess(false)
@@ -105,11 +224,27 @@ const Page = () => {
               }
 
               const saveAIAnswer = (appId:string) =>{
-                  if(aiResponse.embedding!=null){
+                  if(aiResponse.airesponse!=null){
                   setSaveLoading(true)
-                  saveAIAnswerRequest(appId,aiResponse.prompt,aiResponse.airesponse,aiResponse.embedding).then((data)=>{
-                      console.log(data)
-                      setSaveLoading(false)
+                  saveAIAnswerRequest(appId,aiResponse.airesponse).then((id)=>{
+                      if(id){
+                        const jobId = id
+                        console.log("workera eklendi",jobId)
+                          console.log("socket:", socket);
+                          console.log("connected:", socket.connected);
+                          if (socket.connected) {
+                          socket.emit("join-job", {queueName:"aiSaveQueue",jobId});
+                          } else {
+                            socket.connect();
+                            socket.once("connect", () => {
+                            socket.emit("join-job", {queueName:"aiSaveQueue",jobId});
+                            });
+                            }
+                        //websocket işlemleri
+                        
+                      }
+                   
+                      
                   }).catch((err)=>{
                     console.log(err)
                     setSaveLoading(false)
@@ -120,39 +255,16 @@ const Page = () => {
               const sendAnalysis = (appId:string) => {
                 setAnalysisLoading(true)
                 if(analysisKind!=""){
-                    sendAnalyisRequest(analysisKind,appId).then((data)=>{
-                      
-                        console.log(analysisKind," => ",data!.results)
-                        if(data!=null && data.results!=null && data.results.length >0){
-                          const ids = data.results.map((i)=>(i.sendedId))
+                    sendAnalyisRequest(analysisKind,appId).then((id)=>{
 
-                          getMultipileStaff(ids,1,10).then((datas)=>{
-                            console.log(datas)
-                            const analysisList : AnalysisType[] = []
-                            datas.data.map((d)=>{
-                                const anResultForId = data.results.find((x)=>x.sendedId == d.id)
-                                if(anResultForId !=undefined){
-                                  const prompt = d.staffPrompts.at(-1)
-                                  if(prompt!=undefined){
-                                    analysisList.push({name:d.name,signupdate:d.signupdate.split("T")[0],score:anResultForId.score!,airesponse:prompt.responseText})
-                                  }
-                                }
-                            })
-                           if(analysisList.length > 0){
-                              setAnalysisExist(true)
-                              setAnalysisLoading(false)
-                              setAnalysisResponse(analysisList)
-                           }else {
-                            setAnalysisLoading(false)
-                           }
-                           setAnalysisKind("oldest")  
-
-                          }).catch((err)=>{
-
-                            console.log(err)
-                            setAnalysisLoading(false)
-                          })
-                        }
+                      if(id){
+                        const jobId = id
+                        connectSocket(jobId,"elasticQueue",()=>{
+                          setAnalysisLoading(false);
+                        });
+                        //websocket işlemleri
+                        
+                      }
                         
 
                     }).catch((err)=>{
@@ -185,7 +297,7 @@ const Page = () => {
                <div className="row justify-content-center">
             <div className="col-md-12">
                  <h2 className="page-title">İş Başvurusu Görüntüle</h2>
-              <p className="text-muted">#{jobApp.id} nolu Backend Developer İlanı için <strong> {jobApp.name} </strong> tarafıdan yapılan iş başvurusu</p>
+              <p className="text-muted">#{jobApp.id} id li <strong> {jobApp.name} </strong> tarafıdan Backend Developer ilanı için yapılan iş başvurusu</p>
             </div>
               <div className="col-md-12 mb-4">
                   <div className="card shadow">

@@ -211,36 +211,42 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
             return;
           }
           setAIPromptsLoading(true)
-          sendMultipileAIPromptRequest(checkedIds).then((data)=>{
-                console.log(data)
-                if(data.result!=undefined){
-                const idList : string[]  = []
-                data.result.map((i)=>{
-                  idList.push(i.sendedId)
-                })
-                
-                getMultipileJobApps(idList,apage,aiJobLimit).then((jobappdata)=>{
-                  console.log("jobappdata",jobappdata)
-                  setAIJobResponses(jobappdata)
-                  setAIJobIdList(idList)
+          sendMultipileAIPromptRequest(checkedIds).then((success)=>{
+                if(success){
+                  //websocket işlemleri
+                  /*
+                        const data = null
+                        console.log(data)
+                      if(data.result!=undefined){
+                      const idList : string[]  = []
+                      data.result.map((i)=>{
+                        idList.push(i.sendedId)
+                      })
+                      
+                      getMultipileJobApps(idList,apage,aiJobLimit).then((jobappdata)=>{
+                        console.log("jobappdata",jobappdata)
+                        setAIJobResponses(jobappdata)
+                        setAIJobIdList(idList)
+                      }).catch((err)=>{
+                        console.log("jobapperr",err)
+                      })
+                      setAIResponses(data.result)
+                      setAIPromptsExist(true)
+                      setAIPromptsFail(false)
+                      
+                      
+                    }
+                    setAIPromptsLoading(false)
                 }).catch((err)=>{
-                  console.log("jobapperr",err)
-                })
-                setAIResponses(data.result)
-                setAIPromptsExist(true)
-                setAIPromptsFail(false)
-                 
+                  console.log(err)
+                  setAIPromptsExist(false)
+                  setAIPromptsFail(true)
+                  setTimeout(() => {
+                    setAIPromptsFail(false);
+                  }, 3000);
+                  setAIPromptsLoading(false)*/
+                }
                 
-              }
-              setAIPromptsLoading(false)
-          }).catch((err)=>{
-            console.log(err)
-            setAIPromptsExist(false)
-            setAIPromptsFail(true)
-            setTimeout(() => {
-              setAIPromptsFail(false);
-            }, 3000);
-            setAIPromptsLoading(false)
           })
 
         }
@@ -262,13 +268,14 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                 reqs.push({
                     sendedId: id,
                     result: resp.result,
-                    preembedding: resp.embedding,
-                    prompt: resp.prompt,
-                    embedding: null
                 });
               }
 
-              saveMultipileAIAnswerRequest(reqs).then((data)=>{
+              saveMultipileAIAnswerRequest(reqs).then((success)=>{
+                if(success){
+                  //webssocket işlemleri ona gröe true false
+                  /*
+                const data = null
                   if(data){
                     setSaveAIPromptSuccess(true)
                     setSaveAIPromptFail(false)
@@ -282,7 +289,8 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                       setSaveAIPromptFail(false);
                   }, 3000);
                   }
-                  setSaveAIPromptsLoading(false)
+                  setSaveAIPromptsLoading(false)*/
+                }
               }).catch((err)=>{
                 setSaveAIPromptFail(true)
                  setTimeout(() => {
@@ -291,6 +299,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                 setSaveAIPromptSuccess(false)
                 setSaveAIPromptsLoading(false)
                 console.log(err)
+
               })
 
               }

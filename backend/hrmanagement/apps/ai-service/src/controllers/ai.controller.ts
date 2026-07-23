@@ -99,9 +99,10 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
        }
       
 
-    }
+    }else {
 
     return res.status(404).json({message:"Parametrelerde hata var."});
+    }
 
    
 }
@@ -167,7 +168,6 @@ export const SearchForNewestStaff = async (req:Request,res:Response,next:NextFun
 }
 
 
-
 export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) => {
 
 
@@ -213,9 +213,11 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
        }
       
 
+    }else {
+        return res.status(404).json({message:"Parametrelerde hata var."});
     }
 
-    return res.status(404).json({message:"Parametrelerde hata var."});
+    
 
 
 }

@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import redis from "../configs/redis";
-import { prisma } from "node_modules/@hrmanagement/prisma/src/lib/prisma";
+import {prisma}  from "@hrmanagement/prisma"
 import { GetEmbedIndex, SearchEmbedIndex } from "../helpers/elastic.helpers";
 
 function handleError(errorMsg: string): never {
@@ -10,9 +10,9 @@ function handleError(errorMsg: string): never {
 const worker = new Worker(
     "elastic-search",
     async (job) => {
-        switch (job.data) {
+        switch (job.name) {
             case "oldest-search": {
-                const data = job.data;
+                const data = job.data.data;
 
                 const appInfo = await prisma.jobapplication.findUnique({
                     where: { id: data.applicationId },
@@ -134,7 +134,7 @@ const worker = new Worker(
             }
 
             case "newest-search": {
-                const data = job.data;
+                const data = job.data.data;
 
                 const appInfo = await prisma.jobapplication.findUnique({
                     where: { id: data.applicationId },
@@ -248,9 +248,6 @@ const worker = new Worker(
                     return handleError("Arama başarısız.");
                 }
             }
-
-            default:
-                return handleError("Geçersiz iş tipi.");
         }
     },
     {

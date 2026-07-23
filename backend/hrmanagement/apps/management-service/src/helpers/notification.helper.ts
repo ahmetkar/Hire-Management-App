@@ -45,7 +45,6 @@ export const SendJobNotificationToStaff = async (byWhoId:string,jobId:string,job
                 console.log("Staff not found")
                 return;
             }
-
             ids = staffs.map((staff)=>{
                 return staff.id
             })

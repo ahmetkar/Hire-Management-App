@@ -17,7 +17,7 @@ const worker = new Worker("job-app-create",async(job)=>{
 
     await job.updateProgress({progress:true})
 
-    const data = job.data
+    const data = job.data.data
 
     const jobapp = await prisma.jobapplication.create({
                         data:data.data

@@ -10,8 +10,9 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
+import { socket } from '@/app/utils/socket';
 
-const page = () => {
+const Page = () => {
 
   const [stage,setStage] = useState("onlyuser")
    const [universities, setUniversities] = useState<University[]>([]);
@@ -23,6 +24,7 @@ const page = () => {
      const [jobs, setJobs] = useState<JobsResponse>();
      const [job,setJob] = useState("")
      const [position,setPosition] = useState<string>("");
+       const [progress,setProgress] = useState<"progress" |"completed" | "failed" | "none">("none")
   
     useEffect(() => {
       getUniversities()
@@ -216,7 +218,23 @@ const page = () => {
         return response.data
       },
       onSuccess:(data)=>{
-          setServerError(null);
+           if(data){
+                        const jobId = data.id
+                        console.log("workera eklendi",jobId)
+                        console.log("socket:", socket);
+                        console.log("connected:", socket.connected);
+                        if (socket.connected) {
+                          socket.emit("join-job", {queueName:"staffQueue",jobId});
+                        } else {
+                          socket.connect();
+          
+                          socket.once("connect", () => {
+                              socket.emit("join-job", {queueName:"staffQueue",jobId});
+                          });
+                        }
+                        
+                    } 
+                 setServerError(null);
           setStage("success")
           resetStaff()
 
@@ -229,6 +247,49 @@ const page = () => {
       }
       
     })
+
+
+      useEffect(() => {
+    
+        socket.on("connect", () => {
+      console.log("CONNECTED", socket.id);
+        });
+    
+        socket.on("disconnect", (reason) => {
+          console.log("DISCONNECTED", reason);
+        });
+    
+        socket.on("connect_error", (err) => {
+          console.log("CONNECT ERROR", err);
+        });
+    
+        socket.onAny((event,...args)=>{
+          console.log("Socket event : ",event,args)
+        })
+    
+        const completedHandler = () => {
+            setProgress("completed");
+        };
+    
+        const progressHandler = () => {
+            setProgress("progress");
+        };
+    
+        const failedHandler = () => {
+            setProgress("failed");
+        };
+    
+        socket.on("staff-completed", completedHandler);
+        socket.on("staff-progress", progressHandler);
+        socket.on("staff-failed", failedHandler);
+
+        return () => {
+                socket.off("staff-completed", completedHandler);
+                socket.off("staff-progress", progressHandler);
+                socket.off("staff-failed", failedHandler);
+            };
+        
+        }, []);
 
 
 
@@ -350,6 +411,8 @@ const page = () => {
                   <button type="submit" className="btn btn-primary">Kullanıcı Ekle</button>
                 </form>
                 ) : ( (stage == "onlystaff") ? (  
+                  <div className="col-md-12">
+                  <h6>{(progress =="progress") ? ("Personel ekleme işlemi sürüyor..") : ((progress === "failed") ? ("Personel ekleme başarısız") :((progress=="completed") ? ("Personel ekleme başarılı") : ("")))}</h6>
                   <form onSubmit={handleSubmitStaff(onStaffSubmit)}>
                     
                   
@@ -669,7 +732,7 @@ const page = () => {
                   
                     
                     <button type="submit" className="btn btn-primary">Personel Ekle</button>
-                  </form>
+                  </form></div>
                 ) : (
                 (stage == "userandstaff") ? (
                   <form onSubmit={handleSubmitUserAndStaff(onUserAndStaffSubmit)}>
@@ -1060,4 +1123,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

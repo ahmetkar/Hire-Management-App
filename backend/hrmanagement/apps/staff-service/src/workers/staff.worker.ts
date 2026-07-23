@@ -9,7 +9,7 @@ import { invalidateCacheTagKeys } from "../helpers/redis.helper"
 const worker = new Worker("staff-create",async(job)=>{
 
 
-const data = job.data
+const data = job.data.data
 
 
      await job.updateProgress({progress:true})

@@ -1,3 +1,3 @@
-1-job application,personel oluşturma için redis cache+bullmq eklemeleri,bir kişi için ardarda ai promptu kaydetme engelleme
+1-bullmq queue den gelen sonucun frontendi
 3-departmentId,jobId nin personel,jobapp ve job eklerken durumuna bakılacak,user güncelleme ve userandstaff güncellemeye tekrar bakılacak
 4-dockerize et ve load balancer ekle

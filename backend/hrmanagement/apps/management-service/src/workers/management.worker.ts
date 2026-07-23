@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client"
 
 
 const worker1 = new Worker("send-notification-staff",async(job)=>{
-    const data = job.data;
+    const data = job.data.data;
     let datas : Prisma.notificationsCreateManyInput[] = []
 
             if(data.byWhoId!=""){
@@ -57,7 +57,7 @@ const worker1 = new Worker("send-notification-staff",async(job)=>{
 
 const worker2 = new Worker("send-notification-manager",async(job)=>{
     
-            const data = job.data;
+            const data = job.data.data;
             let datas : Prisma.notificationsCreateManyInput[] = []
 
             if(data.byWhoId!=""){

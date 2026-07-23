@@ -17,8 +17,8 @@ const worker1 = new Worker("send-prompt",async(job)=>{
     switch(job.name){
         case "app-one-prompt":
             {
-                const data = job.data
-                 const personInfo = await prisma.jobapplication.findUnique({where:{id:data.sendedId}})
+                const data = job.data.data
+                 const personInfo = await prisma.jobapplication.findUnique({where:{id:data.id}})
                 
                         if(!personInfo){
                             //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
@@ -77,10 +77,10 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                             const embeddingResponse = await getEmbedding(responseText)
                         
                              if(response){
-                                await redis.set(`jobapp:${data.sendedId}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
-                                await redis.set(`jobapp:${data.sendedId}:prompt`,prompt,"EX",300)  
+                                await redis.set(`jobapp:${data.id}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
+                                await redis.set(`jobapp:${data.id}:prompt`,prompt,"EX",300)  
                                 await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-                                return {success:true,sendedId:data.sendedId,airesponse:responseText,message:"Başarılı."}
+                                return {success:true,sendedId:data.id,airesponse:responseText,message:"Başarılı."}
                             }else {
                                  return handleError("Hata response alınamadı.");
                              
@@ -88,8 +88,8 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 
             }
         case "staff-one-prompt":{
-              const data = job.data
-              const personInfo = await prisma.staff.findUnique({where:{id:data.sendedId}})
+              const data = job.data.data
+              const personInfo = await prisma.staff.findUnique({where:{id:data.id}})
 
                 if(!personInfo){
                      return handleError("Personel bilgisi bulunamadı.");
@@ -143,10 +143,10 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 const embeddingResponse = await getEmbedding(responseText)
                         
                 if(response){
-                    await redis.set(`staff:${data.sendedId}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
-                    await redis.set(`staff:${data.sendedId}:prompt`,prompt,"EX",300)  
+                    await redis.set(`staff:${data.id}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
+                    await redis.set(`staff:${data.id}:prompt`,prompt,"EX",300)  
                     await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-                    return {success:true,sendedId:data.sendedId,airesponse:responseText,message:""}
+                    return {success:true,sendedId:data.id,airesponse:responseText,message:""}
                  }else {
                     return handleError("Gelen responseda bir sorun var.");
                 }
@@ -162,7 +162,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
             let errorcount = 0;
             const errorList : string[] = []
 
-            const data = job.data
+            const data = job.data.data
             await Promise.all(data.idList.map( async (id : string)=>{
                 
             
@@ -283,7 +283,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
             const errorList : string[] = []
 
             
-            const data = job.data
+            const data = job.data.data
 
             await Promise.all(data.idList.map( async (id : string)=>{
             
@@ -400,7 +400,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
 const worker2 = new Worker("save-prompt",async(job)=>{
             switch(job.name){
                 case "app-one-save":{
-                       const data = job.data
+                       const data = job.data.data
                        if(await CreateIndex()){
                             const prompt = await redis.get(`jobapp:${data.sendedId}:prompt`)
                             const embeddingRedis = await redis.get(`jobapp:${data.sendedId}:embedding`)
@@ -454,7 +454,7 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                 }
                 case "staff-one-save":
                     {
-                      const data = job.data
+                      const data = job.data.data
                       
                        if(await CreateIndex()){
                             const prompt = await redis.get(`staff:${data.sendedId}:prompt`)
@@ -505,7 +505,7 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                     }
                 case "app-multi-save":{
                  
-                    const data = job.data
+                    const data = job.data.data
                      let count = 0;
                             let resultcount = 0;
                             let errorcount = 0;
@@ -590,7 +590,7 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                             let resultcount = 0;
                             let errorcount = 0;
                             const errorList : string[] = []
-                    const data = job.data
+                    const data = job.data.data
                         if(await CreateIndex()){
                             
                            
@@ -630,9 +630,7 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                                      errorcount+=1
                                      errorList[count] = "ElasticSearch a kaydetme başarısız oldu."
                                      return; 
-                                   
                                 }
-
                                      const personInfo = await prisma.staff.findUnique({where:{id:info.sendedId}})
                     
                                     if(!personInfo){

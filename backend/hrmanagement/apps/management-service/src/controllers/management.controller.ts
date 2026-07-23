@@ -3,7 +3,7 @@ import {prisma}  from "@hrmanagement/prisma"
 import { ValidationError } from "@hrmanagement/error-handler";
 import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helpers";
 
-
+import { notifications } from "@prisma/client";
 
 
 export const CreateOrUpdateSettings = async (req:Request,res:Response,next:NextFunction) => {
@@ -101,7 +101,7 @@ export const getNotifications = async (req:any,res:Response,next:NextFunction) =
                 const skip = (page-1) * limit
 
                     
-                  const [notifications,count] = await Promise.all([ getOrSetRedisCache(`notifications:${myId}:${page}:${limit}`,`cache-tag:notifications:${myId}`,()=>prisma.notifications.findMany({skip,take:limit,orderBy:{
+                  const [notifications,count] = await Promise.all([ getOrSetRedisCache<notifications[]>(`notifications:${myId}:${page}:${limit}`,`cache-tag:notifications:${myId}`,()=>prisma.notifications.findMany({skip,take:limit,orderBy:{
                         id:'desc'
                   },
                                 where:{

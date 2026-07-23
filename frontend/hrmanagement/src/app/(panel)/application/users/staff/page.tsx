@@ -181,7 +181,8 @@ const Page = () => {
                           
                           setAIPromptsLoading(true)
                           sendMultipileAIPromptRequest(checkedIds).then((data)=>{
-                                console.log(data)
+                            console.log(data)
+                               /* 
                                 if(data.result!=undefined){
                                 const idList : string[]  = []
                                 data.result.map((i)=>{
@@ -197,11 +198,11 @@ const Page = () => {
                                 })
                                 setAIResponses(data.result)
                                 setAIPromptsExist(true)
-                                setAIPromptsFail(false)
+                                setAIPromptsFail(false) 
                                  
                                 
                               }
-                              setAIPromptsLoading(false)
+                              setAIPromptsLoading(false)*/
                           }).catch((err)=>{
                             console.log(err)
                             setAIPromptsExist(false)
@@ -231,14 +232,12 @@ const Page = () => {
                                 reqs.push({
                                     sendedId: id,
                                     result: resp.result,
-                                    preembedding: resp.embedding,
-                                    prompt: resp.prompt,
-                                    embedding: null
                                 });
                               }
                 
                               saveMultipileAIAnswerRequest(reqs).then((data)=>{
-                                  if(data){
+                                console.log(data)
+                                 /* if(data){
                                     setSaveAIPromptSuccess(true)
                                     setSaveAIPromptFail(false)
                                      setTimeout(() => {
@@ -251,7 +250,7 @@ const Page = () => {
                                       setSaveAIPromptFail(false);
                                   }, 3000);
                                   }
-                                  setSaveAIPromptsLoading(false)
+                                  setSaveAIPromptsLoading(false)*/
                               }).catch((err)=>{
                                 setSaveAIPromptFail(true)
                                  setTimeout(() => {
@@ -361,11 +360,11 @@ const Page = () => {
                                         <td>
                                           <p className="mb-0 text-muted">
             
-                                            <small className="mb-0 text-muted">İş Id : {uap.position.id}</small>
+                                            <small className="mb-0 text-muted">İş Id : {uap.position!.id}</small>
                                           </p>
                                           
                                            <p className="mb-0 text-muted">
-                                            <small className="mb-0 text-muted">İş Adı : {uap.position.jobtitle}</small>
+                                            <small className="mb-0 text-muted">İş Adı : {uap.position!.jobtitle}</small>
                                            </p>
                                         </td>
                                         <td>
@@ -529,7 +528,7 @@ const Page = () => {
                             </td> 
                             <td><small className="text-muted">{uap.city}</small></td>
                             <td><small className="text-muted">{uap.country}</small></td>
-                            <td className="text-muted">{uap.position.jobtitle}</td>
+                            <td className="text-muted">{uap.position!.jobtitle}</td>
                             
                             <td>
                                 <button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

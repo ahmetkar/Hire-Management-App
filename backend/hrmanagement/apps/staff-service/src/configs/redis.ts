@@ -14,10 +14,10 @@ class RedisClient {
           const delay = Math.min(times * 50, 2000);
           return delay;
         },
-        maxRetriesPerRequest: 3});
+        maxRetriesPerRequest: null});
 
       RedisClient.setupEventListeners();
-      RedisClient.setupKeyspaceNotifications();
+    
     }
     return RedisClient.instance;
   }
@@ -53,61 +53,7 @@ class RedisClient {
   }
 
 
-   private static async setupKeyspaceNotifications() {
-    try {
-      /**
-       * Redis keyspace notificationları açar.
-       * KEA = çoğu key eventini aktif eder.
-       */
-      await RedisClient.instance.config(
-        "SET",
-        "notify-keyspace-events",
-        "KEA"
-      );
-
-      /**
-       * Pub/Sub için ayrı bağlantı gerekir.
-       */
-      RedisClient.subscriber = RedisClient.instance.duplicate();
-
-      RedisClient.subscriber.on("error", (error) => {
-        console.error("Redis subscriber error:", error);
-      });
-
-      await RedisClient.subscriber.psubscribe("__keyevent@0__:*");
-
-      RedisClient.subscriber.on("pmessage", (pattern, channel, message) => {
-        const eventName = channel.split(":").pop();
-
-        console.log("Redis event:", {
-          pattern,
-          eventName,
-          key: message,
-        });
-
-        if (eventName === "set") {
-          console.log(`${message} eklendi/güncellendi`);
-        }
-
-        if (eventName === "del") {
-          console.log(`${message} silindi`);
-        }
-
-        if (eventName === "expired") {
-          console.log(`${message} expire oldu`);
-        }
-
-        if (eventName === "hset") {
-          console.log(`${message} hash olarak güncellendi`);
-        }
-      });
-
-      console.log("Redis keyspace notifications dinleniyor");
-    } catch (error) {
-      console.error("Redis keyspace notification setup error:", error);
-    }
-  }
-
+  
   public static async closeConnection() {
     if (RedisClient.instance) {
       try {

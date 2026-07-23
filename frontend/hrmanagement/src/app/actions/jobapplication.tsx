@@ -9,26 +9,17 @@ export type AIResponses  = {
 
 export type AIResponseElement = {
     sendedId:string;
-    prompt:string;
     result:string;
-    embedding:Record<string,unknown> | null;
-
 }
 
 export type AIResponse = {
     sendedId:string;
-    prompt:string;
     airesponse:string;
-    embedding:Record<string,unknown> | null;
-
 }
 
 export type SaveRequest =  {
         sendedId:string;
-        prompt:string;
         result:string;
-        preembedding:Record<string,unknown> | null;
-        embedding:unknown | null;
 }
 
 export type AnalysisResponse = {
@@ -50,88 +41,76 @@ export type SearchResult  = {
 
 
 
-export const sendAIPromptRequest = async (appId:string): Promise<AIResponse> => {
-    const response = await axiosInstance.post<AIResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/send-prompt`,{
+export const sendAIPromptRequest = async (appId:string): Promise<string | null> => {
+    const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/send-prompt`,{
         kind:"application",
         id:appId
     })
-    const data =  response.data
-    return data
+    if(response.status == 201){
+        return response.data.id
+    }
+    return null
 }  
 
 
-export const sendMultipileAIPromptRequest = async (appIdList:string[]): Promise<AIResponses> => {
-    const response = await axiosInstance.post<AIResponses>(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/send-multipile-prompt`,{
+export const sendMultipileAIPromptRequest = async (appIdList:string[]): Promise<string | null> => {
+    const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/send-multipile-prompt`,{
         kind:"application",
         idList:appIdList
     })
-    const data =  response.data
-    return data
+    if(response.status == 201){
+        return response.data.id
+    }
+    return null
 }  
 
 
-export const sendAnalyisRequest = async (kind:string,appId:string): Promise<AnalysisResponse | null> => {
+export const sendAnalyisRequest = async (kind:string,appId:string): Promise<string  | null> => {
     let response = null
     if(kind == "oldest"){
-        response = await axiosInstance.post<AnalysisResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/search-for-oldest`,{
+        response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/search-for-oldest`,{
             applicationId:appId
         })
     }else if(kind == "newest"){
-        response = await axiosInstance.post<AnalysisResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/search-for-newest`,{
+        response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/search-for-newest`,{
             applicationId:appId
         })
     }
 
-    if(response!=null){
-        const data =  response.data
-        return data
+     if(response!=null && response.status == 201){
+        return response.data.id
     }
     return null
 }  
 
 
 
-export const saveAIAnswerRequest = async (appId:string,prompt:string,resp:string,embedding:Record<string,unknown>): Promise<string> => {
-    let embed = null
-    if(embedding != null){
-    const embeddingArr = embedding.data as Record<string,unknown>[]
-    embed = embeddingArr[0].embedding
+export const saveAIAnswerRequest = async (appId:string,resp:string): Promise<string | null> => {
+  
     
-    }
     const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/save-prompt`,{
         kind:"application",
         sendedId:appId,
-        prompt:prompt,
-        result:resp,
-        embedding:embed
+        result:resp
     })
-    const data =  response.data
-    return data
+     if(response.status == 201){
+        return response.data.id
+    }
+    return null
 }  
 
 
-export const saveMultipileAIAnswerRequest = async (requests:SaveRequest[]): Promise<boolean> => {
+export const saveMultipileAIAnswerRequest = async (requests:SaveRequest[]): Promise<string | null> => {
     
    
-    const reqs = requests.map((req)=>{
-        if(req!=undefined){
-            let embed = null
-            if(req.preembedding != null){
-                const embeddingArr = req.preembedding.data as Record<string,unknown>[]
-                embed = embeddingArr[0].embedding
-                req.embedding = embed
-            }
-            
-        }
-        return req
-    })
-    
     const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/save-multipile-prompt`,{
         kind:"application",
-        infoList:reqs
+        infoList:requests
     })
-    const res =  response.data.success
-    return res
+     if(response.status == 201){
+        return response.data.id
+    }
+    return null
    
 }  
 

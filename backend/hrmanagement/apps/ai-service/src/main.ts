@@ -6,7 +6,8 @@ import router from './routes/ai.routes'
 import cors from "cors"
 import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
-
+import "./workers/ai.worker"
+import "./workers/elastic.worker"
 const app = express();
 
 

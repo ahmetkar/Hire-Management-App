@@ -68,15 +68,20 @@ export async function startQueueEvents(io:Server){
         console.log("completed",jobId,returnvalue)
         const status = await redis.get(`sendpromptstatus:${jobId}`)
         if(status == "completed"){
-            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+            io.to(`aiSendQueue:${jobId}`).emit("sendprompt-completed",{jobId,result:returnvalue})
         }
    
         
     })
 
+    queueEventsForSendPrompt.on("progress",async ({jobId,data})=>{
+        console.log("progress",jobId,data) 
+        io.to(`aiSendQueue:${jobId}`).emit("sendprompt-progress",{jobId,data})
+     })
+
      queueEventsForSendPrompt.on("failed",async ({jobId,failedReason})=>{
         console.log("failed",jobId,failedReason) 
-        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        io.to(`aiSendQueue:${jobId}`).emit("sendprompt-failed",{jobId,error:failedReason})
         
     })
 
@@ -90,15 +95,21 @@ export async function startQueueEvents(io:Server){
         console.log("completed",jobId,returnvalue)
         const status = await redis.get(`savepromptstatus:${jobId}`)
         if(status == "completed"){
-            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+            io.to(`aiSaveQueue:${jobId}`).emit("saveprompt-completed",{jobId,result:returnvalue})
         }
    
         
     })
 
+      queueEventsForSavePrompt.on("progress",async ({jobId,data})=>{
+        console.log("progress",jobId,data) 
+        io.to(`aiSaveQueue:${jobId}`).emit("saveprompt-progress",{jobId,data})
+        
+    })
+
      queueEventsForSavePrompt.on("failed",async ({jobId,failedReason})=>{
         console.log("failed",jobId,failedReason)
-        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        io.to(`aiSaveQueue:${jobId}`).emit("saveprompt-failed",{jobId,error:failedReason})
         
     })
 
@@ -111,15 +122,21 @@ export async function startQueueEvents(io:Server){
         console.log("completed",jobId,returnvalue)
         const status = await redis.get(`elasticstatus:${jobId}`)
         if(status == "completed"){
-            io.to(`staffQueue:${jobId}`).emit("staff-completed",{jobId,result:returnvalue})
+            io.to(`elasticQueue:${jobId}`).emit("elastic-completed",{jobId,result:returnvalue})
         }
    
         
     })
 
+    queueEventsForElasticSearch.on("progress",async ({jobId,data})=>{
+        console.log("progress",jobId,data) 
+        io.to(`elasticQueue:${jobId}`).emit("elastic-progress",{jobId,data})
+        
+    })
+
      queueEventsForElasticSearch.on("failed",async ({jobId,failedReason})=>{
         console.log("failed",jobId,failedReason) 
-        io.to(`staffQueue:${jobId}`).emit("staff-failed",{jobId,error:failedReason})
+        io.to(`elasticQueue:${jobId}`).emit("elastic-failed",{jobId,error:failedReason})
         
     })
 
