@@ -7,7 +7,8 @@ import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { getAllStaff, getMultipileStaff, StaffResponse } from '@/app/lists/datas/users';
-import { AIResponseElement, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/users';
+import { AIResponseElement, AIResponses, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/users';
+import { connectSocket, socket } from '@/app/utils/socket';
 
 
 
@@ -98,6 +99,119 @@ const Page = () => {
       }, [page,limit,searchStr]);
 
 
+              useEffect(() => {
+      
+                     socket.on("connect", () => {
+                            console.log("CONNECTED", socket.id);
+                      });
+                                
+                    socket.on("disconnect", (reason) => {
+                          console.log("DISCONNECTED", reason);
+                    });
+                                
+                    socket.on("connect_error", (err) => {
+                          console.log("CONNECT ERROR", err);
+                     });
+                                
+                    socket.onAny((event,...args)=>{
+                          console.log("Socket event : ",event,args)
+                    });
+      
+      
+                     const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                                      
+                         const data = payload.result as AIResponses
+                                if(data.result!=undefined){
+                                const idList : string[]  = []
+                                data.result.map((i)=>{
+                                  idList.push(i.sendedId)
+                                })
+                                
+                                getMultipileStaff(idList,apage,aiJobLimit).then((staffdata)=>{
+                                  console.log("staffdata",staffdata)
+                                  setAIStaffResponses(staffdata)
+                                  setAIStaffIdList(idList)
+                                }).catch((err)=>{
+                                  console.log("stafferr",err)
+                                })
+                                setAIResponses(data.result)
+                                setAIPromptsExist(true)
+                                setAIPromptsFail(false) 
+                                 
+                                
+                              }
+                              setAIPromptsLoading(false)
+                     }
+                    
+                                
+                                
+                                
+                    const sendFailedHandler = (payload : {jobId:string,error:string}) => {
+                        
+                            setAIPromptsExist(false)
+                            setAIPromptsFail(true)
+                            setTimeout(() => {
+                              setAIPromptsFail(false);
+                            }, 3000);
+                            setAIPromptsLoading(false)
+                            console.log(payload.error)
+      
+                    };
+                    
+                    
+                    const saveCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                       
+                      const data = payload.result as unknown
+                       if(data){
+                                    setSaveAIPromptSuccess(true)
+                                    setSaveAIPromptFail(false)
+                                     setTimeout(() => {
+                                      setSaveAIPromptSuccess(false);
+                                  }, 3000);
+                                  }else {
+                                    setSaveAIPromptFail(true)
+                                    setSaveAIPromptSuccess(false)
+                                    setTimeout(() => {
+                                      setSaveAIPromptFail(false);
+                                  }, 3000);
+                                  }
+                                  setSaveAIPromptsLoading(false)
+                                       
+                    };
+                                
+                    const saveFailedHandler = (payload : {jobId:string,error:string}) => {
+                         
+                                setSaveAIPromptFail(true)
+                                 setTimeout(() => {
+                                      setSaveAIPromptFail(false);
+                                  }, 3000);
+                                setSaveAIPromptSuccess(false)
+                                setSaveAIPromptsLoading(false)
+                                console.log(payload.error)
+                    };
+      
+                      socket.on("sendprompt-completed", sendCompletedHandler);
+                      socket.on("sendprompt-failed", sendFailedHandler);
+                    
+                    
+                      socket.on("saveprompt-completed", saveCompletedHandler);
+                      socket.on("saveprompt-failed", saveFailedHandler);
+                    
+      
+                     return () => {
+                              socket.off("sendprompt-completed", sendCompletedHandler);
+                              socket.off("sendprompt-failed", sendFailedHandler);
+                    
+                                        
+                              socket.off("saveprompt-completed", saveCompletedHandler);
+                              socket.off("saveprompt-failed", saveFailedHandler);
+      
+                     }
+      
+                                    
+                  },[]);
+
+
       const setLimit = (e:React.ChangeEvent<HTMLSelectElement>) => {
         const l  = e.target.value
         const searchParams = new URLSearchParams(params.toString())
@@ -180,29 +294,16 @@ const Page = () => {
                           }
                           
                           setAIPromptsLoading(true)
-                          sendMultipileAIPromptRequest(checkedIds).then((data)=>{
-                            console.log(data)
-                               /* 
-                                if(data.result!=undefined){
-                                const idList : string[]  = []
-                                data.result.map((i)=>{
-                                  idList.push(i.sendedId)
-                                })
-                                
-                                getMultipileStaff(idList,apage,aiJobLimit).then((staffdata)=>{
-                                  console.log("staffdata",staffdata)
-                                  setAIStaffResponses(staffdata)
-                                  setAIStaffIdList(idList)
-                                }).catch((err)=>{
-                                  console.log("stafferr",err)
-                                })
-                                setAIResponses(data.result)
-                                setAIPromptsExist(true)
-                                setAIPromptsFail(false) 
-                                 
-                                
+                          sendMultipileAIPromptRequest(checkedIds).then((id)=>{
+                         
+                              if(id){
+                                const jobId = id
+                                connectSocket(jobId,"aiSendQueue",()=>{
+                                                                setAIPromptsLoading(false);
+                                                    })
                               }
-                              setAIPromptsLoading(false)*/
+                            
+                              
                           }).catch((err)=>{
                             console.log(err)
                             setAIPromptsExist(false)
@@ -235,22 +336,15 @@ const Page = () => {
                                 });
                               }
                 
-                              saveMultipileAIAnswerRequest(reqs).then((data)=>{
-                                console.log(data)
-                                 /* if(data){
-                                    setSaveAIPromptSuccess(true)
-                                    setSaveAIPromptFail(false)
-                                     setTimeout(() => {
-                                      setSaveAIPromptSuccess(false);
-                                  }, 3000);
-                                  }else {
-                                    setSaveAIPromptFail(true)
-                                    setSaveAIPromptSuccess(false)
-                                    setTimeout(() => {
-                                      setSaveAIPromptFail(false);
-                                  }, 3000);
+                              saveMultipileAIAnswerRequest(reqs).then((id)=>{
+                                 if(id){
+                                const jobId = id
+                                connectSocket(jobId,"aiSaveQueue",()=>{
+                                              setAIPromptsLoading(false);
+                                  })
                                   }
-                                  setSaveAIPromptsLoading(false)*/
+                            
+                                
                               }).catch((err)=>{
                                 setSaveAIPromptFail(true)
                                  setTimeout(() => {

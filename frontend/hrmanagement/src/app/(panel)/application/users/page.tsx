@@ -71,9 +71,9 @@ const Page = () => {
   return (
     <div>
         <Modal show={showSuccessModal} title={successTitle} message={successDesc}
-                                    confirmText='' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowSuccessModal(false)} />
+                                    confirmText='' cancelText='Tamam' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowSuccessModal(false)} />
         <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
-                                    confirmText='' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
+                                    confirmText='' cancelText='Tamam' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
 
         
 

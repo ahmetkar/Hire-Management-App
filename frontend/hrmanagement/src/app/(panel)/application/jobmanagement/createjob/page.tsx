@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 
-import { Department,getDepartments } from '../../../../lists/datas/departments'
+import { Department,getDepartments } from '../../../../lists/department'
 
 import { User,getUsers } from '../../../../lists/datas/users'
 
@@ -12,7 +12,7 @@ import axiosInstance from '@/app/utils/axiosInstance';
 
 
 
-const page = () => {
+const Page = () => {
 
     const [departments, setDepartments] = useState<Department[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -21,12 +21,12 @@ const page = () => {
 
 
      useEffect(() => {
-        getDepartments()
-          .then((data) => setDepartments(data))
+        getDepartments(1,10)
+          .then((data) => setDepartments(data.data as Department[]))
           .catch((error) => console.error(error));
 
-          getUsers()
-          .then((data) => setUsers(data))
+          getUsers(1,10)
+          .then((data) => setUsers(data.data as User[]))
           .catch((error) => console.error(error));
 
      },[]);
@@ -36,13 +36,13 @@ const page = () => {
            jobtitle:string;
            jobrequirements:string;
            jobnotes:string;
-           department:string;
            position:string;
            mounthlywage:number;
            weeklypayment:number;
            dailypayment:number;
            expiredate:string;
            responsibleUserId:string;
+           departmentId:string;
        };
      
      
@@ -152,19 +152,19 @@ const page = () => {
                         <div className="form-group mb-3">
                           <label htmlFor="simple-select2">Ait olduğu departman : </label>
                           <select className="form-control" id="simple-select2"
-                          {...register("department",{required: "Departman bilgisi gereklidir."})}
+                          {...register("departmentId",{required: "Departman bilgisi gereklidir."})}
                           >
                             <optgroup label="">
                               {departments.map((dep,index)=>(
-                                <option key={index} value={`${dep.name}`}>{dep.name}</option>
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
                               ))}  
                               
                 
                             </optgroup>
                           
                           </select>
-                           {errors.department && (
-                        <p className='text-red-500 text-sm'>{String(errors.department.message)}</p>
+                           {errors.departmentId && (
+                        <p className='text-red-500 text-sm'>{String(errors.departmentId.message)}</p>
                           )
                           }
                           
@@ -266,4 +266,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

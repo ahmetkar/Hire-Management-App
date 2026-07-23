@@ -229,17 +229,9 @@ const Page = () => {
                   saveAIAnswerRequest(appId,aiResponse.airesponse).then((id)=>{
                       if(id){
                         const jobId = id
-                        console.log("workera eklendi",jobId)
-                          console.log("socket:", socket);
-                          console.log("connected:", socket.connected);
-                          if (socket.connected) {
-                          socket.emit("join-job", {queueName:"aiSaveQueue",jobId});
-                          } else {
-                            socket.connect();
-                            socket.once("connect", () => {
-                            socket.emit("join-job", {queueName:"aiSaveQueue",jobId});
-                            });
-                            }
+                        connectSocket(jobId,"aiSaveQueue",()=>{
+                          setSaveLoading(false);
+                        })
                         //websocket işlemleri
                         
                       }

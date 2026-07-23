@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 
-import { Department,getDepartments } from '../../../../../lists/datas/departments'
+import { Department,getDepartments } from '../../../../../lists/department'
 
 import { User,getUsers } from '../../../../../lists/datas/users'
 
@@ -14,7 +14,7 @@ import { getJob,Job } from '../../../../../lists/jobs';
 
 
 
-const page = () => {
+const Page = () => {
 
 
     const {id} = useParams()
@@ -28,12 +28,12 @@ const page = () => {
 
 
      useEffect(() => {
-        getDepartments()
-          .then((data) => setDepartments(data))
+        getDepartments(1,10)
+          .then((data) => setDepartments(data.data as Department[]))
           .catch((error) => console.error(error));
 
-          getUsers()
-          .then((data) => setUsers(data))
+          getUsers(1,10)
+          .then((data) => setUsers(data.data as User[]))
           .catch((error) => console.error(error));
 
           if(id != null){
@@ -57,6 +57,7 @@ const page = () => {
            jobrequirements:string;
            jobnotes:string;
            department:string;
+           departmentId:string;
            position:string;
            mounthlywage:number;
            weeklypayment:number;
@@ -77,6 +78,7 @@ const page = () => {
            jobrequirements:"",
            jobnotes:"",
            department:"",
+           departmentId:"",
            position:"",
            mounthlywage:undefined,
            weeklypayment:undefined,
@@ -91,7 +93,8 @@ const page = () => {
            jobtitle:job.jobtitle ?? "",
            jobrequirements:job.jobrequirements ?? "",
            jobnotes:job.jobnotes ?? "",
-           department:job.department ?? "",
+           department:job.department.name ?? "",
+           departmentId:job.departmentId ?? "",
            position:job.position ?? "",
            mounthlywage:job.mounthlywage ?? undefined,
            weeklypayment:job.weeklypayment ??undefined,
@@ -207,21 +210,21 @@ const page = () => {
                         <div className="form-group mb-3">
                           <label htmlFor="simple-select2">Ait olduğu departman : </label>
                           <select className="form-control" id="simple-select2"
-                          {...register("department",{required: "Departman bilgisi gereklidir."})}
+                          {...register("departmentId",{required: "Departman bilgisi gereklidir."})}
 
                        
                           >
                             <optgroup label="">
                               {departments.map((dep,index)=>(
-                                <option key={index} value={`${dep.name}`}>{dep.name}</option>
+                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
                               ))}  
                               
                 
                             </optgroup>
                           
                           </select>
-                           {errors.department && (
-                        <p className='text-red-500 text-sm'>{String(errors.department.message)}</p>
+                           {errors.departmentId && (
+                        <p className='text-red-500 text-sm'>{String(errors.departmentId.message)}</p>
                           )
                           }
                           
@@ -328,4 +331,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

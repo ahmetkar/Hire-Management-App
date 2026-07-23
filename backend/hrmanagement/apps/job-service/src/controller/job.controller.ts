@@ -880,13 +880,26 @@ export const getAllDepartment = async (req:Request,res:Response,next:NextFunctio
 
 
             try {
+
+                const page = Math.max(Number(req.query.page) || 1 ,1)
+                const limit = Math.min(Number(req.query.limit) || 10 ,100)
                 
-                    const departments = await prisma.department.findMany();
+                const skip = (page-1) * limit
+
+                
+                
+                    const [departments,total] = await Promise.all([prisma.department.findMany({skip,take:limit,orderBy:{
+                            addingdate:'desc'
+                        }}),prisma.department.count()]) 
                     if(departments){
                         res.status(201).json({
                         success:true,
                         message:"Departments found !",
-                        data: departments
+                        data: departments,
+                        total:total,
+                        page:page,
+                        limit:limit,
+                        totalPages:Math.ceil(total/limit)
                         });
                     }else {
                         return next(new ValidationError("No departments exists"))

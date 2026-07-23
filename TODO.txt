@@ -1,3 +1,2 @@
-1-bullmq queue den gelen sonucun frontendi
-3-departmentId,jobId nin personel,jobapp ve job eklerken durumuna bakılacak,user güncelleme ve userandstaff güncellemeye tekrar bakılacak
-4-dockerize et ve load balancer ekle
+1-departmentId,jobId nin personel,jobapp ve job eklerken durumuna bakılacak,user güncelleme ve userandstaff güncellemeye tekrar bakılacak
+2-dockerize et ve load balancer ekle

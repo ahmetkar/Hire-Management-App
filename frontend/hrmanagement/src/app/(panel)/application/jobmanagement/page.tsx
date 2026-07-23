@@ -6,6 +6,7 @@ import Pagination from '../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
 import {AIResponse, AIResponseElement, AIResponses, approveJobApp, disapproveJobApp, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
+import { connectSocket, socket } from '@/app/utils/socket';
 
 
 const Page = () => {
@@ -202,21 +203,31 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
        
         }
 
-         const sendMultipilePrompt = ()=>{
-          if(checkedIds.length == 0){
-            setAIPromptsFail(true)
-             setTimeout(() => {
-                      setAIPromptsFail(false);
-            }, 3000);
-            return;
-          }
-          setAIPromptsLoading(true)
-          sendMultipileAIPromptRequest(checkedIds).then((success)=>{
-                if(success){
-                  //websocket işlemleri
-                  /*
-                        const data = null
-                        console.log(data)
+        
+            useEffect(() => {
+
+               socket.on("connect", () => {
+                      console.log("CONNECTED", socket.id);
+                });
+                          
+              socket.on("disconnect", (reason) => {
+                    console.log("DISCONNECTED", reason);
+              });
+                          
+              socket.on("connect_error", (err) => {
+                    console.log("CONNECT ERROR", err);
+               });
+                          
+              socket.onAny((event,...args)=>{
+                    console.log("Socket event : ",event,args)
+              });
+
+
+               const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                                
+                
+                      const data = payload.result as AIResponses
+                      console.log(data)
                       if(data.result!=undefined){
                       const idList : string[]  = []
                       data.result.map((i)=>{
@@ -233,10 +244,100 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                       setAIResponses(data.result)
                       setAIPromptsExist(true)
                       setAIPromptsFail(false)
+                      setAIPromptsLoading(false)
+               }
+              }
+                          
+                             
+                          
+              const sendFailedHandler = (payload : {jobId:string,error:string}) => {
+                  
+                  console.log(payload.error)
+                  setAIPromptsExist(false)
+                  setAIPromptsFail(true)
+                  setTimeout(() => {
+                    setAIPromptsFail(false);
+                  }, 3000);
+                  setAIPromptsLoading(false)
+
+              };
+              
+              
+              const saveCompletedHandler = (payload : {jobId:string,result:unknown}) => {
+                 
+                const data = payload.result as unknown
+                  if(data){
+                    setSaveAIPromptSuccess(true)
+                    setSaveAIPromptFail(false)
+                     setTimeout(() => {
+                      setSaveAIPromptSuccess(false);
+                  }, 3000);
+                  }else {
+                    setSaveAIPromptFail(true)
+                    setSaveAIPromptSuccess(false)
+                    setTimeout(() => {
+                      setSaveAIPromptFail(false);
+                  }, 3000);
+                  }
+                  setSaveAIPromptsLoading(false)
+                            
+                                 
+              };
+                          
+              const saveFailedHandler = (payload : {jobId:string,error:string}) => {
+                 setSaveAIPromptFail(true)
+                 setTimeout(() => {
+                      setSaveAIPromptFail(false);
+                  }, 3000);
+                setSaveAIPromptSuccess(false)
+                setSaveAIPromptsLoading(false)
+                console.log(payload.error)              
+                                  
+              };
+
+                socket.on("sendprompt-completed", sendCompletedHandler);
+                socket.on("sendprompt-failed", sendFailedHandler);
+              
+              
+                socket.on("saveprompt-completed", saveCompletedHandler);
+                socket.on("saveprompt-failed", saveFailedHandler);
+              
+
+               return () => {
+                        socket.off("sendprompt-completed", sendCompletedHandler);
+                        socket.off("sendprompt-failed", sendFailedHandler);
+              
+                                  
+                        socket.off("saveprompt-completed", saveCompletedHandler);
+                        socket.off("saveprompt-failed", saveFailedHandler);
+
+               }
+
+                              
+            },[]);
+
+         const sendMultipilePrompt = ()=>{
+          if(checkedIds.length == 0){
+            setAIPromptsFail(true)
+             setTimeout(() => {
+                      setAIPromptsFail(false);
+            }, 3000);
+            return;
+          }
+
+
+          
+          setAIPromptsLoading(true)
+          sendMultipileAIPromptRequest(checkedIds).then((id)=>{
+                if(id){
+                  const jobId = id
+                  connectSocket(jobId,"aiSendQueue",()=>{
+                                setAIPromptsLoading(false);
+                    })
+                  //websocket işlemleri
                       
-                      
-                    }
-                    setAIPromptsLoading(false)
+                }
+                 
                 }).catch((err)=>{
                   console.log(err)
                   setAIPromptsExist(false)
@@ -244,10 +345,9 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                   setTimeout(() => {
                     setAIPromptsFail(false);
                   }, 3000);
-                  setAIPromptsLoading(false)*/
-                }
-                
-          })
+                  setAIPromptsLoading(false)
+
+               })
 
         }
 
@@ -271,25 +371,14 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                 });
               }
 
-              saveMultipileAIAnswerRequest(reqs).then((success)=>{
-                if(success){
+              saveMultipileAIAnswerRequest(reqs).then((id)=>{
+                if(id){
+                  const jobId = id
+                  connectSocket(jobId,"aiSaveQueue",()=>{
+                                setAIPromptsLoading(false);
+                    })
                   //webssocket işlemleri ona gröe true false
-                  /*
-                const data = null
-                  if(data){
-                    setSaveAIPromptSuccess(true)
-                    setSaveAIPromptFail(false)
-                     setTimeout(() => {
-                      setSaveAIPromptSuccess(false);
-                  }, 3000);
-                  }else {
-                    setSaveAIPromptFail(true)
-                    setSaveAIPromptSuccess(false)
-                    setTimeout(() => {
-                      setSaveAIPromptFail(false);
-                  }, 3000);
-                  }
-                  setSaveAIPromptsLoading(false)*/
+                 
                 }
               }).catch((err)=>{
                 setSaveAIPromptFail(true)

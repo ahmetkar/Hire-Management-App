@@ -2,12 +2,18 @@ import axios from "axios"
 import axiosInstance from "../utils/axiosInstance";
 
 
+export type Department = {
+    name:string;
+}
+
+
 export type Job =  {
  id: string;
  jobtitle: string;
  jobrequirements: string;
  jobnotes: string;
- department: string;
+ department:Department;
+ departmentId: string;
  position: string;
  mounthlywage: number | null;
  weeklypayment: number | null;
