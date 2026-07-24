@@ -9,9 +9,7 @@ import { useForm } from 'react-hook-form'
 
 const Page =  () => {
 
-     const params = useParams<{ id: string }>();
-
-     const id = params.id;
+       const {id} = useParams()
 
     const [serverError,setServerError] = useState<string | null>(null)
     const [success,setSuccess] = useState(false)
@@ -47,7 +45,6 @@ const Page =  () => {
       onSuccess:(data : unknown)=>{
           setServerError(null);
           setSuccess(true)
-          reset()
       },
       onError: (error:AxiosError) => {
           const errorMsg = (error.response?.data as {message?:string})?.message || "Departman formu gönderilemedi"
@@ -65,13 +62,13 @@ const Page =  () => {
         try {
           if (id !== undefined) {
             try {
-            const user = await getDepartment(id.toString());
+            const dep = await getDepartment(id.toString());
     
-            if (user) {
+            if (dep) {
              
                 reset({
-                  id:user.id,
-                  name: user.name,
+                  id:dep.data.id,
+                  name: dep.data.name,
                   
                 });
     
@@ -101,13 +98,13 @@ const Page =  () => {
    <div>
           <div className="row justify-content-center">
            {send ? ( success ? (
-              <p>Departman başarıyla eklendi.</p>
+              <p>Departman başarıyla güncellendi.</p>
             ) : (
-              <p>Departman eklenemedi.</p>
+              <p>Departman güncellenemedi..</p>
             )):("")
           }
             <div className="col-12">
-              <h2 className="page-title">{params.id} id li departman güncelleme</h2>
+              <h2 className="page-title">{id} id li departman güncelleme</h2>
               <p className="text-muted"></p>
               <div className="card shadow mb-4">
                 <div className="card-header">

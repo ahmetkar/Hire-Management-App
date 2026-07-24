@@ -86,7 +86,6 @@ export const SendJobNotificationToManager = async (byWhoId:string,jobId:string,j
         if(jobapp && job){
 
 
-
             if(status == "approved"){
             const by = await prisma.users.findUnique({where:{id:byWhoId}}) 
             if(by){

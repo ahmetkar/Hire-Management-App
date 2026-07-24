@@ -20,14 +20,18 @@ const worker = new Worker(
                 });
 
                 if (!appInfo) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusu bilgisi bulunamadı.");
                 }
 
                 if (appInfo.jobId == null) {
+
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusu iş bilgilerinde sorun var.");
                 }
 
                 if (appInfo.appPrompts == null) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Personel için prompt bilgisi yok.");
                 }
 
@@ -36,6 +40,7 @@ const worker = new Worker(
                 });
 
                 if (!jobInfo) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusundaki iş bilgisi bulunamadı.");
                 }
 
@@ -56,9 +61,10 @@ const worker = new Worker(
                 });
 
                 if (!foundOldest) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Personel bilgileri bulunamadı.");
                 }
-
+                console.log(foundOldest)
                 const embedIndexIdList = await Promise.all(
                     foundOldest.map(async (s) => {
                         const getPrompt = s.staffPrompts.at(-1);
@@ -78,7 +84,10 @@ const worker = new Worker(
                     })
                 );
 
+                console.log(embedIndexIdList)
+
                 if (embedIndexIdList.every((item) => item == null)) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Personeller için Elastic Search kayıtları bulunamadı."
                     );
@@ -92,6 +101,7 @@ const worker = new Worker(
                 const getAppPrompt = appInfo.appPrompts.at(-1);
 
                 if (getAppPrompt == undefined) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Application için prompt kaydı yok."
                     );
@@ -111,6 +121,8 @@ const worker = new Worker(
                         : null;
 
                 if (appEmbedding == null) {
+
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Application için elastic search kaydı yok."
                     );
@@ -129,6 +141,7 @@ const worker = new Worker(
                         message: "Arama başarılı",
                     };
                 } else {
+                    await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Arama başarısız.");
                 }
             }
@@ -142,14 +155,18 @@ const worker = new Worker(
                 });
 
                 if (!appInfo) {
+
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusu bilgisi bulunamadı.");
                 }
 
                 if (appInfo.jobId == null) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusu iş bilgilerinde sorun var.");
                 }
 
                 if (appInfo.appPrompts == null) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Personel için prompt bilgisi yok.");
                 }
 
@@ -158,6 +175,7 @@ const worker = new Worker(
                 });
 
                 if (!jobInfo) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("İş başvurusundaki iş bilgisi bulunamadı.");
                 }
 
@@ -178,6 +196,7 @@ const worker = new Worker(
                 });
 
                 if (!foundNewest) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Personel bilgileri bulunamadı.");
                 }
 
@@ -201,6 +220,7 @@ const worker = new Worker(
                 );
 
                 if (embedIndexIdList.every((item) => item == null)) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Personeller için Elastic Search kayıtları bulunamadı."
                     );
@@ -212,6 +232,7 @@ const worker = new Worker(
                 const getAppPrompt = appInfo.appPrompts.at(-1);
 
                 if (getAppPrompt == undefined) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Application için prompt kaydı yok."
                     );
@@ -227,6 +248,7 @@ const worker = new Worker(
                         : null;
 
                 if (appEmbedding == null) {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError(
                         "Application için elastic search kaydı yok."
                     );
@@ -245,6 +267,7 @@ const worker = new Worker(
                         message: "Arama başarılı.",
                     };
                 } else {
+                      await redis.set(`elasticstatus:${job.id}`,"failed","EX",300) 
                     return handleError("Arama başarısız.");
                 }
             }

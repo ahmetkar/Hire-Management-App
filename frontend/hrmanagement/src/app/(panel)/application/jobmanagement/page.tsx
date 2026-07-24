@@ -5,13 +5,13 @@ import React, { useEffect, useState } from 'react'
 import Pagination from '../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
-import {AIResponse, AIResponseElement, AIResponses, approveJobApp, disapproveJobApp, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
+import {AIResponse, AIResponseElement, AIResponseResults, AIResponses, approveJobApp, disapproveJobApp, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
 import { connectSocket, socket } from '@/app/utils/socket';
 
 
 const Page = () => {
 
-const defaultLimit = 1
+const defaultLimit = 5
 const [activeId,setActiveId] = useState("")
 const [detailForId,setDetailForId] = useState("")
 const [type,setType] = useState("new")
@@ -32,7 +32,7 @@ const [aiPromptsFail,setAIPromptsFail] = useState(false)
 const [aiPromptsLoading,setAIPromptsLoading] = useState(false) 
 
 const [aiResponses,setAIResponses] = useState<AIResponseElement[]>([])
-const aiJobLimit = 2
+const aiJobLimit = 15
 const [aiJobIdList,setAIJobIdList] = useState<string[]>([])
 const [aiJobResponses,setAIJobResponses] = useState<JobAppsResponse>({
   data:[],
@@ -52,7 +52,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
         data: [],
         total: 0,
         page: 1,
-        limit: 10,
+        limit: 5,
         totalPages: 0,
      });
      const params =  useSearchParams()
@@ -226,11 +226,11 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
                                 
                 
-                      const data = payload.result as AIResponses
+                      const data = payload.result as AIResponseResults
                       console.log(data)
-                      if(data.result!=undefined){
+                      if(data.resultarr!=undefined){
                       const idList : string[]  = []
-                      data.result.map((i)=>{
+                      data.resultarr.map((i)=>{
                         idList.push(i.sendedId)
                       })
                       
@@ -238,13 +238,15 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                         console.log("jobappdata",jobappdata)
                         setAIJobResponses(jobappdata)
                         setAIJobIdList(idList)
+                          setAIResponses(data.resultarr)
+                          setAIPromptsExist(true)
+                          setAIPromptsFail(false)
+                          setAIPromptsLoading(false)
                       }).catch((err)=>{
                         console.log("jobapperr",err)
+                         setAIPromptsLoading(false)
                       })
-                      setAIResponses(data.result)
-                      setAIPromptsExist(true)
-                      setAIPromptsFail(false)
-                      setAIPromptsLoading(false)
+                    
                }
               }
                           
@@ -328,10 +330,10 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
 
           
           setAIPromptsLoading(true)
-          sendMultipileAIPromptRequest(checkedIds).then((id)=>{
+          sendMultipileAIPromptRequest(checkedIds).then(async (id)=>{
                 if(id){
                   const jobId = id
-                  connectSocket(jobId,"aiSendQueue",()=>{
+                  await connectSocket(jobId,"aiSendQueue",()=>{
                                 setAIPromptsLoading(false);
                     })
                   //websocket işlemleri
@@ -371,10 +373,10 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                 });
               }
 
-              saveMultipileAIAnswerRequest(reqs).then((id)=>{
+              saveMultipileAIAnswerRequest(reqs).then(async (id)=>{
                 if(id){
                   const jobId = id
-                  connectSocket(jobId,"aiSaveQueue",()=>{
+                  await connectSocket(jobId,"aiSaveQueue",()=>{
                                 setAIPromptsLoading(false);
                     })
                   //webssocket işlemleri ona gröe true false
@@ -563,10 +565,10 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                             <div className="form-group col-auto mr-auto">
                               <label className="my-1 mr-2 sr-only" htmlFor="inlineFormCustomSelectPref1">Show</label>
                               <select value={limit} onChange={(e)=>setLimit(e)} className="custom-select mr-sm-2" id="inlineFormCustomSelectPref1">
-                                <option value={1}>1</option>
-                                <option  value={4}>4</option>
-                                <option  value={5}>5</option>
-                                <option value={8}>8</option>
+                                <option value={5}>5</option>
+                                <option  value={10}>10</option>
+                                <option  value={25}>25</option>
+                                <option value={50}>50</option>
                               </select>
                             </div>
                              <div className="form-group col-auto ml-3">

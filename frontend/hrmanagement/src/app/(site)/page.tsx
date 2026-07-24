@@ -5,19 +5,40 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { JobsResponse,getJobs } from "../lists/jobs";
+import { JobsResponse,getJobs, getJobsByDate } from "../lists/jobs";
 import Pagination from "../(panel)/application/utils/pagination";
 
 export default function Home() {
 
       const [tabNu,setTabNu] = useState<number>(0)
-      const defaultLimit = 5
+      const latestLimit = 10
+      const weekLimit = 10
+      const yearLimit = 10
 
-       const [jobsResponse, setJobResponse] = useState<JobsResponse>({
+      const [latestJobs, setLatestJobs] = useState<JobsResponse>({
           data: [],
           total: 0,
           page: 1,
-          limit: defaultLimit,
+          limit: latestLimit,
+          totalPages: 0,
+       });
+
+
+       const [thisWeekJobs, setThisWeekJobs] = useState<JobsResponse>({
+          data: [],
+          total: 0,
+          page: 1,
+          limit: weekLimit,
+          totalPages: 0,
+       });
+
+
+       
+       const [thisYearJobs, setThisYearJobs] = useState<JobsResponse>({
+          data: [],
+          total: 0,
+          page: 1,
+          limit: yearLimit,
           totalPages: 0,
        });
 
@@ -25,48 +46,34 @@ export default function Home() {
        const params =  useSearchParams()
        const router = useRouter()
     
-       const page = Number(params.get("page")) || 1
-       const limit = Number(params.get("limit") || defaultLimit)
+       const lpage = Number(params.get("lpage")) || 1
+       const latestlimit = Number(params.get("limit") || latestLimit)
+
+        const wpage = Number(params.get("wpage")) || 1
+       const weeklimit = Number(params.get("limit") || weekLimit)
      
-    
+        const ypage = Number(params.get("ypage")) || 1
+       const yearlimit = Number(params.get("limit") || yearLimit)
+
        useEffect(() => {
-         
-          getJobs(page,limit)
-            .then((data) => setJobResponse(data))
+    
+          getJobsByDate(lpage,latestlimit,"latest")
+            .then((data) => setLatestJobs(data))
             .catch((error) => console.error(error));  
 
-          
+          getJobsByDate(wpage,weeklimit,"thisweek")
+            .then((data) => setThisWeekJobs(data))
+            .catch((error) => console.error(error));  
+
+          getJobsByDate(ypage,yearlimit,"thisyear")
+            .then((data) => setThisYearJobs(data))
+            .catch((error) => console.error(error));  
+
          
-        }, [page,limit]);
+        }, [lpage,wpage,ypage,latestlimit,weeklimit,yearlimit]);
 
 
-        const now = new Date();
-
-        const latestJobs = jobsResponse.data.filter(job => {
-              const diff = now.getTime() - job.createdate.getTime();
-              const diffDays = diff / (1000 * 60 * 60 * 24);
-
-                return diffDays <= 7;
-        });
-
-
-        const startOfWeek = new Date(now);
-        const day = now.getDay(); // Pazar=0, Pazartesi=1
-
-        const diff = day === 0 ? 6 : day - 1;
-
-        startOfWeek.setDate(now.getDate() - diff);
-        startOfWeek.setHours(0, 0, 0, 0);
-
-      const thisWeekJobs = jobsResponse.data.filter(
-        job => job.createdate >= startOfWeek
-      );
-
-      const currentYear = new Date().getFullYear();
-
-      const thisYearJobs = jobsResponse.data.filter(
-        job => job.createdate.getFullYear() === currentYear
-      );
+        
 
   return (
      <div>
@@ -114,7 +121,7 @@ export default function Home() {
                 <tbody>
 
                   {(latestJobs ? (
-                    (latestJobs.map((j)=>(
+                    (latestJobs.data.map((j)=>(
                        <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
@@ -137,9 +144,10 @@ export default function Home() {
                   
                 </tbody>
               </table>
-              <Pagination pname="page" currentPage={jobsResponse.page} totalPages={jobsResponse.totalPages} ></Pagination>
+              <Pagination pname="lpage" currentPage={latestJobs.page} totalPages={latestJobs.totalPages} ></Pagination>
               </div>
                 ):  (tabNu==1) ?  (
+                  <div>
                  <table className="table table-borderless table-striped">
                 <thead>
                   <tr>
@@ -154,7 +162,7 @@ export default function Home() {
                 <tbody>
                 
                   {(thisWeekJobs ? (
-                    (thisWeekJobs.map((j)=>(
+                    (thisWeekJobs.data.map((j)=>(
                        <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
@@ -179,8 +187,11 @@ export default function Home() {
                  
                 </tbody>
               </table>
+                <Pagination pname="wpage" currentPage={thisWeekJobs.page} totalPages={thisWeekJobs.totalPages} ></Pagination>
+            </div>
 
                 ) : (tabNu==2) ? (
+                  <div>
                   <table className="table table-borderless table-striped">
                 <thead>
                   <tr>
@@ -195,7 +206,7 @@ export default function Home() {
                 <tbody>
               
                {(thisYearJobs ? (
-                    (thisYearJobs.map((j)=>(
+                    (thisYearJobs.data.map((j)=>(
                        <tr key={j.id}>
                     <td className="text-center">
                       <div className="circle circle-sm bg-light">
@@ -218,6 +229,8 @@ export default function Home() {
                   
                 </tbody>
               </table>
+                <Pagination pname="ypage" currentPage={thisYearJobs.page} totalPages={thisYearJobs.totalPages} ></Pagination>
+              </div>
                 ) :("")
               }
             

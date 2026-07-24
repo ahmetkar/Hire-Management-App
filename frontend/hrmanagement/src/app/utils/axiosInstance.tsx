@@ -1,4 +1,5 @@
 import axios from "axios";
+import useLogout from "./logout";
 
 
 const axiosInstance = axios.create({
@@ -10,9 +11,7 @@ let isRefreshing = false
 let refreshSubscribers : (()=>void)[] = [];
 
 const handleLogout = () => {
-    if(window.location.pathname  != "/login"){
-        window.location.href = "/login"
-    }
+    window.location.replace("/login");
 }
 
 //Handle adding a new access token to queued requests
@@ -38,7 +37,7 @@ axiosInstance.interceptors.response.use(
     async (error)=> {
         const originalRequest = error.config;
         //prevent infinity retry loop
-        if(error.response?.status == 401 && !originalRequest._retry){
+        if(error.response?.status == 401 && error.response?.status == 400 && error.response?.status == 403 && !originalRequest._retry){
             if(isRefreshing){
                 return new Promise((resolve)=>{
                     subscribeTokenRefresh(()=>resolve(axiosInstance(originalRequest)))

@@ -16,7 +16,9 @@ export type DepartmentResponse  = {
     totalPages:number
 }
 
-
+type OneDepartment = {
+    data:Department
+}
 
 
 export const getDepartments = async (page:number,limit:number): Promise<DepartmentResponse> => {
@@ -28,9 +30,9 @@ export const getDepartments = async (page:number,limit:number): Promise<Departme
 }
 
 
-export const getDepartment = async (id:string): Promise<Department> => {
+export const getDepartment = async (id:string): Promise<OneDepartment> => {
 
-    const response = await axiosInstance.get<Department>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-department/${id}`)
+    const response = await axiosInstance.get<OneDepartment>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-department/${id}`)
     const depresp =  response.data
     return depresp
 

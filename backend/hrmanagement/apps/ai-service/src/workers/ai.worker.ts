@@ -22,6 +22,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 
                         if(!personInfo){
                             //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
+                               await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                             return handleError("İş başvurusu bilgisi bulunamadı.");
                         }
                 
@@ -29,6 +30,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                         ){
                 
                            // return res.status(404).json({message:"İş başvurusunda iş bilgisi bulunamadı."})
+                              await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                            return handleError("İş başvurusunda iş bilgisi bulunamadı.");
                         }
                 
@@ -36,6 +38,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 
                         if(!jobInfo) {
                             //return res.status(404).json({message:"İş başvurusu yapan kullanıcı için iş bilgisi bulunamadı."})
+                               await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                              return handleError("İş başvurusu yapan kullanıcı için iş bilgisi bulunamadı.");
                             
                         }
@@ -47,7 +50,8 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                             ){
                                     console.log(personInfo) 
                                     console.log(jobInfo)
-                                    return {success:false,message:""};
+                                       await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
+                                     return handleError("İş başvurusu yapan kullanıcı  bilgiler eksik.");
                             }
                         
                             const promptInput : PromptInput = {
@@ -63,6 +67,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                         
                             if (!messageOutput || !("content" in messageOutput)) {
                                  //return res.status(404).json({message:"AI agentten gelen response da sorun var."})
+                                    await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                                   return handleError("AI agentten gelen response da sorun var.");
                             }
                         
@@ -82,6 +87,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                                 await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
                                 return {success:true,sendedId:data.id,airesponse:responseText,message:"Başarılı."}
                             }else {
+                                await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                                  return handleError("Hata response alınamadı.");
                              
                             }
@@ -92,11 +98,13 @@ const worker1 = new Worker("send-prompt",async(job)=>{
               const personInfo = await prisma.staff.findUnique({where:{id:data.id}})
 
                 if(!personInfo){
+                       await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                      return handleError("Personel bilgisi bulunamadı.");
                     //return res.status(404).json({message:"Personel bilgisi bulunamadı."})
                 }
 
             if(!personInfo.jobId){
+                   await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                   return handleError("Personel bilgileri arasında iş bilgisi bulunamadı.");
                 //return res.status(404).json({message:"Personel bilgileri arasında iş bilgisi bulunamadı."})
                 }
@@ -104,13 +112,14 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 const jobInfo = await prisma.jobs.findUnique({where:{id:personInfo.jobId}})
 
                 if(!jobInfo) {
+                       await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                     return handleError("Personel için için iş bilgisi bulunamadı.");
                     //return res.status(404).json({message:"Personel için için iş bilgisi bulunamadı."})
                 }
 
                  if(!personInfo.jobId || !personInfo.university || !personInfo.abilities || !personInfo.unidepartment || !personInfo.address ||
                                     !personInfo.graduatedate || !personInfo.selfbio || !personInfo.county || !personInfo.city || !jobInfo.jobtitle || !jobInfo.jobrequirements
-                ){
+                ){   await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                                   return handleError("Personel bilgisi bulunamadı.");
 
                  }
@@ -128,6 +137,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                         
                 if (!messageOutput || !("content" in messageOutput)) {
                     //return res.status(404).json({message:"AI agentten gelen response da sorun var."})
+                       await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                      return handleError("AI agentten gelen response da sorun var.");
 
                 }
@@ -148,6 +158,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                     await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
                     return {success:true,sendedId:data.id,airesponse:responseText,message:""}
                  }else {
+                     await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                     return handleError("Gelen responseda bir sorun var.");
                 }
             
@@ -209,7 +220,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                 if(!personInfo.jobId || !personInfo.university || !personInfo.abilities || !personInfo.unidepartment || !personInfo.address ||
                         !personInfo.graduatedate || !personInfo.selfbio || !personInfo.county || !personInfo.city || !jobInfo.jobtitle || !jobInfo.jobrequirements
                 ){
-
+                    console.log(personInfo," ",jobInfo)
                         //return res.status(404).json({message:"Personel veya iş başvurusu bilgileri bulunamadı."})
                     errorcount+=1
                     errorList[count] = "Personel veya iş başvurusu bilgileri bulunamadı."
@@ -267,9 +278,10 @@ const worker1 = new Worker("send-prompt",async(job)=>{
 
            
              if(resultcount==0 || errorcount>0){
+                await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300) 
                  return handleError(`Gelen responseda bir sorun var. ${errorList.join(",")}`);
-             
-            }
+                  
+             }
             await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
             return {success:true,resultarr:resultarr,message:"Başarılı."}
             }
@@ -385,6 +397,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
 
            
             if(resultcount==0 || errorcount > 0){
+                await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                   return handleError(`Gelen responseda bir sorun var. ${errorList.join(",")}`);
             }
             await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
@@ -393,280 +406,8 @@ const worker1 = new Worker("send-prompt",async(job)=>{
         }
     }
 
-  return;
+
 },{connection:redis,concurrency:10})
-
-
-const worker2 = new Worker("save-prompt",async(job)=>{
-            switch(job.name){
-                case "app-one-save":{
-                       const data = job.data.data
-                       if(await CreateIndex()){
-                            const prompt = await redis.get(`jobapp:${data.sendedId}:prompt`)
-                            const embeddingRedis = await redis.get(`jobapp:${data.sendedId}:embedding`)
-
-                            if(!prompt || !embeddingRedis){
-                                  return handleError("Redisten gelen veride sorun var.");
-
-                            }
-                            const embeddingObj = JSON.parse(embeddingRedis) as Record<string,unknown>
-                            if(embeddingObj==null){
-                                return handleError("Redisten gelen veri işlenirken sorun oluştu.");
-                            }
-                            let embedding = null
-                            
-                            const embeddingArr = embeddingObj.data as Record<string,unknown>[]
-                            embedding = embeddingArr[0].embedding
-                            if(embedding == null){
-                                return handleError("Redisten gelen veri işlenirken sorun oluştu.");
-                            }
-                            
-                            
-                            //index oluştu devam et
-                            const elasticId = randomUUID()
-                    
-                            const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:data.sendedId,kind:data.kind,embedding:embedding});
-                    
-                            if(!elasticResult){
-                                //return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-                                 return handleError("ElasticSearch a kaydetme başarısız oldu.");
-                            }
-
-                            const appInfo = await prisma.jobapplication.findUnique({where:{id:data.sendedId}})
-                    
-                            if(!appInfo){
-                                //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-                                return handleError("İş başvurusu bilgisi bulunamadı.");
-                            }
-                    
-                            const saveprompt = await prisma.aIPrompts.create({data:{kind:data.kind,applicationId:appInfo.id,promptText:prompt,responseText:data.result,elasticId:elasticId}})
-                    
-                                if(saveprompt){
-                                await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
-                                return {success:true,message:"Kaydetme başarılı."}
-                                }else {
-                                     return handleError("Kaydetme başarısız oldu.");
-                                }
-                       }
-                            
-                    return;
-
-                }
-                case "staff-one-save":
-                    {
-                      const data = job.data.data
-                      
-                       if(await CreateIndex()){
-                            const prompt = await redis.get(`staff:${data.sendedId}:prompt`)
-                            const embeddingRedis = await redis.get(`staff:${data.sendedId}:embedding`)
-
-                            if(!prompt || !embeddingRedis){
-                                return handleError("Redisten gelen veride sorun var.");
-                            }
-                            const embeddingObj = JSON.parse(embeddingRedis) as Record<string,unknown>
-                            if(embeddingObj==null){
-                                     return handleError("Redisten gelen veri işlenirken sorun oluştu.");
-                            }
-                            let embedding = null
-                                    
-                            const embeddingArr = embeddingObj.data as Record<string,unknown>[]
-                            embedding = embeddingArr[0].embedding
-                            if(embedding == null){
-                                    return handleError("Redisten gelen veri işlenirken sorun oluştu.");
-                            }
-        
-                            //index oluştu devam et
-                            const elasticId = randomUUID()
-                    
-                            const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:data.sendedId,kind:data.kind,embedding:embedding});
-                    
-                            if(!elasticResult){
-                                //return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-                                 return handleError("ElasticSearch a kaydetme başarısız oldu.");
-         
-                            }
-
-                             const personInfo = await prisma.staff.findUnique({where:{id:data.sendedId}})
-                    
-                            if(!personInfo){
-                                //return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-
-                                return handleError("Personel bilgisi bulunamadı.");
-                            }
-                            const saveprompt = await prisma.aIPrompts.create({data:{kind:data.kind,staffId:personInfo.id,promptText:prompt,responseText:data.result,elasticId:elasticId}})
-                              if(saveprompt){
-                                await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
-                                return {success:true,message:"Başarıyla kaydedildi.s"}
-                                }else {
-                                return handleError("Prompt kaydedilirken sorun oluştu.");
-                                }
-                       }
-                    return
-                    }
-                case "app-multi-save":{
-                 
-                    const data = job.data.data
-                     let count = 0;
-                            let resultcount = 0;
-                            let errorcount = 0;
-                            const errorList : string[] = []
-                        if(await CreateIndex()){
-                            
-                       
-                            data.infoList.map(async (info : any)=>{
-                                const prompt = await redis.get(`jobapp:${info.sendedId}:prompt`)
-                                const embeddingRedis = await redis.get(`jobapp:${info.sendedId}:embedding`)
-
-                                if(!prompt || !embeddingRedis){
-                                     errorcount+=1
-                                     errorList[count] = "Redisten gelen veride sorun var."
-                                     return; 
-                                }
-                                const embeddingObj = JSON.parse(embeddingRedis) as Record<string,unknown>
-                                if(embeddingObj==null){
-                                      errorcount+=1
-                                     errorList[count] = "Redisten gelen veri işlenirken sorun oluştu."
-                                     return; 
-                                
-                                }
-                                let embedding = null
-                                        
-                                const embeddingArr = embeddingObj.data as Record<string,unknown>[]
-                                embedding = embeddingArr[0].embedding
-                                if(embedding == null){
-                                       errorcount+=1
-                                     errorList[count] = "Redisten gelen veri işlenirken sorun oluştu."
-                                     return; 
-                                    
-                                }
-                                const elasticId = randomUUID()
-                    
-                                const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:info.sendedId,kind:data.kind,embedding:info.embedding});
-                    
-                                if(!elasticResult){
-                                    //return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-                                      errorcount+=1
-                                     errorList[count] = "ElasticSearch a kaydetme başarısız oldu."
-                                     return; 
-                               
-                                }
-
-                                 const appInfo = await prisma.jobapplication.findUnique({where:{id:info.sendedId}})
-                    
-                                if(!appInfo){
-                                    //return res.status(404).json({message:"İş başvurusu bilgisi bulunamadı."})
-                                     errorcount+=1
-                                     errorList[count] = "İş başvurusu bilgisi bulunamadı."
-                                     return; 
-                            
-                                }
-                    
-                                const saveprompt = await prisma.aIPrompts.create({data:{kind:data.kind,applicationId:appInfo.id,promptText:info.prompt,responseText:info.result,elasticId:elasticId}})
-                    
-                                    if(saveprompt){
-                                        resultcount+=1
-                                    }
-                    
-                                count+=1
-                            })
-                                
-                            if(data.infoList.length == resultcount && errorcount==0){
-                                await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
-                                 return {success:true,message:"Prompt başarıyla kaydedildi."};
-                            }else {
-                                 return handleError(`Prompt kaydetme başarısız oldu.. : ${errorList.join(",")}`);
-                             
-                            }
-                             
-                    
-                        }else {
-                    
-                             return {success:false,message:"Elastic Searche bağlanmadı.",errorList:[]}
-                        }
-                }
-                case "staff-multi-save":
-                {
-                            let count = 0;
-                            let resultcount = 0;
-                            let errorcount = 0;
-                            const errorList : string[] = []
-                    const data = job.data.data
-                        if(await CreateIndex()){
-                            
-                           
-                            
-                            data.infoList.forEach(async (info : any)=>{
-                                const prompt = await redis.get(`staff:${info.sendedId}:prompt`)
-                                const embeddingRedis = await redis.get(`staff:${info.sendedId}:embedding`)
-
-                                if(!prompt || !embeddingRedis){
-                                     errorcount+=1
-                                     errorList[count] = "Redisten gelen veride sorun var.."
-                                     return; 
-                                }
-                                const embeddingObj = JSON.parse(embeddingRedis) as Record<string,unknown>
-                                if(embeddingObj==null){
-                                     errorcount+=1
-                                     errorList[count] = "Redisten gelen veri işlenirken sorun oluştu."
-                                     return; 
-                                        
-                                }
-                                let embedding = null
-                                        
-                                const embeddingArr = embeddingObj.data as Record<string,unknown>[]
-                                embedding = embeddingArr[0].embedding
-                                if(embedding == null){
-                                     errorcount+=1
-                                     errorList[count] = "Redisten gelen veri işlenirken sorun oluştu."
-                                     return; 
-                                     
-                                }
-                                const elasticId = randomUUID()
-  
-                                const elasticResult = await CreateEmbedIndex({id:elasticId,sendedId:info.sendedId,kind:data.kind,embedding:info.embedding});
-                    
-                                if(!elasticResult){
-                                    //return res.status(501).json({message:"ElasticSearch a kaydetme başarısız oldu."})
-                                     errorcount+=1
-                                     errorList[count] = "ElasticSearch a kaydetme başarısız oldu."
-                                     return; 
-                                }
-                                     const personInfo = await prisma.staff.findUnique({where:{id:info.sendedId}})
-                    
-                                    if(!personInfo){
-                                        //return res.status(404).json({message:"Personel bilgisi bulunamadı."})
-                                        errorcount+=1
-                                        errorList[count] = "Personel bilgisi bulunamadı."
-                                        return; 
-                                      
-                                    }
-                                    const saveprompt = await prisma.aIPrompts.create({data:{kind:data.kind,staffId:personInfo.id,promptText:info.prompt,responseText:info.result,elasticId:elasticId}})
-                                        if(saveprompt){
-                                            resultcount+=1
-                                        }
-
-                    
-                            count+=1
-                            })
-                                
-                            if(data.infoList.length == resultcount && errorcount==0){
-                                await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
-                                return {success:true,message:"Prompt dizisi başarıyla kaydedildi.."};
-                            }else {
-                                  return handleError(`Prompt kaydetme başarısız oldu.. : ${errorList.join(",")}`);
-                            }
-                    
-                        }else {
-                    
-                               return handleError(`Elastic Searcha bağlanırken sorun oluştu.`);
-                        }
-                 
-                }
-            
-    }
-  return;
-},{connection:redis,concurrency:10})
-
 
 
 
@@ -675,13 +416,5 @@ worker1.on("completed",(job)=>{
 })
 
 worker1.on("failed",(job,error)=>{
-    console.log("hata : ",job?.id,"->",error)
-})
-
-worker2.on("completed",(job)=>{
-    console.log("tamamlandı",job.id)
-})
-
-worker2.on("failed",(job,error)=>{
     console.log("hata : ",job?.id,"->",error)
 })

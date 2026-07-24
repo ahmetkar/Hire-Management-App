@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser';
 import { verifyInternalRequest } from './middlewares/verify.middleware';
 import "./workers/ai.worker"
 import "./workers/elastic.worker"
+import "./workers/aisave.worker"
+
 const app = express();
 
 

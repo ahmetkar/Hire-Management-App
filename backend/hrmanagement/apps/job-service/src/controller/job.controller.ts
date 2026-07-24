@@ -201,10 +201,10 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
 
                 
                     
-                    const [data,total] = await Promise.all([getOrSetRedisCache<jobs[]>(`job:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
+                    const [data,total] = await Promise.all([getOrSetRedisCache<JobWithDepartment[]>(`job:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
                         skip,take:limit,orderBy:{
                             createdate:'desc'
-                        }
+                        },include:{department:true}
                     }),6*60*60)
                     ,
                     getOrSetRedisCache(`job:count`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
@@ -232,6 +232,106 @@ export const getAllJobs = async (req:Request,res:Response,next:NextFunction) => 
 
 }
 
+export const getAllJobsByDate = async (req:Request,res:Response,next:NextFunction) => {
+     
+
+            try {
+
+            
+
+                const page = Math.max(Number(req.query.page) || 1 ,1)
+                const limit = Math.min(Number(req.query.limit) || 10 ,100)
+                const type =req.query.type
+                const skip = (page-1) * limit
+                let data,total;
+                if(type == "latest"){
+                const yesterday = new Date();   
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                    
+                    [data,total] = await Promise.all([getOrSetRedisCache<JobWithDepartment[]>(`job:latest:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
+                        skip,take:limit,orderBy:{
+                            createdate:'desc'
+                        },  where: {
+                            createdate: {
+                            gte: yesterday,
+                            },
+                        },include:{department:true}
+                    }),6*60*60)
+                    ,
+                    getOrSetRedisCache(`job:latest:count`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
+                    ])
+
+
+                }else if(type == "thisweek"){
+
+                    const now = new Date();
+
+                    const startOfWeek = new Date(now);
+                    const day = startOfWeek.getDay(); // 0=Pazar
+
+                    const diff = day === 0 ? 6 : day - 1;
+
+                    startOfWeek.setDate(startOfWeek.getDate() - diff);
+                    startOfWeek.setHours(0, 0, 0, 0);
+
+
+                      [data,total] = await Promise.all([getOrSetRedisCache<JobWithDepartment[]>(`job:thisweek:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
+                        skip,take:limit,orderBy:{
+                            createdate:'desc'
+                        }, where: {
+                            createdate: {
+                            gte: startOfWeek,
+                            },
+                        },include:{department:true}
+                    }),6*60*60)
+                    ,
+                    getOrSetRedisCache(`job:thisweek:count`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
+                    ])
+                    
+                }else if(type == "thisyear"){
+
+                    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+
+
+                      [data,total] = await Promise.all([getOrSetRedisCache<JobWithDepartment[]>(`job:thisyear:${page}:${limit}`,`cache-tag:job`,()=>prisma.jobs.findMany({
+                        skip,take:limit,orderBy:{
+                            createdate:'desc'
+                        }, where: {
+                                createdate: {
+                                gte: startOfYear,
+                                },
+                            },include:{department:true}
+                    }),6*60*60)
+                    ,
+                    getOrSetRedisCache(`job:thisyear:count`,`cache-tag:job`,()=>prisma.jobs.count(),6*60*60)
+                    ])
+
+                }
+
+                    if(data){
+                        res.status(201).json({
+                        success:true,
+                        message:"Jobs found !",
+                        data: data,
+                        total,
+                        page,
+                        limit,
+                        totalPages:Math.ceil(total/limit)
+
+                        });
+                    }else {
+                       return next(new ValidationError("Jobs Not Found"))
+                    }
+               
+
+            }catch(error){
+                return next(error);
+            }
+
+}
+
+
 export const getOneJobApplication = async (req:Request,res:Response,next:NextFunction) => {
 
         const id = req.params.id ? String(req.params.id) : undefined;
@@ -256,6 +356,7 @@ export const getOneJobApplication = async (req:Request,res:Response,next:NextFun
             }
 
 }
+
 
 export const getOneJob = async (req:any,res:Response,next:NextFunction) => {
 
@@ -448,6 +549,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
 
 
      try {
+
         const data = {name:name,
                             email:email,
                             phone_number:phone_number,

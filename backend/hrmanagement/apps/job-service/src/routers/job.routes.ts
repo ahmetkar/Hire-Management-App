@@ -1,6 +1,6 @@
 
 import express, { Router } from "express"
-import { approveJobApplication, createDepartment, createJob, createJobApplication, deleteDepartment, deleteJob, denyJobApplication, getAllDepartment, getAllJobApplication, getAllJobs, getJobApplicationByFilter, getJobByFilter, getMultipileJobApplication, getOneDepartment, getOneJob, getOneJobApplication, searchAllJobApplication, updateDepartment, updateJob } from "../controller/job.controller"
+import { approveJobApplication, createDepartment, createJob, createJobApplication, deleteDepartment, deleteJob, denyJobApplication, getAllDepartment, getAllJobApplication, getAllJobs, getAllJobsByDate, getJobApplicationByFilter, getJobByFilter, getMultipileJobApplication, getOneDepartment, getOneJob, getOneJobApplication, searchAllJobApplication, updateDepartment, updateJob } from "../controller/job.controller"
 
 
 const router:Router = express.Router()
@@ -22,6 +22,8 @@ router.get("/get-all-application",getAllJobApplication)
 router.get("/search-all-application",searchAllJobApplication)
 router.get("/get-one-application/:id",getOneJobApplication)
 router.get("/get-job-application-by-filter",getJobApplicationByFilter)
+router.get("/get-all-jobs-by-date",getAllJobsByDate)
+
 
 router.post("/create-job-application",createJobApplication)
 router.post("/deny-application",denyJobApplication)

@@ -1,50 +1,45 @@
-import {io} from "socket.io-client"
+import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:4000",{autoConnect:false})
+export const socket = io("http://localhost:4000", {
+  autoConnect: false,
+});
 
+export const connectSocket = (
+  jobId: string,
+  queueName: string,
+  callback:()=>void
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const joinRoom = () => {
+      socket.emit(
+        "join-job",
+        { queueName, jobId },
+        (success: boolean) => {
+          if (success) {
+            console.log("Room'a katıldı:", `${queueName}:${jobId}`);
+            resolve();
+          } else {
+            reject(new Error("Room'a katılamadı."));
+          }
+        }
+      );
+    };
 
-export const connectSocket = (jobId: string,queueName:string,callback:()=>void) => {
-    
-   
-        console.log("socket:", socket);
-        console.log("connected:", socket.connected);
-        
     if (socket.connected) {
-          
-        socket.emit("join-job", { queueName: queueName, jobId });
-        console.log("workera eklendi",jobId)
-        return;
+      joinRoom();
+      return;
     }
 
-    const timeout = setTimeout(() => {
-        console.log("Socket bağlantısı kurulamadı.");
+    socket.once("connect", () => {
+      console.log("Socket connected:", socket.id);
+      joinRoom();
+    });
 
-        socket.off("connect", onConnect);
-        socket.off("connect_error", onError);
-
-        callback();
-    }, 5000);
-
-    const onConnect = () => {
-        clearTimeout(timeout);
-
-        socket.emit("join-job", { queueName: queueName, jobId });
-
-        socket.off("connect_error", onError);
-    };
-
-    const onError = (err: Error) => {
-        clearTimeout(timeout);
-
-        console.error("Socket bağlantı hatası:", err);
-
-        socket.off("connect", onConnect);
-
-        // Hata durumunda yapılacak işlem
-    };
-
-    socket.once("connect", onConnect);
-    socket.once("connect_error", onError);
+    socket.once("connect_error", (err) => {
+      callback();
+      reject(err);
+    });
 
     socket.connect();
+  });
 };

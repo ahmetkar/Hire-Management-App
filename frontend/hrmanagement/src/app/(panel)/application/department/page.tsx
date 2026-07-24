@@ -97,12 +97,12 @@ export default function Page() {
                               </div>
                             </td>
                             <td>{dep.name}</td>
-                            <td>{dep.addingdate.toISOString()}</td>
+                            <td>{dep.addingdate.toString().split("T")[0]}</td>
                             <td><button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span className="text-muted sr-only">Action</span>
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
-                                <a href={`application/department/updatedepartment/${dep.id}`} className="dropdown-item">Düzenle</a>
+                                <a href={`department/updatedepartment/${dep.id}`} className="dropdown-item">Düzenle</a>
                                 <a onClick={()=>deleteDepartment(dep.id)} className="dropdown-item" href="#">Sil</a>
                                
                               </div>

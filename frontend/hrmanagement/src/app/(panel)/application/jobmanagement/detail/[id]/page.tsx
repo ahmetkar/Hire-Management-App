@@ -207,10 +207,10 @@ const Page = () => {
 
               const sendAIRequest = (appId:string) => {
                     setAnswerLoading(true)
-                    sendAIPromptRequest(appId).then((id)=>{
+                    sendAIPromptRequest(appId).then(async (id)=>{
                       if(id){
                         const jobId = id
-                        connectSocket(jobId,"aiSendQueue",()=>{
+                        await connectSocket(jobId,"aiSendQueue",()=>{
                           setAnswerLoading(false);
                         })
                         //websocket işlemleri
@@ -226,10 +226,10 @@ const Page = () => {
               const saveAIAnswer = (appId:string) =>{
                   if(aiResponse.airesponse!=null){
                   setSaveLoading(true)
-                  saveAIAnswerRequest(appId,aiResponse.airesponse).then((id)=>{
+                  saveAIAnswerRequest(appId,aiResponse.airesponse).then(async (id)=>{
                       if(id){
                         const jobId = id
-                        connectSocket(jobId,"aiSaveQueue",()=>{
+                        await connectSocket(jobId,"aiSaveQueue",()=>{
                           setSaveLoading(false);
                         })
                         //websocket işlemleri
@@ -247,11 +247,11 @@ const Page = () => {
               const sendAnalysis = (appId:string) => {
                 setAnalysisLoading(true)
                 if(analysisKind!=""){
-                    sendAnalyisRequest(analysisKind,appId).then((id)=>{
+                    sendAnalyisRequest(analysisKind,appId).then(async (id)=>{
 
                       if(id){
                         const jobId = id
-                        connectSocket(jobId,"elasticQueue",()=>{
+                        await connectSocket(jobId,"elasticQueue",()=>{
                           setAnalysisLoading(false);
                         });
                         //websocket işlemleri

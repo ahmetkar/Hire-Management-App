@@ -6,6 +6,10 @@ export type AIResponses  = {
     result:AIResponseElement[]
 }
 
+export type AIResponseResults  = {
+    resultarr:AIResponseElement[]
+}
+
 
 export type AIResponseElement = {
     sendedId:string;

@@ -15,12 +15,15 @@ const worker = new Worker("job-app-create",async(job)=>{
 
     console.log("Worker başladı",job.id)
 
+    try {
+
     await job.updateProgress({progress:true})
+    await redis.set(`jobapp-status:${job.id}`, "progress");
 
     const data = job.data.data
 
     const jobapp = await prisma.jobapplication.create({
-                        data:data.data
+                        data:data
     })
     
     if(jobapp){
@@ -28,14 +31,20 @@ const worker = new Worker("job-app-create",async(job)=>{
         await redis.set(`jobappstatus:${job.id}`,"progress","EX",300)  
         invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.NEW}`)
         publishJobAppCreated({
-                            key:job.id!,jobAppId:data.id,name:data.name,email:data.email,jobId:data.jobId,ipaddress:data.ipadress===undefined ? "" : data.ipadress,message:"Application created"
+                            key:job.id!,jobAppId:jobapp.id,name:data.name,email:data.email,jobId:data.jobId,ipaddress:data.ipadress===undefined ? "" : data.ipadress,message:"Application created"
                             })
         
-        await redis.set(`jobappstatus:${job.id}`,"completed","EX",300)  
+        await redis.set(`jobapp-status:${job.id}`, "completed");
         return {success:true}
+
     }
-     await redis.set(`jobappstatus:${job.id}`,"failed","EX",300)  
-     throw new Error("Job application ekleme başarıssız oldu")
+    await redis.set(`jobapp-status:${job.id}`, "failed");
+    throw new Error("Job application ekleme başarıssız oldu")
+  
+    }catch(error : any){
+        await redis.set(`jobapp-status:${job.id}`, "failed");
+        throw new Error("Job application ekleme başarıssız oldu"+error.message)
+    }
 },{connection:redis,concurrency:5})
 
 

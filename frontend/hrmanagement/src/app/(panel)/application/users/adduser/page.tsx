@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
-import { socket } from '@/app/utils/socket';
+import { connectSocket, socket } from '@/app/utils/socket';
 import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
 
 const Page = () => {
@@ -223,21 +223,12 @@ const Page = () => {
 
         return response.data
       },
-      onSuccess:(data)=>{
+      onSuccess:async (data)=>{
            if(data){
                         const jobId = data.id
-                        console.log("workera eklendi",jobId)
-                        console.log("socket:", socket);
-                        console.log("connected:", socket.connected);
-                        if (socket.connected) {
-                          socket.emit("join-job", {queueName:"staffQueue",jobId});
-                        } else {
-                          socket.connect();
-          
-                          socket.once("connect", () => {
-                              socket.emit("join-job", {queueName:"staffQueue",jobId});
-                          });
-                        }
+                        await connectSocket(jobId,"staffQueue",()=>{
+                          setStage("onlystaff")
+                        })
                         
                     } 
                  setServerError(null);
@@ -273,15 +264,15 @@ const Page = () => {
           console.log("Socket event : ",event,args)
         })
     
-        const completedHandler = () => {
+        const completedHandler = (payload:{jobId:string,result:unknown}) => {
             setProgress("completed");
         };
     
-        const progressHandler = () => {
+        const progressHandler = (payload:{jobId:string,data:unknown}) => {
             setProgress("progress");
         };
     
-        const failedHandler = () => {
+        const failedHandler = (payload:{jobId:string,errorr:string}) => {
             setProgress("failed");
         };
     
@@ -699,7 +690,7 @@ const Page = () => {
                             >
                               <optgroup label="">
                                 {universities.map((uni,index)=>(
-                                <option key={`${uni.name,index}`} value={`${uni.name}`}>{uni.name}</option>
+                                <option key={`${uni.isim,index}`} value={`${uni.isim}`}>{uni.isim}</option>
                             ))}
                               </optgroup>
                             </select>
@@ -1029,7 +1020,7 @@ const Page = () => {
                           >
                             <optgroup label="">
                               {universities.map((uni,index)=>(
-                              <option key={`${uni.name,index}`} value={`${uni.name}`}>{uni.name}</option>
+                              <option key={`${uni.isim,index}`} value={`${uni.isim}`}>{uni.isim}</option>
                            ))}
                             </optgroup>
                           </select>

@@ -145,29 +145,31 @@ export const io = new Server(server1,{cors:{
   origin:"http://localhost:3000"
 }})
 
-io.on("connection",async (socket)=>{
-  console.log("Socket bağlandı",socket.id)
-
+io.on("connection", (socket) => {
   socket.on(
-  "join-job",
-  async ({ queueName, jobId }: { queueName: string; jobId: string }) => {
-    const room = `${queueName}:${jobId}`;
+    "join-job",
+    (
+      { queueName, jobId }: { queueName: string; jobId: string },
+      callback?: (success: boolean) => void
+    ) => {
+      const room = `${queueName}:${jobId}`;
 
-    socket.join(room);
+      socket.join(room);
 
-    console.log(`${socket.id} joined ${room}`);
-  }
-);
+      console.log(`${socket.id} joined ${room}`);
 
-})
+      callback?.(true);
+    }
+  );
+});
 
 startQueueEvents(io)
 
 const port = process.env.PORT || 4000;
-const server = server1.listen(port, async () => {
+server1.listen(port, async () => {
 
   console.log(`Listening at http://localhost:${port}/api`);
   
 });
-server.on('error', console.error);
+server1.on('error', console.error);
 

@@ -1,6 +1,7 @@
 import { Request,Response,NextFunction } from "express";
 import { aiPromptQueue } from "../queue/aiprompt.queue";
 import { elasticSearchQueue } from "../queue/elasticsearch.queue";
+import { aiSaveQueue } from "../queue/aisave.queue";
 
 
 export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFunction) => {
@@ -24,7 +25,7 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
     
     if(kind == "application"){
 
-       const aiJob = await aiPromptQueue.add("app-multi-save",{data:data})
+       const aiJob = await aiSaveQueue.add("app-multi-save",{data:data})
 
        if(aiJob.id){
               res.status(201).json({
@@ -37,7 +38,7 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
 
     }else if(kind == "staff") {
       
-        const aiJob = await aiPromptQueue.add("staff-multi-save",{data:data})
+        const aiJob = await aiSaveQueue.add("staff-multi-save",{data:data})
 
        if(aiJob.id){
               res.status(201).json({
@@ -49,9 +50,10 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
        }
       
 
-    }
+    }else {
 
     return res.status(404).json({message:"Parametrelerde hata var."});
+    }
    
 
 }
@@ -74,7 +76,7 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
 
        if(kind == "application"){
 
-       const aiJob = await aiPromptQueue.add("app-one-save",{data:data})
+       const aiJob = await aiSaveQueue.add("app-one-save",{data:data})
 
        if(aiJob.id){
               res.status(201).json({
@@ -87,7 +89,7 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
 
     }else if(kind == "staff") {
       
-        const aiJob = await aiPromptQueue.add("staff-one-save",{data:data})
+        const aiJob = await aiSaveQueue.add("staff-one-save",{data:data})
 
        if(aiJob.id){
               res.status(201).json({
@@ -270,9 +272,10 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
        }
       
 
-    }
+    }else {
 
     return res.status(404).json({message:"Parametrelerde hata var."});
+    }
    
    
 }
