@@ -1,5 +1,6 @@
 import { Kafka } from 'kafkajs';
 import { SendJobMailToUser, SendJobNotificationToManager } from '../helpers/notification.helper';
+import {kafkaConnectionGauge} from "@hrmanagement/metrics"
 
 
 const kafka = new Kafka({
@@ -22,6 +23,8 @@ export let isStarted = false
 export const startKafkaJobAppDeniedConsumer = async () => {
   try {
     await consumer.connect();
+
+    kafkaConnectionGauge.set(1)
 
     await consumer.subscribe({
         topic:"job.application.denied",
@@ -75,6 +78,7 @@ export const startKafkaJobAppDeniedConsumer = async () => {
 export async function JobAppDeniedConsumerShutdown(): Promise<void> {
   if(!isStarted) return;
   await consumer.disconnect();
+  kafkaConnectionGauge.set(0)
   isStarted = false;
 }
 

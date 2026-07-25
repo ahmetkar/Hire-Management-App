@@ -1,11 +1,11 @@
 import Redis from 'ioredis';
-
+import {redisCacheConnectionGauge,redisPubConnectionGauge,redisSubConnectionGauge} from "@hrmanagement/metrics"
 
 class RedisClient {
   private static instance: Redis;
-  private static subscriber: Redis;
   private static isConnected = false;
-
+  private static dupInstance : Redis;
+  private static subInstance : Redis;
   private constructor() {}
 
   public static getInstance(): Redis {
@@ -21,10 +21,40 @@ class RedisClient {
     return RedisClient.instance;
   }
 
+  public static getSub(): Redis {
+      this.subInstance = RedisClient.getInstance().duplicate();
+      return this.subInstance;
+  }
+
+  public static getDuplicate(): Redis {
+      this.dupInstance = RedisClient.getInstance().duplicate();
+      return this.dupInstance;
+  }
+
   private static setupEventListeners(): void {
     RedisClient.instance.on('connect', () => {
       RedisClient.isConnected = true;
+      redisCacheConnectionGauge.set(1);
       console.log('Connected to Redis');
+    });
+
+    this.dupInstance.on('connect',()=>{
+      redisPubConnectionGauge.set(1);
+    })
+
+    
+    this.dupInstance.on('close',()=>{
+      redisPubConnectionGauge.set(0);
+    })
+
+    
+    this.subInstance.on('connect',()=>{
+      redisSubConnectionGauge.set(1);
+    });
+
+        
+    this.subInstance.on('close',()=>{
+      redisSubConnectionGauge.set(0);
     });
 
     RedisClient.instance.on('error', (error : any) => {
@@ -57,6 +87,8 @@ class RedisClient {
     if (RedisClient.instance) {
       try {
         await RedisClient.instance.quit();
+        await RedisClient.dupInstance.quit();
+        await RedisClient.subInstance.quit();
         console.log('Redis connection closed');
       } catch (error) {
         console.log('Error closing Redis connection:', error);

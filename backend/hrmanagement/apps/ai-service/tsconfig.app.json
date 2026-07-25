@@ -27,10 +27,13 @@
   ],
   "references": [
     {
+      "path": "../../lib/prisma/tsconfig.lib.json"
+    },
+    {
       "path": "../../lib/error-handler/tsconfig.lib.json"
     },
     {
-      "path": "../../lib/prisma/tsconfig.lib.json"
+      "path": "../../lib/metrics/tsconfig.lib.json"
     }
   ]
 }

@@ -32,6 +32,9 @@
     },
     {
       "path": "../../lib/error-handler/tsconfig.lib.json"
+    },
+    {
+      "path": "../../lib/metrics/tsconfig.lib.json"
     }
   ]
 

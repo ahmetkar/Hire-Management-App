@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-
+import { redisCacheConnectionGauge } from '@hrmanagement/metrics';
 
 class RedisClient {
   private static instance: Redis;
@@ -14,7 +14,7 @@ class RedisClient {
           const delay = Math.min(times * 50, 2000);
           return delay;
         },
-        maxRetriesPerRequest: 3});
+        maxRetriesPerRequest: null});
 
       RedisClient.setupEventListeners();
       RedisClient.setupKeyspaceNotifications();
@@ -25,6 +25,7 @@ class RedisClient {
   private static setupEventListeners(): void {
     RedisClient.instance.on('connect', () => {
       RedisClient.isConnected = true;
+      redisCacheConnectionGauge.set(1);
       console.log('Connected to Redis');
     });
 
@@ -35,10 +36,12 @@ class RedisClient {
 
     RedisClient.instance.on('close', () => {
       RedisClient.isConnected = false;
+      redisCacheConnectionGauge.set(0);
       console.log('Redis connection closed');
     });
 
     RedisClient.instance.on('reconnecting', () => {
+       redisCacheConnectionGauge.set(1);
       console.log('Reconnecting to Redis...');
     });
 

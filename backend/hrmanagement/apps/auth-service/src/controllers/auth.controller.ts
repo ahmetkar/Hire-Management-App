@@ -11,6 +11,8 @@ import { clearCookie } from "../util/clearCookie";
 import redis from "../config/redis";
 import { randomUUID } from "crypto";
 
+import { loginCounter } from "@hrmanagement/metrics";
+
 
 type Role = "user" | "admin" | "staff" ;
 
@@ -316,7 +318,7 @@ export const loginUser = async (req:Request,res:Response,next:NextFunction) => {
                         sessionId:sessionId,
                             }),"EX",7*24*60*60)
 
-  
+        loginCounter.inc();
 
         res.status(200).json({
             message:"Login successful",

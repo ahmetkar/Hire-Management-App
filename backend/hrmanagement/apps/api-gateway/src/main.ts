@@ -10,14 +10,22 @@ import { verifyToken } from './middlewares/auth.middleware';
 import { authorizeRoles } from './utils/authorizeRoles';
 import http from "http"
 import {Server} from "socket.io"
-
-import { startQueueEvents } from './queueEvents/queueEvent';
+import {RedisClient} from './config/redis';
+import {createAdapter} from "@socket.io/redis-adapter"
+import dotenv from "dotenv"
+import { closeQueueEvents, startQueueEvents } from './queueEvents/queueEvent';
+import client from "prom-client"
+import {socketConnectionGauge, socketDisconnectReasons} from "@hrmanagement/metrics"
 
 const app = express();
 
 
+dotenv.config({path:`.env${process.env.NODE_ENV || ""}`})
+
+const clientUrl = process.env.CLIENT_URL!=undefined ? process.env.CLIENT_URL : ""
+
 app.use(cors({
-  origin:["http://localhost:3000"],
+  origin:[clientUrl],
   allowedHeaders:['Authorization',"Content-Type"
   ],
   credentials:true
@@ -79,10 +87,6 @@ const createProxy = (prefix:string,target:string) => {
 
 
 
-app.get('/gateway-health', (req, res) => {
-  res.send({ message: 'Welcome to api-gateway!' });
-});
-
 app.use("/auth/get-user-by-filter",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth/user-delete/:id/",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth/user-update",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
@@ -142,10 +146,17 @@ const server1 = http.createServer(app)
 
 
 export const io = new Server(server1,{cors:{
-  origin:"http://localhost:3000"
+  origin:clientUrl
 }})
 
+
+const pubClient = RedisClient.getSub();
+const subClient = RedisClient.getDuplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
+
 io.on("connection", (socket) => {
+  socketConnectionGauge.set(1);
   socket.on(
     "join-job",
     (
@@ -161,6 +172,10 @@ io.on("connection", (socket) => {
       callback?.(true);
     }
   );
+  socket.on("disconnect",(reason)=>{
+    socketConnectionGauge.set(0)
+    socketDisconnectReasons.labels(reason).inc();
+  })
 });
 
 startQueueEvents(io)
@@ -168,8 +183,43 @@ startQueueEvents(io)
 const port = process.env.PORT || 4000;
 server1.listen(port, async () => {
 
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at ${port}`);
   
 });
 server1.on('error', console.error);
 
+
+
+app.get("/api-health", (req, res) => {
+    res.status(200).json({
+        success: true,
+        service: "api-gateway-service",
+        status: "UP",
+        timestamp: new Date().toISOString()
+    });
+});
+
+client.collectDefaultMetrics();
+
+app.get("/metrics", async (_, res) => {
+    res.set("Content-Type", client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
+
+server1.on("SIGINT", async () => {
+
+    await closeQueueEvents();
+    await io.close();
+    await RedisClient.closeConnection();
+  
+   
+});
+
+server1.on("SIGTERM", async () => {
+
+  await closeQueueEvents();
+  await io.close();
+  await RedisClient.closeConnection();
+  
+});

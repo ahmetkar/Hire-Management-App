@@ -9,12 +9,21 @@ import { verifyInternalRequest } from './middlewares/verify.middleware';
 import "./workers/ai.worker"
 import "./workers/elastic.worker"
 import "./workers/aisave.worker"
+import dotenv from "dotenv"
+import client from "prom-client"
 
 const app = express();
 
 
+
+dotenv.config({path:`.env${process.env.NODE_ENV || ""}`})
+
+
+const clientUrl = process.env.CLIENT_URL!=undefined ? process.env.CLIENT_URL : ""
+
+
 app.use(cors({
-  origin:["http://localhost:3000"],
+  origin:[clientUrl],
   allowedHeaders:['Authorization',"Content-Type"
   ],
   credentials:true
@@ -39,8 +48,16 @@ app.use(errorMiddleware)
 
 app.use(verifyInternalRequest)
 
+
+client.collectDefaultMetrics();
+
+app.get("/metrics", async (_, res) => {
+    res.set("Content-Type", client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
 const port = process.env.PORT || 3334;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at ${port}/api`);
 });
 server.on('error', console.error);

@@ -25,6 +25,9 @@
         ],
         "@hrmanagement/prisma":[
           "lib/prisma/index.ts"
+        ],
+        "@hrmanagement/metrics":[
+          "lib/metrics/index.ts"
         ]
     }
   }

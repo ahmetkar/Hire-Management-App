@@ -3,6 +3,7 @@ import redis from "../configs/redis"
 import {prisma}  from "@hrmanagement/prisma"
 import { publishJobAppCreated } from "../events/producers/jobAppCreated.producers"
 import { invalidateCacheTagKeys } from "../helpers/redis.helper"
+import { jobAppCreatedCounter } from "@hrmanagement/metrics"
 
 enum JobAppStatus {
     NEW="new",
@@ -33,11 +34,12 @@ const worker = new Worker("job-app-create",async(job)=>{
         publishJobAppCreated({
                             key:job.id!,jobAppId:jobapp.id,name:data.name,email:data.email,jobId:data.jobId,ipaddress:data.ipadress===undefined ? "" : data.ipadress,message:"Application created"
                             })
-        
+        jobAppCreatedCounter.inc();
         await redis.set(`jobapp-status:${job.id}`, "completed");
         return {success:true}
 
     }
+
     await redis.set(`jobapp-status:${job.id}`, "failed");
     throw new Error("Job application ekleme başarıssız oldu")
   

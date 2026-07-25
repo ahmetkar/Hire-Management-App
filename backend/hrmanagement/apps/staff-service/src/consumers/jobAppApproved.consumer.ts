@@ -1,5 +1,6 @@
 import { Kafka } from 'kafkajs';
 import { AddApprovedJobApplicationToStaff } from '../helpers/staff.helper';
+import {kafkaConnectionGauge} from "@hrmanagement/metrics"
 
 
 const kafka = new Kafka({
@@ -26,6 +27,7 @@ async function testKafkaConnection(): Promise<void> {
 
   try {
     await admin.connect();
+    kafkaConnectionGauge.set(1)
 
     const cluster = await admin.describeCluster();
     const metadata = await admin.fetchTopicMetadata({
@@ -103,6 +105,7 @@ export const startKafkaJobAppApprovedConsumer = async () => {
 export async function JobAppApprovedConsumerShutdown(): Promise<void> {
   if(!isStarted) return;
   await consumer.disconnect();
+  kafkaConnectionGauge.set(0)
   isStarted = false;
 }
 

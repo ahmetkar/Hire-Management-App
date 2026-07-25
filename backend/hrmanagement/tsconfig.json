@@ -26,6 +26,9 @@
     },
     {
       "path": "./apps/ai-service"
+    },
+    {
+      "path": "./lib/metrics"
     }
   ]
 }

@@ -3,8 +3,23 @@ import redis from "../config/redis"
 import {Server} from "socket.io"
 
 
+const queueEventsForJobApp = new QueueEvents("job-app-create",{connection:redis})
+const queueEventsForStaff = new QueueEvents("staff-create",{connection:redis})
+const queueEventsForSendPrompt = new QueueEvents("send-prompt",{connection:redis})
+const queueEventsForSavePrompt = new QueueEvents("save-prompt",{connection:redis})
+const queueEventsForElasticSearch = new QueueEvents("elastic-search",{connection:redis})
+
+
+export async function closeQueueEvents(){
+    await queueEventsForJobApp.close();
+    await queueEventsForStaff.close();
+    await queueEventsForSavePrompt.close();
+    await queueEventsForSendPrompt.close();
+    await queueEventsForElasticSearch.close();
+}
+
 export async function startQueueEvents(io:Server){
-    const queueEventsForJobApp = new QueueEvents("job-app-create",{connection:redis})
+    
 
     queueEventsForJobApp.on("progress",async ({jobId,data})=>{
        
@@ -42,7 +57,7 @@ export async function startQueueEvents(io:Server){
         }
     })
 
-    const queueEventsForStaff = new QueueEvents("staff-create",{connection:redis})
+    
 
     queueEventsForStaff.on("progress",async ({jobId,data})=>{
        
@@ -74,7 +89,7 @@ export async function startQueueEvents(io:Server){
         }
     })
 
-    const queueEventsForSendPrompt = new QueueEvents("send-prompt",{connection:redis})
+    
 
    
 
@@ -112,10 +127,6 @@ export async function startQueueEvents(io:Server){
 
 
 
-    const queueEventsForSavePrompt = new QueueEvents("save-prompt",{connection:redis})
-
-   
-
     queueEventsForSavePrompt.on("completed",async ({jobId,returnvalue})=>{
         
         const status = await redis.get(`savepromptstatus:${jobId}`)
@@ -146,9 +157,6 @@ export async function startQueueEvents(io:Server){
         }
         
     })
-
-
-     const queueEventsForElasticSearch = new QueueEvents("elastic-search",{connection:redis})
 
    
 

@@ -1,5 +1,6 @@
 import { Kafka, logLevel } from 'kafkajs';
 import { SendJobNotificationToManager, SendJobNotificationToStaff } from '../helpers/notification.helper';
+import {kafkaConnectionGauge} from "@hrmanagement/metrics"
 
 
 const kafka = new Kafka({
@@ -20,7 +21,7 @@ export let isStarted = false
 export const startKafkaJobAppCreatedConsumer = async () => {
   try {
     await consumer.connect();
-
+    kafkaConnectionGauge.set(1);
     await consumer.subscribe({
         topic:"job.application.created",
         fromBeginning:true
@@ -74,5 +75,6 @@ export const startKafkaJobAppCreatedConsumer = async () => {
 export async function JobAppCreatedConsumerShutdown(): Promise<void> {
   if(!isStarted) return;
   await consumer.disconnect();
+  kafkaConnectionGauge.set(0)
   isStarted = false;
 }
