@@ -21,13 +21,13 @@
     "baseUrl": ".",
     "paths":{
         "@hrmanagement/error-handler": [
-        "lib/error-handler/src/index.ts"
+        "libs/error-handler/src/index.ts"
         ],
         "@hrmanagement/prisma":[
-          "lib/prisma/index.ts"
+          "libs/prisma/src/index.ts"
         ],
         "@hrmanagement/metrics":[
-          "lib/metrics/index.ts"
+          "libs/metrics/src/index.ts"
         ]
     }
   }

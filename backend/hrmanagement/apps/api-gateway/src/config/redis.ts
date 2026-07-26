@@ -38,6 +38,7 @@ class RedisClient {
       console.log('Connected to Redis');
     });
 
+    if(this.dupInstance!=undefined){
     this.dupInstance.on('connect',()=>{
       redisPubConnectionGauge.set(1);
     })
@@ -46,7 +47,9 @@ class RedisClient {
     this.dupInstance.on('close',()=>{
       redisPubConnectionGauge.set(0);
     })
+    }
 
+    if(this.subInstance!=undefined){
     
     this.subInstance.on('connect',()=>{
       redisSubConnectionGauge.set(1);
@@ -56,6 +59,7 @@ class RedisClient {
     this.subInstance.on('close',()=>{
       redisSubConnectionGauge.set(0);
     });
+    }
 
     RedisClient.instance.on('error', (error : any) => {
       RedisClient.isConnected = false;

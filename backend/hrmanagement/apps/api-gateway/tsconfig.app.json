@@ -6,11 +6,11 @@
       "node",
       "express"
     ],
-    "rootDir": "src",
+    //"rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
   ],
   "exclude": [
     "out-tsc",
@@ -25,7 +25,7 @@
   ],
   "references": [
     {
-      "path": "../../lib/metrics/tsconfig.lib.json"
+      "path": "../../libs/metrics/tsconfig.lib.json"
     }
   ]
 }

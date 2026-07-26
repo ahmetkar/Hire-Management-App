@@ -19,16 +19,16 @@
       "path": "./apps/job-service"
     },
     {
-      "path": "./lib/error-handler"
-    },
-    {
-      "path": "./lib/prisma"
-    },
-    {
       "path": "./apps/ai-service"
     },
     {
-      "path": "./lib/metrics"
+      "path": "./libs/error-handler"
+    },
+    {
+      "path": "./libs/metrics"
+    },
+    {
+      "path": "./libs/prisma"
     }
   ]
 }

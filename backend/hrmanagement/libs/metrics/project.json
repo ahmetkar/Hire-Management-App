@@ -1,0 +1,17 @@
+{
+  "name": "@hrmanagement/metrics",
+  "sourceRoot": "libs/metrics/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "generatePackageJson": true,
+        "outputPath": "libs/metrics/dist",
+        "main": "libs/metrics/src/index.ts",
+        "tsConfig": "libs/metrics/tsconfig.lib.json"
+      }
+    }
+  }
+}

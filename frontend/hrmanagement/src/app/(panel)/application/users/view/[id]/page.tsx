@@ -165,138 +165,169 @@ const Page = () => {
 
      
   useEffect(() => {
+      const fetchOtherData = async () => {
+      const [universitiesData, citiesData, departmentsData, jobsData] =
+        await Promise.all([
+          getUniversities(),
+          getCities(),
+          getDepartments(),
+          getJobs(1, 50),
+        ]);
+
+      setUniversities(universitiesData);
+      setCities(citiesData);
+      setDepartments(departmentsData);
+      setJobs(jobsData);
+
+      getDepartments1(1,10)
+                .then((data) => setDepartments1(data.data as Department[]))
+                .catch((error) => console.error(error));
+  }
+  
   const fetchData = async () => {
     try {
       if (id !== undefined) {
+         
         try {
-        const user = await getUser(id.toString());
-
-        if (user) {
-          if (user.role === "staff") {
        
-            const data1 = await getStaffAndUser(id.toString());
-
-            if(data1){
-    
-            setStage("userandstaff");
-
-            if (data1.staffInfoOne?.city) {
-              const countiesData = await getCounties(Number(data1.staffInfoOne.city));
-              setCounties(countiesData);
-            }
-
-            resetUserAndStaff({
-              userId:user.id,
-              name: user.name,
-              email: user.email,
-              phone_number: data1.staffInfoOne.phone_number ?? "",
-              birthdate: data1.staffInfoOne.birthdate
-                ? data1.staffInfoOne.birthdate.split("T")[0]
-                : "",
-              university: data1.staffInfoOne.university,
-              unidepartment: data1.staffInfoOne.unidepartment,
-              graduatedate: data1.staffInfoOne.graduatedate
-                ? data1.staffInfoOne.graduatedate.split("T")[0]
-                : "",
-              address: data1.staffInfoOne.address ?? "",
-              city: data1.staffInfoOne.city,
-              country: data1.staffInfoOne.country ?? "",
-              jobId: data1.staffInfoOne.jobId ?? "",
-              county: data1.staffInfoOne.county ?? "",
-              postcode: data1.staffInfoOne.postcode ?? "",
-              githublink: data1.staffInfoOne.githublink ?? "",
-              linkedinlink: data1.staffInfoOne.linkedinlink ?? "",
-              abilities: [],
-              selfbio: data1.staffInfoOne.selfbio ?? "",
-              departmentId: data1.staffInfoOne.departmentId ?? "",
-              password: "",
-              repassword: "",
-            });
-
-            if(data1.staffInfoOne?.jobId){
-               const abilitydata = await getJobInfos(data1.staffInfoOne.jobId)
-               setAbilities(abilitydata[0].split(","))
-            }
-
-            if(data1.staffInfoOne.abilities){
-              setActiveAbilities(data1.staffInfoOne.abilities.split(","))
-            }
-            console.log(activeAbilities)
-
-            }
-          }else if(user.role === "admin") {
-
-          setStage("onlyuser");
-
-          resetUser({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            departmentId: user.departmentId,
-          });
-
-          setFound(true);
-          }else {
-           
+         const user = await getUser(id.toString());
+              if (user!=null) {
+              
+                if (user.role === "staff") {
             
-          const staff = await getStaff(id.toString());
+                  const data1 = await getStaffAndUser(id.toString());
 
-          if (staff) {
-          setStage("onlystaff");
-          setFound(true);
-
+                  if(data1){
           
-            if (staff?.city) {
-              const countiesData = await getCounties(Number(staff.city));
-              setCounties(countiesData);
-            }
-            if(staff.staffPrompts!=undefined){
-              const prompt = staff.staffPrompts.at(-1)
-              if(prompt!=undefined){
-                  setAIResponseForStaff(prompt.responseText)
+                  setStage("userandstaff");
+
+                  if (data1.staffInfoOne?.city) {
+                    const countiesData = await getCounties(Number(data1.staffInfoOne.city));
+                    setCounties(countiesData);
+                  }
+
+
+               
+
+                  resetUserAndStaff({
+                    userId:user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone_number: data1.staffInfoOne.phone_number ?? "",
+                    birthdate: data1.staffInfoOne.birthdate
+                      ? data1.staffInfoOne.birthdate.split("T")[0]
+                      : "",
+                    university: data1.staffInfoOne.university,
+                    unidepartment: data1.staffInfoOne.unidepartment,
+                    graduatedate: data1.staffInfoOne.graduatedate
+                      ? data1.staffInfoOne.graduatedate.split("T")[0]
+                      : "",
+                    address: data1.staffInfoOne.address ?? "",
+                    city: data1.staffInfoOne.city,
+                    country: data1.staffInfoOne.country ?? "",
+                    jobId: data1.staffInfoOne.jobId ?? "",
+                    county: data1.staffInfoOne.county ?? "",
+                    postcode: data1.staffInfoOne.postcode ?? "",
+                    githublink: data1.staffInfoOne.githublink ?? "",
+                    linkedinlink: data1.staffInfoOne.linkedinlink ?? "",
+                    abilities: [],
+                    selfbio: data1.staffInfoOne.selfbio ?? "",
+                    departmentId: data1.staffInfoOne.departmentId ?? "",
+                    password: "",
+                    repassword: "",
+                  });
+
+
+                  
+
+                  if(data1.staffInfoOne?.jobId){
+                    const abilitydata = await getJobInfos(data1.staffInfoOne.jobId)
+                    setAbilities(abilitydata[0].split(","))
+                  }
+
+                  if(data1.staffInfoOne.abilities){
+                    setActiveAbilities(data1.staffInfoOne.abilities.split(","))
+                  }
+                  console.log(activeAbilities)
+
+                  }
+                }else if(user.role === "admin") {
+
+                setStage("onlyuser");
+
+                resetUser({
+                  name: user.name,
+                  email: user.email,
+                  role: user.role,
+                  departmentId: user.departmentId,
+                });
+
+                setFound(true);
+                }
+                
+              }else {
+                
+                
+                const staff = await getStaff(id.toString());
+
+                if (staff) {
+                setStage("onlystaff");
+                setFound(true);
+
+                
+                  if (staff?.city) {
+                    const countiesData = await getCounties(Number(staff.city));
+                    setCounties(countiesData);
+                  }
+                  if(staff.staffPrompts!=undefined){
+                    const prompt = staff.staffPrompts.at(-1)
+                    if(prompt!=undefined){
+                        setAIResponseForStaff(prompt.responseText)
+                    }
+                }
+                  
+                
+                resetStaff({
+                  staffId:staff.id,
+                  name: staff.name,
+                  email: staff.email,
+                  phone_number: staff.phone_number ?? "",
+                  birthdate: staff.birthdate
+                    ? staff.birthdate.split("T")[0]
+                    : "",
+                  university: staff.university ?? "",
+                  unidepartment: staff.unidepartment ?? "",
+                  graduatedate: staff.graduatedate
+                    ? staff.graduatedate.split("T")[0]
+                    : "",
+                  address: staff.address ?? "",
+                  city: staff.city ?? "",
+                  country: staff.country ?? "",
+                  jobId: staff.jobId ?? "",
+                  county: staff.county ?? "",
+                  postcode: staff.postcode ?? "",
+                  githublink: staff.githublink ?? "",
+                  linkedinlink: staff.linkedinlink ?? "",
+                  abilities: staff.abilities ? staff.abilities.split(",") : [],
+                  selfbio: staff.selfbio ?? "",
+                  departmentId: staff.departmentId ?? "",
+                });
+              
+
+                if(staff.jobId){
+                    const abilitydata = await getJobInfos(staff.jobId)
+                    setAbilities(abilitydata[0].split(","))
+                  }
+
+                  if(staff.abilities){
+                    setActiveAbilities(staff.abilities.split(","))
+                  }
               }
-          }
-            
-
-          resetStaff({
-            staffId:staff.id,
-            name: staff.name,
-            email: staff.email,
-            phone_number: staff.phone_number ?? "",
-            birthdate: staff.birthdate
-              ? staff.birthdate.split("T")[0]
-              : "",
-            university: staff.university ?? "",
-            unidepartment: staff.unidepartment ?? "",
-            graduatedate: staff.graduatedate
-              ? staff.graduatedate.split("T")[0]
-              : "",
-            address: staff.address ?? "",
-            city: staff.city ?? "",
-            country: staff.country ?? "",
-            jobId: staff.jobId ?? "",
-            county: staff.county ?? "",
-            postcode: staff.postcode ?? "",
-            githublink: staff.githublink ?? "",
-            linkedinlink: staff.linkedinlink ?? "",
-            abilities: staff.abilities ? staff.abilities.split(",") : [],
-            selfbio: staff.selfbio ?? "",
-            departmentId: staff.departmentId ?? "",
-          });
-
-          if(staff.jobId){
-               const abilitydata = await getJobInfos(staff.jobId)
-               setAbilities(abilitydata[0].split(","))
-            }
-
-            if(staff.abilities){
-              setActiveAbilities(staff.abilities.split(","))
-            }
-        }
+                
+                }
+             
+                
           
-          }
-          
-        }
         }
         catch(error){
           console.log(error)
@@ -311,30 +342,14 @@ const Page = () => {
     }
   
   };
-
-  fetchData();
-
-
-  const fetchOtherData = async () => {
-      const [universitiesData, citiesData, departmentsData, jobsData] =
-        await Promise.all([
-          getUniversities(),
-          getCities(),
-          getDepartments(),
-          getJobs(1, 50),
-        ]);
-
-      setUniversities(universitiesData);
-      setCities(citiesData);
-      setDepartments(departmentsData);
-      setJobs(jobsData);
+  const load = async () => {
+    await fetchOtherData()
+    await fetchData();
   }
+  
+  load();
 
-  fetchOtherData()
-
-    getDepartments1(1,10)
-                .then((data) => setDepartments1(data.data as Department[]))
-                .catch((error) => console.error(error));
+ 
   
 }, []);
     
@@ -856,7 +871,7 @@ const Page = () => {
                             >
                               <optgroup label="">
                                 {universities.map((uni,index)=>(
-                                <option key={`${uni.name,index}`} value={`${uni.name}`}>{uni.name}</option>
+                                <option key={`${uni.isim,index}`} value={`${uni.isim}`}>{uni.isim}</option>
                             ))}
                               </optgroup>
                             </select>
@@ -1190,7 +1205,7 @@ const Page = () => {
                           >
                             <optgroup label="">
                               {universities.map((uni,index)=>(
-                              <option key={`${uni.name,index}`} value={`${uni.name}`}>{uni.name}</option>
+                              <option key={`${uni.isim,index}`} value={`${uni.isim}`}>{uni.isim}</option>
                            ))}
                             </optgroup>
                           </select>

@@ -5,7 +5,7 @@ FROM node:22-alpine AS builder
 
 ARG APP_NAME
 
-WORKDIR /
+WORKDIR /app
 
 COPY package*.json ./
 COPY nx.json ./
@@ -16,7 +16,8 @@ RUN npm ci
 COPY . .
 
 # Prisma Client oluştur 
-RUN npx prisma generate --schema=lib/prisma/prisma/schema.prisma
+RUN npx prisma generate --schema=libs/prisma/prisma/schema.prisma
+
 
 # İlgili servisi build et
 RUN npx nx build ${APP_NAME}
@@ -36,16 +37,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /package*.json ./
-COPY --from=builder /node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
 
-COPY --from=builder /dist/apps/${APP_NAME} ./dist
+COPY --from=builder /app/dist/apps/${APP_NAME} ./dist
 
-# Lib dosyaları
-COPY --from=builder /lib/prisma ./lib/prisma
-COPY --from=builder /lib/error-handler ./lib/error-handler
+COPY --from=builder /app/libs/prisma ./libs/prisma
+COPY --from=builder /app/libs/error-handler ./libs/error-handler
+COPY --from=builder /app/libs/metrics ./libs/metrics
 
-
-EXPOSE 4000
-
-CMD ["node","dist/main.js"]
+CMD ["node","dist/main.js"] 

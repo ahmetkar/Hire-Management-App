@@ -131,16 +131,26 @@ const Page = () => {
                                   console.log("staffdata",staffdata)
                                   setAIStaffResponses(staffdata)
                                   setAIStaffIdList(idList)
+                                  setAIResponses(data.result)
+                                  setAIPromptsExist(true)
+                                  setAIPromptsFail(false) 
+                                  setAIPromptsLoading(false)
                                 }).catch((err)=>{
                                   console.log("stafferr",err)
+                                  setAIPromptsExist(false)
+                                  setAIPromptsFail(true)
+                                  setTimeout(() => {
+                                    setAIPromptsFail(false);
+                                  }, 3000);
+                                  setAIPromptsLoading(false)
                                 })
-                                setAIResponses(data.result)
-                                setAIPromptsExist(true)
-                                setAIPromptsFail(false) 
+                                
+                                console.log(aiStaffResponses)
+                                console.log(aiPromptsExist)
                                  
                                 
                               }
-                              setAIPromptsLoading(false)
+                              
                      }
                     
                                 
@@ -388,6 +398,7 @@ const Page = () => {
         <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
                                           confirmText='' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
 
+    
     {aiPromptsExist && aiStaffResponses.data!=undefined ? (
             
                       <div>

@@ -10,7 +10,6 @@ import { RedisClient } from './config/redis';
 import dotenv from "dotenv"
 import client from "prom-client"
 
-
 const app = express();
 
 dotenv.config({path:`.env${process.env.NODE_ENV || ""}`})

@@ -1,5 +1,13 @@
 import client from "prom-client";
 
+
+
+export const requestCounter = new client.Counter({
+    name: "http_requests_total",
+    help: "Toplam HTTP istekleri",
+    labelNames: ["method", "route", "status"]
+});
+
 export const loginCounter = new client.Counter({
     name: "auth_login_total",
     help: "Toplam başarılı giriş sayısı"

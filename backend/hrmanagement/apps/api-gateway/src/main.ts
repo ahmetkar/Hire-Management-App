@@ -16,6 +16,7 @@ import dotenv from "dotenv"
 import { closeQueueEvents, startQueueEvents } from './queueEvents/queueEvent';
 import client from "prom-client"
 import {socketConnectionGauge, socketDisconnectReasons} from "@hrmanagement/metrics"
+import { requestDuration } from './middlewares/requestDuration.middleware';
 
 const app = express();
 
@@ -141,6 +142,8 @@ app.use("/management",verifyToken,authorizeRoles(["admin","staff"]),createProxy(
 app.use("/ai-service",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/ai-service",process.env.AI_SERVICE_URL!));
 
 
+app.use(requestDuration)
+
 
 const server1 = http.createServer(app)
 
@@ -150,10 +153,18 @@ export const io = new Server(server1,{cors:{
 }})
 
 
-const pubClient = RedisClient.getSub();
-const subClient = RedisClient.getDuplicate();
+let subClient = undefined
 
-io.adapter(createAdapter(pubClient, subClient));
+
+const pubClient = RedisClient.getSub();
+if(pubClient){
+  if(RedisClient.getDuplicate() !=undefined){
+    subClient = RedisClient.getDuplicate();
+  }
+}
+if(subClient!=undefined){
+  io.adapter(createAdapter(pubClient, subClient));
+}
 
 io.on("connection", (socket) => {
   socketConnectionGauge.set(1);

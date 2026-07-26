@@ -168,10 +168,18 @@ export const getAllUserAndStaff = async (page:number,limit:number): Promise<Staf
 
 
 
-export const getUser = async (id:string): Promise<User> => {
-    const response = await axiosInstance.get<OneUserResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/get-user/${id}`)
+export const getUser = async (id:string): Promise<User | null> => {
+    let response = null;
+    try {
+    response = await axiosInstance.get<OneUserResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/get-user/${id}`)
     const dep =  response.data
+   
     return dep.data
+
+    }catch(error){
+         if(response!=null && response.status === 400) return null;
+         return null;
+    }
 }
 
 

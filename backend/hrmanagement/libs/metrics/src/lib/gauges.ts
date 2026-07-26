@@ -36,6 +36,6 @@ export const socketConnectionGauge = new client.Gauge({
 
 
 export const prismaQueriesInRun = new client.Gauge({
-  name: "prisma_queries_total",
+  name: "prisma_queries_inrun",
   help: "Total Prisma queries",
 });
