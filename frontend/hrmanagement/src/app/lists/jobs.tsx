@@ -47,10 +47,11 @@ export const getJobs = async (page:number,limit:number): Promise<JobsResponse> =
 
 
 export const getJobsByDate= async (page:number,limit:number,type:string): Promise<JobsResponse> => {
-
+    
     const response = await axiosInstance.get<JobsResponse>(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/get-all-jobs-by-date?page=${page}&limit=${limit}&type=${type}`)
     const jobresp =  response.data
     return jobresp
+
 
 }
 

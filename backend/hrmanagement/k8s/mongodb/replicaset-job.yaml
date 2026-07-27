@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: mongodb-init-rs
+  namespace: hrmanagement
+
+spec:
+  backoffLimit: 5
+
+  template:
+
+    spec:
+
+      restartPolicy: OnFailure
+
+      containers:
+
+        - name: mongodb-init
+
+          image: mongo:8
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "MongoDB bekleniyor..."
+
+              until mongosh --host mongodb-0.mongodb --eval "db.adminCommand('ping')" >/dev/null 2>&1
+              do
+                sleep 2
+              done
+
+              echo "MongoDB hazır."
+
+              mongosh --host mongodb-0.mongodb <<EOF
+
+              try {
+
+                rs.status();
+
+                print("ReplicaSet zaten kurulmuş.");
+
+              } catch(e) {
+
+                print("ReplicaSet kuruluyor...");
+
+                rs.initiate({
+
+                  _id:"rs0",
+
+                  members:[
+                    {
+                      _id:0,
+                      host:"mongodb-0.mongodb:27017"
+                    }
+                  ]
+
+                });
+
+              }
+
+              EOF

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: management-service-config
+  namespace: hrmanagement
+
+data:
+  REDIS_PORT: "6379"
+  REDIS_HOST: "redis"
+  PROCESS_NAME: "management-service"
+  PORT: "3332"
+  KAFKA_BROKER: "kafka:9092"
+  CLIENT_URL: "http://localhost:3000"
+  DATABASE_URL: "mongodb://mongodb:27017/hrmanagement?replicaSet=rs0"
+

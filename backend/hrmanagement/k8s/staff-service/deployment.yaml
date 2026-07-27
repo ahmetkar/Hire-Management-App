@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: staff-service
+  namespace: hrmanagement
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: staff-service
+
+  template:
+    metadata:
+      labels:
+        app: staff-service
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: staff-service
+
+          image: ghcr.io/ahmetkar/hrmanagement-staff-service:v1.0.0
+
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3333
+
+          envFrom:
+            - configMapRef:
+                name: staff-service-config
+
+            - secretRef:
+                name: staff-service-secret

@@ -36,7 +36,8 @@ const worker = new Worker("job-app-create",async(job)=>{
                             })
         jobAppCreatedCounter.inc();
         await redis.set(`jobapp-status:${job.id}`, "completed");
-        const duration = (Date.now()-Number(job.data.requestStarted))/1000;
+        const started = Number(job.data.requestStarted)
+        const duration = (Date.now()-started)/1000;
         applicationDuration.observe(duration);
         return {success:true}
 

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: hrmanagement
+spec:
+  selector:
+    app: auth-service
+
+  ports:
+    - port: 3330
+      targetPort: 3330
+
+  type: ClusterIP

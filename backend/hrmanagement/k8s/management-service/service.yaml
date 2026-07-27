@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-service
+  namespace: hrmanagement
+spec:
+  selector:
+    app: management-service
+
+  ports:
+    - port: 3332
+      targetPort: 3332
+
+  type: ClusterIP

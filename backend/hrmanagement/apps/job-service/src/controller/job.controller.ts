@@ -572,7 +572,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             appdate:appdate,
                             ipadress:ipadress,}
                             
-            const jobApp = await jobAppQueue.add("job-app-create",{data:data,requestStared:requesttimestamp})
+            const jobApp = await jobAppQueue.add("job-app-create",{data:data,requestStarted:requesttimestamp})
                     
                     /*const job = await prisma.jobapplication.create({
                         data:{
