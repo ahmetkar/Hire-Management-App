@@ -10,7 +10,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
-
 RUN npm ci
 
 COPY . .

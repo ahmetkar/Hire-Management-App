@@ -3,7 +3,7 @@ import redis from "../configs/redis"
 import {prisma}  from "@hrmanagement/prisma"
 import { publishJobAppCreated } from "../events/producers/jobAppCreated.producers"
 import { invalidateCacheTagKeys } from "../helpers/redis.helper"
-import { jobAppCreatedCounter } from "@hrmanagement/metrics"
+import { applicationDuration, jobAppCreatedCounter } from "@hrmanagement/metrics"
 
 enum JobAppStatus {
     NEW="new",
@@ -36,6 +36,8 @@ const worker = new Worker("job-app-create",async(job)=>{
                             })
         jobAppCreatedCounter.inc();
         await redis.set(`jobapp-status:${job.id}`, "completed");
+        const duration = (Date.now()-Number(job.data.requestStarted))/1000;
+        applicationDuration.observe(duration);
         return {success:true}
 
     }

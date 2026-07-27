@@ -155,6 +155,7 @@ useEffect(() => {
       selfbio:string;
       agreeterms:boolean;
       ipaddress:string;
+      requesttimestamp:number;
   };
 
 
@@ -186,7 +187,7 @@ useEffect(() => {
 
           const citystr = cities.find((city)=> city.plateCode == data.city)
           data.city = citystr!.name
-
+          data.requesttimestamp = Date.now()
           const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/job/create-job-application`,data)
 
           return response.data

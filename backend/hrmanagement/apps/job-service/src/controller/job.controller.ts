@@ -540,7 +540,7 @@ export const getJobByFilter = async (req:Request,res:Response,next:NextFunction)
 export const createJobApplication= async (req:Request,res:Response,next:NextFunction) => {
     const {jobId,name,email,phone_number,city,country,county,
         address,postcode,university,unidepartment,unifaculty,graduatedate,githublink
-    ,linkedinlink,abilities,selfbio,birthdate,agreeterms,ipadress} = req.body;
+    ,linkedinlink,abilities,selfbio,birthdate,agreeterms,ipadress,requesttimestamp} = req.body;
 
    var appdate = new Date().toISOString()
 
@@ -572,7 +572,7 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             appdate:appdate,
                             ipadress:ipadress,}
                             
-            const jobApp = await jobAppQueue.add("job-app-create",{data:data})
+            const jobApp = await jobAppQueue.add("job-app-create",{data:data,requestStared:requesttimestamp})
                     
                     /*const job = await prisma.jobapplication.create({
                         data:{

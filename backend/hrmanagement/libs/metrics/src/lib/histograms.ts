@@ -13,3 +13,25 @@ export const prismaQueryDuration = new client.Histogram({
   help: "Prisma query duration",
   buckets: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 2],
 });
+
+export const applicationDuration =
+        new client.Histogram({
+
+            name:"job_application_duration_seconds",
+
+            help:"Application duration",
+
+            buckets:[
+                0.1,
+                0.25,
+                0.5,
+                1,
+                2,
+                5,
+                10,
+                20,
+                30,
+                60
+            ]
+
+        });
