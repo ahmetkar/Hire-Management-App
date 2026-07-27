@@ -1,4 +1,30 @@
 services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    networks:
+      - hrmanagement
+  grafana:
+    image: grafana/grafana
+
+    container_name: grafana
+
+    ports:
+      - "3002:3000"
+
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+    networks:
+      - hrmanagement
+
   mongodb:
     image: mongo:7.0
     restart: unless-stopped
@@ -27,7 +53,7 @@ services:
     environment:
       REDIS_ARGS: "--requirepass cantremember"
     ports:
-      - "6379:6379"
+      - "6380:6379"
       - "8001:8001"
     volumes:
       - redis_data:/data
@@ -282,6 +308,7 @@ volumes:
   redis_data:
   kafka_data:
   elastic_data:
+  grafana-storage:
 
 networks:
   hrmanagement:

@@ -14,13 +14,13 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
      
     }
 
-   const {kind,infoList} = req.body
+   const {kind,infoList,currentpage,currentlimit,currenttype} = req.body
     //sendedId,prompt,result,embedding
     if(!kind || !infoList){
         return res.status(404).json({message:"Verilen bilgilerde sorun var."})
     }
 
-    const data = {kind:kind,infoList:infoList}
+    const data = {kind:kind,infoList:infoList,currentpage:currentpage,currentlimit:currentlimit,currenttype:currenttype}
 
     
     if(kind == "application"){

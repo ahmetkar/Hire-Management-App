@@ -104,12 +104,15 @@ export const saveAIAnswerRequest = async (appId:string,resp:string): Promise<str
 }  
 
 
-export const saveMultipileAIAnswerRequest = async (requests:SaveRequest[]): Promise<string | null> => {
+export const saveMultipileAIAnswerRequest = async (requests:SaveRequest[],currentpage:number,currentlimit:number,type:string): Promise<string | null> => {
     
    
     const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/ai-service/save-multipile-prompt`,{
         kind:"application",
-        infoList:requests
+        infoList:requests,
+        currentpage:currentpage,
+        currentlimit:currentlimit,
+        currenttype:type
     })
      if(response.status == 201){
         return response.data.id

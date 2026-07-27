@@ -157,7 +157,8 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                         if(await CreateIndex()){
                             
                        
-                            data.infoList.map(async (info : any)=>{
+                            await Promise.all( 
+                                data.infoList.map(async (info : any)=>{
                                 const prompt = await redis.get(`jobapp:${info.sendedId}:prompt`)
                                 const embeddingRedis = await redis.get(`jobapp:${info.sendedId}:embedding`)
 
@@ -213,9 +214,10 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                                     }
                     
                                 count+=1
-                            })
+                            }))
                                 
                             if(data.infoList.length == resultcount && errorcount==0){
+                                await redis.del(`jobapp:${data.currenttype}:${data.currentpage}:${data.currentlimit}`)
                                 await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
                                  return {success:true,message:"Prompt başarıyla kaydedildi."};
                             }else {
@@ -238,12 +240,12 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                             let resultcount = 0;
                             let errorcount = 0;
                             const errorList : string[] = []
-                    const data = job.data.data
-                        if(await CreateIndex()){
+                            const data = job.data.data
+                            if(await CreateIndex()){
                             
                            
-                            
-                            data.infoList.forEach(async (info : any)=>{
+                        await Promise.all( 
+                            data.infoList.map(async (info : any)=>{
                                 const prompt = await redis.get(`staff:${info.sendedId}:prompt`)
                                 const embeddingRedis = await redis.get(`staff:${info.sendedId}:embedding`)
 
@@ -296,9 +298,11 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                                         }
 
                             count+=1
-                            })
+                            }))
                                 
                             if(data.infoList.length == resultcount && errorcount==0){
+                                await redis.del(`staff:${data.currentpage}:${data.currentlimit}`)
+                                invalidateCacheTagKeys(`cache-tag:staff`)
                                 await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
                                 return {success:true,message:"Prompt dizisi başarıyla kaydedildi.."};
                             }else {

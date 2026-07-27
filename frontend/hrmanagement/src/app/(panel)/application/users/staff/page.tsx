@@ -9,6 +9,7 @@ import axiosInstance from '@/app/utils/axiosInstance';
 import { getAllStaff, getMultipileStaff, StaffResponse } from '@/app/lists/datas/users';
 import { AIResponseElement, AIResponses, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/users';
 import { connectSocket, socket } from '@/app/utils/socket';
+import { AIResponseResults } from '@/app/actions/jobapplication';
 
 
 
@@ -118,39 +119,36 @@ const Page = () => {
                     });
       
       
-                     const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
-                                      
-                         const data = payload.result as AIResponses
-                                if(data.result!=undefined){
-                                const idList : string[]  = []
-                                data.result.map((i)=>{
-                                  idList.push(i.sendedId)
-                                })
+                     const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {     
+                                const data = payload.result as AIResponseResults
+
+                                if(data.resultarr!=undefined){
+                                  const idList : string[]  = []
+                                  data.resultarr.map((i)=>{
+                                    idList.push(i.sendedId)
+                                  })
                                 
-                                getMultipileStaff(idList,apage,aiJobLimit).then((staffdata)=>{
-                                  console.log("staffdata",staffdata)
-                                  setAIStaffResponses(staffdata)
-                                  setAIStaffIdList(idList)
-                                  setAIResponses(data.result)
-                                  setAIPromptsExist(true)
-                                  setAIPromptsFail(false) 
-                                  setAIPromptsLoading(false)
-                                }).catch((err)=>{
-                                  console.log("stafferr",err)
-                                  setAIPromptsExist(false)
-                                  setAIPromptsFail(true)
-                                  setTimeout(() => {
-                                    setAIPromptsFail(false);
-                                  }, 3000);
-                                  setAIPromptsLoading(false)
-                                })
-                                
-                                console.log(aiStaffResponses)
-                                console.log(aiPromptsExist)
-                                 
-                                
+                                  getMultipileStaff(idList,apage,aiJobLimit).then((staffdata)=>{
+                                      console.log("staffdata",staffdata)
+                                      setAIStaffResponses(staffdata)
+                                      setAIStaffIdList(idList)
+                                      setAIResponses(data.resultarr)
+                                      setAIPromptsExist(true)
+                                      setAIPromptsFail(false) 
+                                      setAIPromptsLoading(false)
+                                  }).catch((err)=>{
+                                      console.log("stafferr",err)
+                                      setAIPromptsExist(false)
+                                      setAIPromptsFail(true)
+                                      setTimeout(() => {
+                                        setAIPromptsFail(false);
+                                      }, 3000);
+                                      setAIPromptsLoading(false)
+                                  })
+                                  
+                                  console.log(aiStaffResponses)
+                                  console.log(aiPromptsExist)
                               }
-                              
                      }
                     
                                 
@@ -346,7 +344,7 @@ const Page = () => {
                                 });
                               }
                 
-                              saveMultipileAIAnswerRequest(reqs).then(async (id)=>{
+                              saveMultipileAIAnswerRequest(reqs,page,limit).then(async (id)=>{
                                  if(id){
                                 const jobId = id
                                 await connectSocket(jobId,"aiSaveQueue",()=>{

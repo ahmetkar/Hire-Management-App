@@ -373,7 +373,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
                 });
               }
 
-              saveMultipileAIAnswerRequest(reqs).then(async (id)=>{
+              saveMultipileAIAnswerRequest(reqs,page,limit,type).then(async (id)=>{
                 if(id){
                   const jobId = id
                   await connectSocket(jobId,"aiSaveQueue",()=>{

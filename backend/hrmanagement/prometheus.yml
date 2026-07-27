@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+
+  - job_name: "api-gateway"
+
+    static_configs:
+      - targets:
+          - api-gateway:4000
+
+  - job_name: "auth-service"
+
+    static_configs:
+      - targets:
+          - auth-service:3330
+
+  - job_name: "staff-service"
+
+    static_configs:
+      - targets:
+          - staff-service:3332
+
+  - job_name: "job-service"
+
+    static_configs:
+      - targets:
+          - job-service:3331
+
+  - job_name: "management-service"
+
+    static_configs:
+      - targets:
+          - management-service:3332
+
+  - job_name: "ai-service"
+
+    static_configs:
+      - targets:
+          - ai-service:3334
