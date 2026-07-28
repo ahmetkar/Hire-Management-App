@@ -59,15 +59,6 @@ spec:
               port: 3000
             initialDelaySeconds: 40
 
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-
-            limits:
-              cpu: "1"
-              memory: 1Gi
-
       volumes:
         - name: grafana-storage
           persistentVolumeClaim:
