@@ -28,13 +28,14 @@ jobs:
             nc -vz ${{ secrets.SSH_HOST }} ${{ secrets.SSH_PORT }}
 
       - name: Deploy Infrastructure
-        uses: appleboy/ssh-action@v1.2.2
+        uses: appleboy/ssh-action@v1
 
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          debug: true
 
           script: |
 
