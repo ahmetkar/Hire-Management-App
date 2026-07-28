@@ -23,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check TCP connectivity
+        run: |
+            nc -vz ${{ secrets.SSH_HOST }} ${{ secrets.SSH_PORT }}
 
       - name: Deploy Infrastructure
         uses: appleboy/ssh-action@v1.2.2
