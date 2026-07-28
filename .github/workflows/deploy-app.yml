@@ -1,6 +1,7 @@
 name: Deploy Applications
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: 
     - "Build & Push Images"
