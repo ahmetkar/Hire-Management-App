@@ -26,12 +26,13 @@ export default function Page() {
           limit: defaultLimit,
           totalPages: 0,
        });
-       const params =  useSearchParams()
+     
 
        const page = Number(params.get("page")) || 1
        const limit = Number(params.get("limit") || defaultLimit)
 
-  
+        const params =  useSearchParams()
+
        useEffect(() => {
           
           getDepartments(page,limit)
