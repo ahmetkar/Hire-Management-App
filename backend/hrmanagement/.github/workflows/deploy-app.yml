@@ -2,86 +2,39 @@ name: Deploy Applications
 
 on:
   workflow_run:
-    workflows:
-      - Build & Push Images
+    workflows: ["Build & Push Images"]
     types:
       - completed
 
-permissions:
-  contents: read
-
-concurrency:
-  group: deploy-app
-  cancel-in-progress: false
-
 jobs:
-
   deploy:
-
-    if: github.event.workflow_run.conclusion == 'success'
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-latest
 
-    environment: production
-
     steps:
-
-      - name: Deploy to Server
+      - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.2
+
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
 
           script: |
-
-            set -e
-
-            echo "========== Deploy Started =========="
-
-            cd /home/ubuntu/Hire-Management-App/backend/hrmanagement
+            cd /home/ubuntu/Hire-Management-App
 
             git fetch origin
-
             git reset --hard origin/main
 
-            echo "Applying Kubernetes manifests..."
+            cd backend/hrmanagement
 
             kubectl apply -k k8s/apps
 
-            echo "Waiting deployments..."
-
-            kubectl rollout status deployment/api-gateway \
-              -n hrmanagement \
-              --timeout=300s
-
-            kubectl rollout status deployment/auth-service \
-              -n hrmanagement \
-              --timeout=300s
-
-            kubectl rollout status deployment/staff-service \
-              -n hrmanagement \
-              --timeout=300s
-
-            kubectl rollout status deployment/management-service \
-              -n hrmanagement \
-              --timeout=300s
-
-            kubectl rollout status deployment/job-service \
-              -n hrmanagement \
-              --timeout=300s
-
-            kubectl rollout status deployment/ai-service \
-              -n hrmanagement \
-              --timeout=300s
-
-            echo "Pods"
-
-            kubectl get pods -n hrmanagement
-
-            echo "Services"
-
-            kubectl get svc -n hrmanagement
-
-            echo "Deploy Finished"
+            kubectl rollout status deployment/api-gateway -n hrmanagement
+            kubectl rollout status deployment/auth-service -n hrmanagement
+            kubectl rollout status deployment/staff-service -n hrmanagement
+            kubectl rollout status deployment/management-service -n hrmanagement
+            kubectl rollout status deployment/job-service -n hrmanagement
+            kubectl rollout status deployment/ai-service -n hrmanagement
