@@ -149,9 +149,15 @@ app.use(requestDuration)
 const server1 = http.createServer(app)
 
 
-export const io = new Server(server1,{cors:{
-  origin:clientUrl
-}})
+export const io = new Server(server1,{
+   cors: {
+      origin:[clientUrl],
+      allowedHeaders:['Authorization',"Content-Type"],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },    
+    transports: ["websocket", "polling"]
+})
 
 
 let subClient = undefined

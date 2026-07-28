@@ -45,3 +45,7 @@ Thumbs.db
 .claude/settings.local.json
 
 test-output
+
+tls.crt
+tls.key
+docker-compose2

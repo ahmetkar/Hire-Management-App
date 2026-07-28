@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: prometheus-config
+  namespace: hrmanagement
+
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+
+      - job_name: api-gateway
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - api-gateway:4000
+
+      - job_name: auth-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - auth-service:3330
+
+      - job_name: job-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - job-service:3331
+
+      - job_name: staff-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - staff-service:3333
+
+      - job_name: management-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - management-service:3332
+
+      - job_name: ai-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - ai-service:3334

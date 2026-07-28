@@ -6,7 +6,7 @@ metadata:
   namespace: hrmanagement
 
 spec:
-  replicas: 2
+  replicas: 1
 
   selector:
     matchLabels:
@@ -37,3 +37,24 @@ spec:
 
             - secretRef:
                 name: auth-service-secret
+          startupProbe:
+            tcpSocket:
+              port: 3330
+            periodSeconds: 10
+            failureThreshold: 30
+
+          readinessProbe:
+            tcpSocket:
+              port: 3330
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            tcpSocket:
+              port: 3330
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
