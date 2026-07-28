@@ -49,3 +49,9 @@ test-output
 tls.crt
 tls.key
 docker-compose2
+rootCA.crt
+rootCA.key
+rootCA.srl
+server.crt
+server.csr
+server.key
