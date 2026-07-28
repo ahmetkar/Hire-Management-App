@@ -1,0 +1,47 @@
+name: Cleanup GHCR Images
+
+on:
+  schedule:
+    - cron: "0 3 * * 0" # Her pazar 03:00 UTC
+
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+concurrency:
+  group: ghcr-cleanup
+  cancel-in-progress: false
+
+jobs:
+
+  cleanup:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - staff-service
+          - management-service
+          - job-service
+          - ai-service
+
+    steps:
+
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+
+          package-name: hrmanagement-${{ matrix.service }}
+
+          package-type: container
+
+          min-versions-to-keep: 20
+
+          delete-only-untagged-versions: false
+
+          token: ${{ secrets.GITHUB_TOKEN }}

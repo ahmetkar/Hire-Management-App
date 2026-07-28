@@ -1,0 +1,82 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/hrmanagement/k8s/infra/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-infra
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    steps:
+
+      - name: Deploy Infrastructure
+        uses: appleboy/ssh-action@v1.2.2
+
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+          script: |
+
+            set -e
+
+            echo "===== Infrastructure Deploy Started ====="
+
+            cd /home/ubuntu/Hire-Management-App/backend/hrmanagement
+
+            git fetch origin
+
+            git reset --hard origin/main
+
+            kubectl apply -k k8s/infra
+
+            echo "Waiting StatefulSets..."
+
+            kubectl rollout status statefulset/mongodb \
+              -n hrmanagement \
+              --timeout=600s
+
+            kubectl rollout status deployment/redis \
+              -n hrmanagement \
+              --timeout=600s
+
+
+            echo "Waiting Deployments..."
+
+            kubectl rollout status deployment/elasticsearch \
+              -n hrmanagement \
+              --timeout=600s
+
+            kubectl rollout status deployment/prometheus \
+              -n hrmanagement \
+              --timeout=600s
+
+            kubectl rollout status deployment/grafana \
+              -n hrmanagement \
+              --timeout=600s
+
+            echo "Infrastructure Status"
+
+            kubectl get pods -n hrmanagement
+
+            kubectl get pvc -n hrmanagement
+
+            kubectl get svc -n hrmanagement
+
+            echo "Infrastructure Deploy Finished"
