@@ -5,6 +5,8 @@ import axiosInstance from '@/app/utils/axiosInstance';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
+export const dynamic = "force-dynamic";
+
 export default function Page() {
 
 
@@ -27,11 +29,11 @@ export default function Page() {
           totalPages: 0,
        });
      
-
+        const params =  useSearchParams()
        const page = Number(params.get("page")) || 1
        const limit = Number(params.get("limit") || defaultLimit)
 
-        const params =  useSearchParams()
+       
 
        useEffect(() => {
           
