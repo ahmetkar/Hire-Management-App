@@ -76,6 +76,10 @@ jobs:
           echo "services=$JSON" >> "$GITHUB_OUTPUT"
 
           echo "$JSON"
+      - id: detect
+        run: |
+            ...
+            echo "services=$SERVICES" >> $GITHUB_OUTPUT
 
   build:
 
