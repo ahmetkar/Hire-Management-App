@@ -1,0 +1,40 @@
+name: Deploy Applications
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Images"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+
+          script: |
+            cd /home/ubuntu/Hire-Management-App
+
+            git fetch origin
+            git reset --hard origin/main
+
+            cd backend/hrmanagement
+
+            kubectl apply -k k8s/apps
+
+            kubectl rollout status deployment/api-gateway -n hrmanagement
+            kubectl rollout status deployment/auth-service -n hrmanagement
+            kubectl rollout status deployment/staff-service -n hrmanagement
+            kubectl rollout status deployment/management-service -n hrmanagement
+            kubectl rollout status deployment/job-service -n hrmanagement
+            kubectl rollout status deployment/ai-service -n hrmanagement
