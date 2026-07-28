@@ -2,7 +2,9 @@ name: Deploy Applications
 
 on:
   workflow_run:
-    workflows: ["Build & Push Images"]
+    workflows: 
+    - "Build & Push Images"
+    - "Deploy Infrastructure"
     types:
       - completed
 

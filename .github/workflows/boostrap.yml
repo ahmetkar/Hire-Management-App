@@ -1,96 +1,37 @@
-name: Build & Push Images
+name: Bootstrap Build & Deploy
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/kustomization.yaml'
+  workflow_dispatch:
 
 permissions:
   contents: write
   packages: write
 
 concurrency:
-  group: ci-main
+  group: bootstrap
   cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
   IMAGE_PREFIX: hrmanagement
-  WORKDIR: backend/hrmanagement
+
 jobs:
-  detect:
 
-    name: Detect Affected Services
-
-    runs-on: ubuntu-latest
-
-    outputs:
-      services: ${{ steps.detect.outputs.services }}
-      tag: ${{ steps.tag.outputs.tag }}
-
-    defaults:
-      run:
-        working-directory: backend/hrmanagement
-
-    steps:
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/hrmanagement/package-lock.json
-
-      - run: npm ci
-
-      - id: tag
-        run: |
-          echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-
-      - id: detect
-        shell: bash
-        run: |
-
-          BASE="${{ github.event.before }}"
-          HEAD="${{ github.sha }}"
-
-          if [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
-            BASE=$(git rev-list --max-parents=0 HEAD)
-          fi
-
-          SERVICES=$(npx nx show projects \
-            --affected \
-            --type app \
-            --base=$BASE \
-            --head=$HEAD)
-
-          JSON=$(echo "$SERVICES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-
-          echo "services=$JSON" >> "$GITHUB_OUTPUT"
-
-          echo "$JSON"
-
-
-  build:
-
-    name: Build & Push Images
-
-    needs: detect
-
-    if: needs.detect.outputs.services != '[]'
+  bootstrap:
 
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.detect.outputs.services) }}
+        service:
+          - api-gateway
+          - auth-service
+          - staff-service
+          - management-service
+          - job-service
+          - ai-service
 
     defaults:
       run:
@@ -100,6 +41,23 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/hrmanagement/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Tag
+        id: tag
+        run: |
+          echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Docker Metadata
         id: meta
@@ -108,7 +66,7 @@ jobs:
           images: |
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ needs.detect.outputs.tag }}
+            type=raw,value=${{ steps.tag.outputs.tag }}
 
       - name: Login GHCR
         uses: docker/login-action@v3
@@ -123,32 +81,22 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
-
           context: backend/hrmanagement
-
           file: backend/hrmanagement/Dockerfile
-
           push: true
 
           build-args: |
             APP_NAME=${{ matrix.service }}
 
           tags: ${{ steps.meta.outputs.tags }}
-
           labels: ${{ steps.meta.outputs.labels }}
 
           cache-from: type=gha
-
           cache-to: type=gha,mode=max
+
   update-manifests:
 
-    name: Update Kubernetes Manifests
-
-    needs:
-      - detect
-      - build
-
-    if: needs.detect.outputs.services != '[]'
+    needs: bootstrap
 
     runs-on: ubuntu-latest
 
@@ -161,35 +109,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }
 
       - name: Install Kustomize
         run: |
           curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
           sudo mv kustomize /usr/local/bin/
 
-      - name: Update Image Tags
-        shell: bash
+      - name: Generate Tag
+        id: tag
+        run: |
+          echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Images
         env:
-          TAG: ${{ needs.detect.outputs.tag }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
 
-          for SERVICE in $(echo '${{ needs.detect.outputs.services }}' | jq -r '.[]')
+          for SERVICE in \
+            api-gateway \
+            auth-service \
+            staff-service \
+            management-service \
+            job-service \
+            ai-service
           do
 
-            echo "Updating ${SERVICE}"
-
-            cd k8s/apps/${SERVICE}
+            cd k8s/apps/$SERVICE
 
             kustomize edit set image \
-            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_PREFIX }}-${SERVICE}=\
-            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_PREFIX }}-${SERVICE}:${TAG}
+              ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_PREFIX }}-${SERVICE}=\
+              ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_PREFIX }}-${SERVICE}:${TAG}
 
             cd ../../..
 
           done
 
-      - name: Commit Changes
+      - name: Commit Manifest Changes
         run: |
 
           git config user.name "github-actions[bot]"
@@ -197,12 +153,12 @@ jobs:
 
           if git diff --quiet
           then
-            echo "Nothing changed."
+            echo "No manifest changes."
             exit 0
           fi
 
           git add .
 
-          git commit -m "chore(ci): update image tags (${TAG}) [skip ci]"
+          git commit -m "chore(bootstrap): initialize image tags (${{ steps.tag.outputs.tag }}) [skip ci]"
 
           git push
