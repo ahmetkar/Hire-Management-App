@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: api-gateway
+  namespace: hrmanagement
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: api-gateway
+
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: api-gateway
+          image: ghcr.io/ahmetkar/hrmanagement-api-gateway:v1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 4000
+          
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"  
+
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+
+            - secretRef:
+                name: api-gateway-secret
+          startupProbe:
+            tcpSocket:
+              port: 4000
+            periodSeconds: 10
+            failureThreshold: 30
+
+          readinessProbe:
+            tcpSocket:
+              port: 4000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            tcpSocket:
+              port: 4000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3

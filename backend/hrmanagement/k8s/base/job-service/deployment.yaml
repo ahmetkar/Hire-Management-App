@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: job-service
+  namespace: hrmanagement
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: job-service
+
+  template:
+    metadata:
+      labels:
+        app: job-service
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: job-service
+          image: ghcr.io/ahmetkar/hrmanagement-job-service:v1.0.0
+          imagePullPolicy: Always
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          ports:
+            - containerPort: 3331
+
+          envFrom:
+            - configMapRef:
+                name: job-service-config
+
+            - secretRef:
+                name: job-service-secret
+
+          startupProbe:
+            tcpSocket:
+              port: 3331
+            periodSeconds: 10
+            failureThreshold: 30
+
+          readinessProbe:
+            tcpSocket:
+              port: 3331
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            tcpSocket:
+              port: 3331
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3

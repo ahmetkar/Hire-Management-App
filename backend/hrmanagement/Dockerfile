@@ -22,7 +22,7 @@ RUN npx prisma generate --schema=libs/prisma/prisma/schema.prisma
 RUN npx nx build ${APP_NAME}
 
 # Sadece production bağımlılıkları kalsın
-RUN npm prune --omit=dev
+RUN npm ci --omit=dev
 
 
 # ==========================

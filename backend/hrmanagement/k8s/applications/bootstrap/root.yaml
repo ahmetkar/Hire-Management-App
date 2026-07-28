@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: hrmanagement-root
+  namespace: argocd
+
+spec:
+  project: hrmanagement
+
+  source:
+    repoURL: https://github.com/ahmetkar/Hire-Management-App.git
+    targetRevision: main
+    path: backend/hrmanagement/k8s/applications/apps
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
