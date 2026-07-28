@@ -2,11 +2,6 @@ name: Deploy Infrastructure
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "Bootstrap Build & Deploy"
-    types:
-      - completed
     paths:
       - 'backend/hrmanagement/k8s/infra/**'
 
