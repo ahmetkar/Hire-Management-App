@@ -25,6 +25,9 @@ RUN npx nx build ${APP_NAME}
 RUN npm ci --omit=dev
 
 
+RUN npx prisma generate --schema=libs/prisma/prisma/schema.prisma
+
+
 # ==========================
 # Runtime
 # ==========================
