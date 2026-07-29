@@ -23,7 +23,7 @@ spec:
 
       containers:
         - name: job-service
-          image: ghcr.io/ahmetkar/hrmanagement-job-service:v1.0.0
+          image: ghcr.io/ahmetkar/hrmanagement-job-service:latest
           imagePullPolicy: Always
 
           resources:

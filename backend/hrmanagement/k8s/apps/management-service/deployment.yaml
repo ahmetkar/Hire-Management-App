@@ -24,7 +24,7 @@ spec:
       containers:
         - name: management-service
 
-          image: ghcr.io/ahmetkar/hrmanagement-management-service:v1.0.0
+          image: ghcr.io/ahmetkar/hrmanagement-management-service:latest
 
           imagePullPolicy: Always
 

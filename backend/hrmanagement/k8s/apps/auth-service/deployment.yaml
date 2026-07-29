@@ -24,7 +24,7 @@ spec:
       containers:
         - name: auth-service
 
-          image: ghcr.io/ahmetkar/hrmanagement-auth-service:v1.0.0
+          image: ghcr.io/ahmetkar/hrmanagement-auth-service:latest
 
           imagePullPolicy: Always
 
