@@ -1,16 +1,16 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 
-import { Department,getDepartments } from '../../../../../lists/department'
+import { Department,getDepartments } from '../../../../../../lists/department'
 
-import { User,getUsers } from '../../../../../lists/datas/users'
+import { User,getUsers } from '../../../../../../lists/datas/users'
 
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { useParams } from 'next/navigation';
-import { getJob,Job } from '../../../../../lists/jobs';
+import { getJob,Job } from '../../../../../../lists/jobs';
 
 
 

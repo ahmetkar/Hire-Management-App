@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useState } from 'react'
 
-import { Department,getDepartments } from '../../../../lists/department'
+import { Department,getDepartments } from '../../../../../lists/department'
 
-import { User,getUsers } from '../../../../lists/datas/users'
+import { User,getUsers } from '../../../../../lists/datas/users'
 
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
