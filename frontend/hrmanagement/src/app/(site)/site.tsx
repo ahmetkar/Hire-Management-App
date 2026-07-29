@@ -112,7 +112,6 @@ export default function Site() {
                     <th></th>
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
-                    <th>Konum</th>
                     <th>Departman</th>
                     <th>Yayınlanma Tarihi</th>
                     <th></th>
@@ -154,7 +153,7 @@ export default function Site() {
                     <th></th>
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
-                    <th>Konum</th>
+                    <th>Departman</th>
                     <th>Yayınlanma Tarihi</th>
                     <th></th>
                   </tr>
@@ -173,7 +172,7 @@ export default function Site() {
                     <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
                       <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">{j.mounthlywage}</td>
+                    <td className="text-muted">{j.mounthlywage ? j.mounthlywage : j.weeklypayment ? j.weeklypayment :  j.dailypayment ? j.dailypayment : 0}</td>
                     <td className="text-muted">{j.department.name}</td>
                     <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
@@ -198,7 +197,7 @@ export default function Site() {
                     <th></th>
                     <th className="w-50">Başlık</th>
                     <th>Maaş</th>
-                    <th>Konum</th>
+                    <th>Departman</th>
                     <th>Yayınlanma Tarihi</th>
                     <th></th>
                   </tr>
@@ -217,7 +216,7 @@ export default function Site() {
                     <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
                       <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">{j.mounthlywage}</td>
+                     <td className="text-muted">{j.mounthlywage ? j.mounthlywage : j.weeklypayment ? j.weeklypayment :  j.dailypayment ? j.dailypayment : 0}</td>
                     <td className="text-muted">{j.department.name}</td>
                     <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     
