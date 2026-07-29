@@ -2,7 +2,7 @@
 import { searchJobApps,getJobApps, JobAppsResponse, getMultipileJobApps } from '@/app/lists/jobapplications';
 import { useSearchParams,useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import Pagination from '../utils/pagination';
+import Pagination from '../../../../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
 import {AIResponse, AIResponseElement, AIResponseResults, AIResponses, approveJobApp, disapproveJobApp, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';

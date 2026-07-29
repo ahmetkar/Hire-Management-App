@@ -153,7 +153,7 @@ const Page = () => {
                 <div className="col-md-8">
                   <div className="card shadow eq-card">
                     <div className="card-header">
-                      <strong className="card-title">Bildirimler</strong>
+                      <strong className="card-title">Bildirimler  {notifications.total}  </strong>
                       <a className="float-right small text-muted" href="/application/notifications">Hepsini gör</a>
                     </div>
                     <div className="card-body">
@@ -169,7 +169,7 @@ const Page = () => {
                         </thead>
                         <tbody>
                           {notifications.data.map((ntf)=>(
-                            <tr key={ntf.desc}>
+                            <tr key={ntf.href}>
                             <td><a href={ntf.href!="" ? `/application/jobmanagement/detail/${ntf.href}` : "#"}>{ntf.title}</a></td>
                             <td><span className="small text-muted">{ntf.desc}</span></td>
                             <td>{ntf.date.toString().split("T")[0]}</td>

@@ -206,9 +206,40 @@ export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) =
 
     try {
         
-        const userId = req.headers["x-user-id"]
-
-            if(userId){
+           const token = req.cookies?.access_token
+            
+           if(!token){
+             return next(new ValidationError("User not Found"))
+           }
+        
+           const decoded = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET as string) as TokenPayload
+        
+           if(!decoded.id || !decoded.sessionId || !decoded.role){
+            console.log(decoded)  
+             return next(new ValidationError("User not Found"))
+           }
+        
+           
+        
+            const redisKey = `session:${decoded.sessionId}`
+            const sessionRaw = await redis.get(redisKey)
+        
+            if(!sessionRaw){
+                 return next(new ValidationError("User not Found"))
+            }
+        
+        
+            const session = JSON.parse(sessionRaw) as {
+              id: string;
+              role: Role;
+              sessionId:string;
+            }
+        
+            if(session.id !== decoded.id){
+                 return next(new ValidationError("User not Found"))
+            }
+            const userId = decoded.id
+             if(userId){
             console.log(userId)
             const user = await prisma.users.findUnique({where:{id:userId}})
 
@@ -226,9 +257,13 @@ export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) =
             }else {
                 return next(new ValidationError("User not Found"))
             }
-                    }catch(error){
-                        return next(error);
-                    }
+                   
+        
+            }catch(error){
+            return next(new Error("Error : "+error))
+            }
+        
+        
 
 
 }

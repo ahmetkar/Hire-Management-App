@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { JobsResponse,getJobs, getJobsByDate } from "../lists/jobs";
-import Pagination from "../(panel)/application/utils/pagination";
+import Pagination from "../utils/pagination"
 
 export default function Home() {
 

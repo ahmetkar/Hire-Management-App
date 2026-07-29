@@ -25,15 +25,43 @@ export default function Pagination({pname="page", currentPage, totalPages }: Pro
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const getPages = () => {
-    const pages: (number | string)[] = [];
+ const getPages = () => {
+  const pages: (number | string)[] = [];
 
-     for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+  // Toplam sayfa azsa hepsini göster
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
 
-      return pages;
-  };
+  // İlk sayfa
+  pages.push(1);
+
+  // Sol tarafta boşluk varsa
+  if (currentPage > 4) {
+    pages.push("...");
+  }
+
+  // Ortadaki sayfalar
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  // Sağ tarafta boşluk varsa
+  if (currentPage < totalPages - 3) {
+    pages.push("...");
+  }
+
+  // Son sayfa
+  pages.push(totalPages);
+
+  return pages;
+};
 
   return (
         <>

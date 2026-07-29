@@ -5,6 +5,6 @@ export const clearCookie = (res:Response,name:string,path:string) => {
         httpOnly:true,
         secure:process.env.NODE_ENV === "production" ? true : false,
         sameSite:process.env.NODE_ENV === "production" ? "none" : "lax",
-        path
+        path:"/"
     })
 }

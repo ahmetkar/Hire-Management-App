@@ -26,3 +26,6 @@ Thumbs.db
 
 awskey.pem
 dbyedek.zip
+tls.crt
+load500.js
+load1000.js

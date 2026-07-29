@@ -2,7 +2,7 @@
 
 import { useSearchParams,useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import Pagination from '../../utils/pagination';
+import Pagination from '../../../../../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
 import axiosInstance from '@/app/utils/axiosInstance';

@@ -2,14 +2,14 @@
 import { getNotifications, NotificationResponse } from '@/app/lists/notifications';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import Pagination from '../utils/pagination';
+import Pagination from '../../../../utils/pagination';
 
 const Page = () => {
        const [notifications,setNotifications] = useState<NotificationResponse>({
                 data:[],
                 total: 0,
                 page: 1,
-                limit: 5,
+                limit: 50,
                 totalPages: 0,
              });
 
@@ -17,7 +17,7 @@ const Page = () => {
                 
                  
                 const page = Number(params.get("page")) || 1
-                const limit = Number(params.get("limit") || 5)
+                const limit = Number(params.get("limit") || 50)
                   
                
                   
@@ -54,7 +54,7 @@ const Page = () => {
                         </thead>
                         <tbody>
                           {notifications.data.map((ntf)=>(
-                            <tr key={ntf.desc}>
+                            <tr key={ntf.href}>
                             <td><a href={ntf.href!="" ? `/application/jobmanagement/detail/${ntf.href}` : "#"}>{ntf.title}</a></td>
                             <td><span className="small text-muted">{ntf.desc}</span></td>
                             <td>{ntf.date.toString().split("T")[0]}</td>
@@ -64,9 +64,10 @@ const Page = () => {
                          
                         </tbody>
                       </table>
+                        <Pagination pname="page" currentPage={notifications.page} totalPages={notifications.totalPages} ></Pagination>
                     </div>
                   </div> 
-                   <Pagination pname="page" currentPage={notifications.page} totalPages={notifications.totalPages} ></Pagination>
+                 
                 </div> 
      
     </div>

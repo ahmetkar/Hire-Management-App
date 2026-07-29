@@ -2,7 +2,7 @@
 import { getJobs,Job,JobsResponse } from '@/app/lists/jobs';
 
 import React, { useEffect, useState } from 'react'
-import Pagination from '../../utils/pagination';
+import Pagination from '../../../../../utils/pagination';
 import { useSearchParams } from 'next/navigation';
 const Page = () => {
 

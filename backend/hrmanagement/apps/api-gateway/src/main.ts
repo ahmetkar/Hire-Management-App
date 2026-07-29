@@ -95,7 +95,6 @@ app.use("/auth/user-update",verifyToken,authorizeRoles(["admin","staff"]),create
 app.use("/auth/get-users",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth/get-user/:id",verifyToken,authorizeRoles(["admin","staff"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth/user-register",verifyToken,authorizeRoles(["admin"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
-app.use("/auth/get-logged-user",verifyToken,authorizeRoles(["admin"]),createProxy("/auth",process.env.AUTH_SERVICE_URL!!));
 app.use("/auth",createProxy("/auth",process.env.AUTH_SERVICE_URL!));
 
 

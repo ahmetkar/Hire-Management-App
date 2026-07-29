@@ -1,9 +1,11 @@
 "use client";
 
+import { useAuth } from '@/app/components/AuthProvider';
+
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 
 const Page = () => {
@@ -20,6 +22,18 @@ const Page = () => {
 
     const router = useRouter()
 
+    const {refreshUser,loading,isAuthenticated} = useAuth()
+
+  useEffect(() => {
+    console.log(isAuthenticated)
+      if (isAuthenticated) {
+        console.log(isAuthenticated)
+        router.push("/application");
+        
+      }
+    }, [loading, isAuthenticated, router]);
+
+      
     
    const {register,handleSubmit,formState:{errors}} = useForm<FormData>();
 
@@ -30,11 +44,17 @@ const Page = () => {
   const loginMutation = useMutation({
     mutationFn: async (data:FormData) => {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/auth/user-login`,data,{withCredentials:true})
-        return response.data
+        return response
     },
-    onSuccess:(data)=>{
+    onSuccess:async (data)=>{
+        console.log("Login başarılı", data.status);
         setServerError(null);
-        router.push("/application/");
+  
+         await refreshUser()
+  
+
+   
+        
 
     },
     onError: (error:AxiosError) => {
