@@ -9,4 +9,4 @@ resources:
   
 images:
 - name: ghcr.io/ahmetkar/hrmanagement-auth-service
-  newTag: latest
+  newTag: cf56bc3
