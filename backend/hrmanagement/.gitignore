@@ -55,3 +55,6 @@ rootCA.srl
 server.crt
 server.csr
 server.key
+
+
+ghcrdeploy.bat
