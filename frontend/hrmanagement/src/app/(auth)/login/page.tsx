@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
 
-const page = () => {
+const Page = () => {
 
   type FormData = {
       email:string;
@@ -100,4 +100,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
