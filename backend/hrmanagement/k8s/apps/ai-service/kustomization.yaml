@@ -9,4 +9,4 @@ resources:
 
 images:
 - name: ghcr.io/ahmetkar/hrmanagement-ai-service
-  newTag: f44639c
+  newTag: latest
