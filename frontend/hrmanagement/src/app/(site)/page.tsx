@@ -132,7 +132,7 @@ export default function Home() {
                     <th scope="row">  <Link href={`/applyjob/${j.id}`}>{j.jobtitle} </Link><br />
                       <span className="badge badge-light text-muted">-{j.position}</span>
                     </th>
-                    <td className="text-muted">{j.mounthlywage}</td>
+                    <td className="text-muted">{j.mounthlywage ? j.mounthlywage : j.weeklypayment ? j.weeklypayment :  j.dailypayment ? j.dailypayment : 0}</td>
                     <td className="text-muted">{j.department.name}</td>
                     <td className="text-muted">{j.createdate.toString().split("T")[0].toString()}</td>
                     

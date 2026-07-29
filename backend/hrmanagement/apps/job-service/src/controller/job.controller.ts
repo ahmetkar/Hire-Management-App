@@ -573,40 +573,10 @@ export const createJobApplication= async (req:Request,res:Response,next:NextFunc
                             ipadress:ipadress,}
                             
             const jobApp = await jobAppQueue.add("job-app-create",{data:data,requestStarted:requesttimestamp})
-                    
-                    /*const job = await prisma.jobapplication.create({
-                        data:{
-                            name:name,
-                            email:email,
-                            phone_number:phone_number,
-                            city:city,
-                            jobId:jobId,
-                            country:country,
-                            county:county,
-                            address:address,
-                            postcode:postcode,
-                            university:university,
-                            unidepartment:unidepartment,
-                            unifaculty:unifaculty,
-                            graduatedate:graduatedate,
-                            githublink:githublink,
-                            linkedinlink:linkedinlink,
-                            abilities:abilitiesstr,
-                            selfbio:selfbio,
-                            birthdate:birthdate,
-                            agreeterms:agreeterms,
-                            appdate:appdate,
-                            ipadress:ipadress,
-                        }
-                    })*/
-
+         
 
                     if(jobApp.id){
 
-                       /* publishJobAppCreated({
-                        key:job.id,jobAppId:job.id,name:name,email:email,jobId:jobId,ipaddress:ipadress===undefined ? "" : ipadress,message:"Application created"
-                        })
-                        invalidateCacheTagKeys(`cache-tag:jobapp:${JobAppStatus.NEW}`)*/
 
                         res.status(201).json({
                             status:"waiting",
