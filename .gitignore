@@ -6,7 +6,7 @@ dist/
 build/
 .next/
 out/
-
+./github
 # Env files
 .env
 .env.local
