@@ -14,5 +14,5 @@ spec:
 
   storage:
     type: persistent-claim
-    size: 10Gi
+    size: 2Gi
     deleteClaim: false

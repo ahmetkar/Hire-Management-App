@@ -30,7 +30,7 @@ spec:
               memory: "256Mi"
 
             limits:
-              cpu: "500m"
+              cpu: "200m"
               memory: "512Mi"
 
           ports:
