@@ -3,7 +3,7 @@ kind: Kafka
 
 metadata:
   name: kafka
-  namespace: hrmanagement
+  namespace: kafka
 
   annotations:
     strimzi.io/node-pools: enabled
