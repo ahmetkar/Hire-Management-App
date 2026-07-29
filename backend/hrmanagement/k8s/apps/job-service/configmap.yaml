@@ -10,6 +10,6 @@ data:
   REDIS_HOST: "redis"
   PROCESS_NAME: "job-service"
   PORT: "3331"
-  KAFKA_BROKER: "kafka-kafka-bootstrap:9092"
+  KAFKA_BROKER: "kafka-kafka-bootstrap.kafka:9092"
   CLIENT_URL: "http://localhost:3000"
   DATABASE_URL: "mongodb://mongodb:27017/hrmanagement?replicaSet=rs0"
