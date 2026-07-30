@@ -1,6 +1,6 @@
 
 import express, { Router } from "express"
-import { approveJobApplication, createDepartment, createJob, createJobApplication, deleteDepartment, deleteJob, denyJobApplication, getAllDepartment, getAllJobApplication, getAllJobs, getAllJobsByDate, getJobApplicationByFilter, getJobByFilter, getMultipileJobApplication, getOneDepartment, getOneJob, getOneJobApplication, searchAllJobApplication, updateDepartment, updateJob } from "../controller/job.controller"
+import { approveJobApplication, createDepartment, createJob, createJobApplication, deleteDepartment, deleteJob, denyJobApplication, getAllDepartment, getAllJobApplication, getAllJobs, getAllJobsByDate, getJobAppCreatedStatus, getJobApplicationByFilter, getJobByFilter, getMultipileJobApplication, getOneDepartment, getOneJob, getOneJobApplication, searchAllJobApplication, updateDepartment, updateJob } from "../controller/job.controller"
 
 
 const router:Router = express.Router()
@@ -37,5 +37,8 @@ router.post("/update-department",updateDepartment)
 router.post("/delete-department/:id",deleteDepartment)
 router.get("/get-all-departments",getAllDepartment)
 router.get("/get-department/:id",getOneDepartment)
+
+
+router.get("/get-jobapp-created-status/:id",getJobAppCreatedStatus)
 
 export default router;

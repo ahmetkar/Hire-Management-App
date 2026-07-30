@@ -9,13 +9,8 @@ import { limiter } from './middlewares/rate-limiter.middleware';
 import { verifyToken } from './middlewares/auth.middleware';
 import { authorizeRoles } from './utils/authorizeRoles';
 import http from "http"
-import {Server} from "socket.io"
-import {RedisClient} from './config/redis';
-import {createAdapter} from "@socket.io/redis-adapter"
 import dotenv from "dotenv"
-import { closeQueueEvents, startQueueEvents } from './queueEvents/queueEvent';
 import client from "prom-client"
-import {socketConnectionGauge, socketDisconnectReasons} from "@hrmanagement/metrics"
 import { requestDuration } from './middlewares/requestDuration.middleware';
 
 const app = express();
@@ -149,54 +144,6 @@ app.use(requestDuration)
 const server1 = http.createServer(app)
 
 
-export const io = new Server(server1,{
-   cors: {
-      origin:[clientUrl],
-      allowedHeaders:['Authorization',"Content-Type"],
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-    },    
-    transports: ["websocket", "polling"]
-})
-
-
-let subClient = undefined
-
-
-const pubClient = RedisClient.getSub();
-if(pubClient){
-  if(RedisClient.getDuplicate() !=undefined){
-    subClient = RedisClient.getDuplicate();
-  }
-}
-if(subClient!=undefined){
-  io.adapter(createAdapter(pubClient, subClient));
-}
-
-io.on("connection", (socket) => {
-  socketConnectionGauge.set(1);
-  socket.on(
-    "join-job",
-    (
-      { queueName, jobId }: { queueName: string; jobId: string },
-      callback?: (success: boolean) => void
-    ) => {
-      const room = `${queueName}:${jobId}`;
-
-      socket.join(room);
-
-      console.log(`${socket.id} joined ${room}`);
-
-      callback?.(true);
-    }
-  );
-  socket.on("disconnect",(reason)=>{
-    socketConnectionGauge.set(0)
-    socketDisconnectReasons.labels(reason).inc();
-  })
-});
-
-startQueueEvents(io)
 
 const port = process.env.PORT || 4000;
 server1.listen(port, async () => {
@@ -227,17 +174,11 @@ app.get("/metrics", async (_, res) => {
 
 server1.on("SIGINT", async () => {
 
-    await closeQueueEvents();
-    await io.close();
-    await RedisClient.closeConnection();
   
    
 });
 
 server1.on("SIGTERM", async () => {
 
-  await closeQueueEvents();
-  await io.close();
-  await RedisClient.closeConnection();
   
 });

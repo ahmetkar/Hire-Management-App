@@ -8,6 +8,7 @@ import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.hel
 import crypto from "crypto"
 import { jobAppQueue } from "../queues/job.queue";
 import { jobapplication,jobs,AIPrompts, Prisma } from "@prisma/client";
+import redis from "../configs/redis";
 
 
 type JobWithDepartment = Prisma.jobsGetPayload<{
@@ -36,6 +37,25 @@ enum JobAppStatus {
     WAITING="waiting",
     APPROVED="approved",
     DISAPPROVED="disapproved"
+}
+
+
+
+export const getJobAppCreatedStatus = async (req:Request,res:Response,next:NextFunction) => { 
+
+ const jobId = req.params.id ? String(req.params.id) : undefined;
+
+ const result = await redis.get(`jobapp-status:${jobId}`)
+
+  if (!result) {
+        return res.status(404).json({
+            success: false,
+            message: "Job bulunamadı."
+        });
+ }
+
+ return res.status(200).json({status:result})
+    
 }
 
 

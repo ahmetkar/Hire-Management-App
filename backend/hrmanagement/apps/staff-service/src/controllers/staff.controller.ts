@@ -8,6 +8,7 @@ import crypto from "crypto"
 import { staffQueue } from "../queue/staff.queue";
 
 import { Prisma, staff} from "@prisma/client";
+import redis from "../configs/redis";
 
 
 type StaffWithDepartment = Prisma.staffGetPayload<{
@@ -180,6 +181,25 @@ export const getAllUserAndStaff = async (req:any,res:Response,next:NextFunction)
                     return next(error);
                 }
                 
+}
+
+
+
+export const getStaffCreatedStatus = async (req:Request,res:Response,next:NextFunction) => { 
+
+ const jobId = req.params.id ? String(req.params.id) : undefined;
+
+ const result = await redis.get(`staffstatus:${jobId}`)
+
+  if (!result) {
+        return res.status(404).json({
+            success: false,
+            message: "Job bulunamadı."
+        });
+ }
+
+ return res.status(200).json({status:result})
+    
 }
 
 

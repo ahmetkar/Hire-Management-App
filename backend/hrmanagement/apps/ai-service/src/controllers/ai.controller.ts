@@ -2,6 +2,62 @@ import { Request,Response,NextFunction } from "express";
 import { aiPromptQueue } from "../queue/aiprompt.queue";
 import { elasticSearchQueue } from "../queue/elasticsearch.queue";
 import { aiSaveQueue } from "../queue/aisave.queue";
+import redis from "../configs/redis";
+
+
+
+export const getSaveStatus= async (req:Request,res:Response,next:NextFunction) => { 
+
+ const jobId = req.params.id ? String(req.params.id) : undefined;
+
+ const result = await redis.get(`savepromptstatus:${jobId}`)
+
+  if (!result) {
+        return res.status(404).json({
+            success: false,
+            message: "Job bulunamadı."
+        });
+ }
+
+ return res.status(200).json({status:result})
+    
+}
+
+export const getSendStatus= async (req:Request,res:Response,next:NextFunction) => { 
+
+ const jobId = req.params.id ? String(req.params.id) : undefined;
+
+ const result = await redis.get(`sendpromptstatus:${jobId}`)
+
+  if (!result) {
+        return res.status(404).json({
+            success: false,
+            message: "Job bulunamadı."
+        });
+ }
+
+ return res.status(200).json({status:result})
+    
+}
+
+export const getElasticStatus= async (req:Request,res:Response,next:NextFunction) => { 
+
+ const jobId = req.params.id ? String(req.params.id) : undefined;
+
+ const result = await redis.get(`elasticstatus:${jobId}`)
+
+  if (!result) {
+        return res.status(404).json({
+            success: false,
+            message: "Job bulunamadı."
+        });
+ }
+
+ return res.status(200).json({status:result})
+    
+}
+
+
 
 
 export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFunction) => {

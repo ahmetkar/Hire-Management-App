@@ -1,6 +1,6 @@
 
 import express, { Router } from "express"
-import { staffDelete, staffUpdate, createStaff, getStaff, getAllStaff, getUserAndStaff, getAllUserAndStaff, getUserAndStaffByFilter, getStaffByFilter, getMultipileStaff } from "../controllers/staff.controller";
+import { staffDelete, staffUpdate, createStaff, getStaff, getAllStaff, getUserAndStaff, getAllUserAndStaff, getUserAndStaffByFilter, getStaffByFilter, getMultipileStaff, getStaffCreatedStatus } from "../controllers/staff.controller";
 
 
 const router:Router = express.Router()
@@ -16,6 +16,8 @@ router.get("/get-user-and-staff/:id",getUserAndStaff)
 router.get("/get-all-user-and-staff",getAllUserAndStaff)
 router.get("/get-user-and-staff-by-filter",getUserAndStaffByFilter)
 router.get("/get-staff-by-filter",getStaffByFilter)
+router.get("/get-staff-created-status/:id",getStaffCreatedStatus)
+
 
 
 

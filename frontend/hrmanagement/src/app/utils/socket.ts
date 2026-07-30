@@ -1,47 +1,61 @@
 import { io } from "socket.io-client";
 
-export const socket = io(process.env.NEXT_PUBLIC_SERVER_URI, {
+export const socket = io(process.env.NEXT_PUBLIC_SERVER_URI!, {
   autoConnect: false,
   withCredentials: true,
-  transports: ["websocket", "polling"]
+  transports: ["websocket", "polling"],
 });
 
-export const connectSocket = (
+export async function connectSocket(
   jobId: string,
   queueName: string,
-  callback:()=>void
-): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const joinRoom = () => {
-      socket.emit(
+  callback?: () => void
+) {
+  if (!socket.connected) {
+    await new Promise<void>((resolve, reject) => {
+      const onConnect = () => {
+        socket.off("connect_error", onError);
+        resolve();
+      };
+
+      const onError = (err: Error) => {
+        socket.off("connect", onConnect);
+        callback?.();
+        reject(err);
+      };
+
+      socket.once("connect", onConnect);
+      socket.once("connect_error", onError);
+
+      if (!socket.active) {
+        socket.connect();
+      }
+    });
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    socket
+      .timeout(5000)
+      .emit(
         "join-job",
-        { queueName, jobId },
-        (success: boolean) => {
-          if (success) {
-            console.log("Room'a katıldı:", `${queueName}:${jobId}`);
-            resolve();
-          } else {
-            reject(new Error("Room'a katılamadı."));
+        {
+          queueName,
+          jobId,
+        },
+        (err: Error | null, success: boolean) => {
+          if (err) {
+            reject(err);
+            return;
           }
+
+          if (!success) {
+            reject(new Error("Room'a katılamadı."));
+            return;
+          }
+
+          console.log(`Joined ${queueName}:${jobId}`);
+          resolve();
         }
       );
-    };
-
-    if (socket.connected) {
-      joinRoom();
-      return;
-    }
-
-    socket.once("connect", () => {
-      console.log("Socket connected:", socket.id);
-      joinRoom();
-    });
-
-    socket.once("connect_error", (err) => {
-      callback();
-      reject(err);
-    });
-
-    socket.connect();
   });
-};
+}
