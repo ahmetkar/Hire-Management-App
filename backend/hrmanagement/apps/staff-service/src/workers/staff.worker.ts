@@ -24,7 +24,7 @@ const staff = await prisma.staff.create({data:{
                      if(staff){
                         if(fromKafka){
                                 const staffId = staff.id
-                                const fromJobId = job.data.fromJobId
+                                const fromJobId = job.data.fromAppId
                                 const getOldJobApp = await prisma.jobapplication.findUnique({where:{id:fromJobId},include:{appPrompts:true}})
                                 if(getOldJobApp){
                                     const staffPrompts = getOldJobApp.appPrompts.map((p)=>{
