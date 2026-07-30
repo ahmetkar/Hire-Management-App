@@ -181,7 +181,7 @@ const Page = () => {
                   })
                   .catch((error) => {
                       setFailureTitle("Onaylama başarısız oldu")
-                      setFailureDesc(error)
+                      setFailureDesc(error.message)
                       setShowFailureModal(true)
                   });  
               }
@@ -198,7 +198,7 @@ const Page = () => {
                   })
                   .catch((error) => {
                       setFailureTitle("Red işlemi başarısız oldu")
-                      setFailureDesc(error)
+                      setFailureDesc(error.message)
                       setShowFailureModal(true)
                   }); 
               }

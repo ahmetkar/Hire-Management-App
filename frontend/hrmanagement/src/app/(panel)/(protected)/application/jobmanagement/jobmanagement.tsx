@@ -153,7 +153,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
           })
           .catch((error) => {
               setFailureTitle("Onaylama başarısız oldu")
-              setFailureDesc(error)
+              setFailureDesc(error.message)
               setShowFailureModal(true)
           });  
       }
@@ -170,7 +170,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
           })
           .catch((error) => {
               setFailureTitle("Red işlemi başarısız oldu")
-              setFailureDesc(error)
+              setFailureDesc(error.message)
               setShowFailureModal(true)
           }); 
       }
@@ -422,6 +422,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
     <div>
         <Modal show={showSuccessModal} title={successTitle} message={successDesc}
                             confirmText='Tamam' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowSuccessModal(false)} />
+
         <Modal show={showFailureModal} title={failureTitle} message={failureDesc}
                             confirmText='Tamam' cancelText='İptal' setConfirm={false} onConfirm={()=>{}} onCancel={()=>setShowFailureModal(false)} />
         

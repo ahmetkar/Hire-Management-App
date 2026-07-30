@@ -218,6 +218,7 @@ const worker2 = new Worker("save-prompt",async(job)=>{
                                 
                             if(data.infoList.length == resultcount && errorcount==0){
                                 await redis.del(`jobapp:${data.currenttype}:${data.currentpage}:${data.currentlimit}`)
+                                invalidateCacheTagKeys(`cache-tag:jobapp:${data.currenttype}`)
                                 await redis.set(`savepromptstatus:${job.id}`,"completed","EX",300)  
                                  return {success:true,message:"Prompt başarıyla kaydedildi."};
                             }else {
