@@ -40,8 +40,9 @@ app.use(helmet())
 app.use(cookieParser());
 app.set("trust proxy",1);
 
+if(process.env.TEST!="true"){
 app.use(limiter);
-
+}
 
 //Original url localhost:4000/auth/login şeklinde gelebelir burada auth u sil /login kalsın baştaki url i öyle değiştir.
 
