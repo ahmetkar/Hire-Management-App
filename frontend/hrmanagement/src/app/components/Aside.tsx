@@ -79,7 +79,10 @@ const Aside = () => {
               </Link>
               <ul className={` list-unstyled pl-4 w-100 ${secToggle ? "d-block" : "d-none"}`} id="staff">
                 <li className="nav-item">
-                  <Link className="nav-link pl-3" href="/application/users/adduser/"><span className="ml-1 item-text">Yeni Ekle</span></Link>
+                  <Link className="nav-link pl-3" href="/application/users/adduser/"><span className="ml-1 item-text">Yeni Kullanıcı/Personel Ekle</span></Link>
+                </li>
+                 <li className="nav-item">
+                  <Link className="nav-link pl-3" href="/application/users/addstaff/"><span className="ml-1 item-text">Yeni Personel Ekle</span></Link>
                 </li>
                 <li className="nav-item">
                   <Link className="nav-link pl-3" href="/application/users/"><span className="ml-1 item-text">Kullanıcıları Görüntüle</span></Link>

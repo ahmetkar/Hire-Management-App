@@ -12,9 +12,24 @@ import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { connectSocket, socket } from '@/app/utils/socket';
 import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
+import { useAuth } from '@/app/components/AuthProvider';
 
 const Page = () => {
 
+  const router = useRouter();
+   const { loading, isAuthenticated,user } = useAuth();
+
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && user!=null) {
+      if(user.role === "staff"){
+        router.replace("/application");
+      }
+    }
+  }, [loading, isAuthenticated,user, router]);
+
+
+  
   const [stage,setStage] = useState("onlyuser")
    const [universities, setUniversities] = useState<University[]>([]);
      const [cities, setCities] = useState<City[]>([]);
@@ -25,9 +40,7 @@ const Page = () => {
      const [abilities, setAbilities] = useState<string[]>([]);
      const [jobs, setJobs] = useState<JobsResponse>();
      const [job,setJob] = useState("")
-     const [position,setPosition] = useState<string>("");
-       const [progress,setProgress] = useState<"progress" |"completed" | "failed" | "none">("none")
-  
+
     useEffect(() => {
       getUniversities()
         .then((data) => setUniversities(data))
@@ -109,41 +122,18 @@ const Page = () => {
 
 
 
-      type StaffFormData = {
-      name:string;
-      email:string;
-      phone_number:string;
-      birthdate:string;
-      university:string;
-      unidepartment:string;
-      graduatedate:string;
-      address:string;
-      city:string;
-      country:string;
-      jobId:string;
-      county:string;
-      postcode:string;
-      githublink:string;
-      linkedinlink:string;
-      abilities:string[];
-      selfbio:string;
-      departmentId:string;
-  };
-
+     
   
     const [serverError,setServerError] = useState<string | null>(null)
   
-  
-    const router = useRouter()
+
   
       
      const {reset:resetUser,register:registerUser,handleSubmit:handleSubmitUser,getValues:getValuesUser,setValue:setValueUser,formState:{errors:errorsUser}} = useForm<UserFormData>({
       mode:"onChange"
      });
 
-     const {reset:resetStaff,register:registerStaff,handleSubmit:handleSubmitStaff,setValue:setValueStaff,formState:{errors:errorsStaff}} = useForm<StaffFormData>({
-      mode:"onChange"
-     });
+    
 
      const {reset:resetUserAndStaff,register:registerUserAndStaff,getValues:getValuesUserAndStaff,handleSubmit:handleSubmitUserAndStaff,setValue:setValueUserAndStaff,formState:{errors:errorsUserAndStaff}} = useForm<UserAndStaffFormData>({
       mode:"onChange"
@@ -155,10 +145,7 @@ const Page = () => {
       addUserMutation.mutate(data)
     };
 
-    const onStaffSubmit = (data:StaffFormData) => {
-      addStaffMutation.mutate(data)
-    };
-
+    
     const onUserAndStaffSubmit = (data:UserAndStaffFormData) => {
       addStaffAndUserMutation.mutate(data)
     };
@@ -211,84 +198,9 @@ const Page = () => {
       
     })
 
-     const addStaffMutation = useMutation({
-      mutationFn: async (data:StaffFormData) => {
+     
 
-
-        data.birthdate = data.birthdate ? new Date(`${data.birthdate}T00:00:00.000Z`).toISOString(): ""
-        data.graduatedate = data.graduatedate ? new Date(`${data.graduatedate}T00:00:00.000Z`).toISOString(): ""
-
-
-        const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/staff-create`,data)
-
-        return response.data
-      },
-      onSuccess:async (data)=>{
-           if(data){
-                        const jobId = data.id
-                        await connectSocket(jobId,"staffQueue",()=>{
-                          setStage("onlystaff")
-                        })
-                        
-                    } 
-                 setServerError(null);
-          setStage("success")
-          resetStaff()
-
-      },
-      onError: (error:AxiosError) => {
-          const errorMsg = (error.response?.data as {message?:string})?.message || "Personel formu gönderilemedi"
-          console.log(errorMsg)
-          setServerError(errorMsg);
-          setStage("fail")
-      }
       
-    })
-
-
-      useEffect(() => {
-    
-        socket.on("connect", () => {
-      console.log("CONNECTED", socket.id);
-        });
-    
-        socket.on("disconnect", (reason) => {
-          console.log("DISCONNECTED", reason);
-        });
-    
-        socket.on("connect_error", (err) => {
-          console.log("CONNECT ERROR", err);
-        });
-    
-        socket.onAny((event,...args)=>{
-          console.log("Socket event : ",event,args)
-        })
-    
-        const completedHandler = (payload:{jobId:string,result:unknown}) => {
-            setProgress("completed");
-        };
-    
-        const progressHandler = (payload:{jobId:string,data:unknown}) => {
-            setProgress("progress");
-        };
-    
-        const failedHandler = (payload:{jobId:string,errorr:string}) => {
-            setProgress("failed");
-        };
-    
-        socket.on("staff-completed", completedHandler);
-        socket.on("staff-progress", progressHandler);
-        socket.on("staff-failed", failedHandler);
-
-        return () => {
-                socket.off("staff-completed", completedHandler);
-                socket.off("staff-progress", progressHandler);
-                socket.off("staff-failed", failedHandler);
-            };
-        
-        }, []);
-
-
 
   return (
    <div>
@@ -304,9 +216,7 @@ const Page = () => {
                   <li className="nav-item">
                     <a className={`nav-link ${stage == "userandstaff" ? "active" : ""}`} onClick={()=>setStage("userandstaff")}>Görevli Personel Ekleme</a>
                   </li>
-                  <li className="nav-item">
-                    <a className={`nav-link ${stage == "onlystaff" ? "active" : ""}`} onClick={()=>setStage("onlystaff")}>Sadece Personel Ekleme</a>
-                  </li>
+                 
                 </ul>
 
                 {(stage == "onlyuser") ? (
@@ -418,338 +328,6 @@ const Page = () => {
                   </div>
                   <button type="submit" className="btn btn-primary">Kullanıcı Ekle</button>
                 </form>
-                ) : ( (stage == "onlystaff") ? (  
-                  <div className="col-md-12">
-                  <h6>{(progress =="progress") ? ("Personel ekleme işlemi sürüyor..") : ((progress === "failed") ? ("Personel ekleme başarısız") :((progress=="completed") ? ("Personel ekleme başarılı") : ("")))}</h6>
-                  <form onSubmit={handleSubmitStaff(onStaffSubmit)}>
-                    
-                  
-                    <div className="form-row">
-                      <div className="form-group col-md-6">
-                        <label htmlFor="simpleinput">Ad ve Soyad</label>
-                          <input type="text" id="simpleinput" className="form-control"
-                          {...registerStaff("name",{required: "İsim ve soyisim gereklidir.."})}
-                          
-                          />
-                          {errorsStaff.name && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.name.message)}</p>
-                            )}
-                      </div>
-                      <div className="form-group col-md-6">
-                        <label htmlFor="example-email">Email</label>
-                          <input type="email" id="example-email"  className="form-control" placeholder="Email" 
-                          {...registerStaff("email",{required: "Email gereklidir.",pattern : {
-                              value:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                              message:"Geçersiz email"
-                          }})}
-                          />
-                          {errorsStaff.email && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.email.message)}</p>
-                          )}
-                      </div>
-                    </div>
-                    
-                    <div className="form-row">
-                      <div className="form-group col-md-6">
-                      <label htmlFor="example-palaceholder">Telefon numarası :</label>
-                          <input className="form-control input-phoneus" id="custom-phone" placeholder="(987) 654-3210" 
-                          {...registerStaff("phone_number",{required: "Telefon nu gereklidir."})}
-                          />
-                          {errorsStaff.phone_number && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.phone_number.message)}</p>
-                            )
-                            }
-                      </div>
-
-                      <div className="form-group col-md-6">
-                        <label htmlFor="example-palaceholder">Doğum tarihi</label>
-                          <input className="form-control" id="example-date" type="date" 
-                          {...registerStaff("birthdate",{required: "Doğum tarihi gereklidir."})}
-                          />
-                          {errorsStaff.birthdate && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.birthdate.message)}</p>
-                      )
-                      }
-                      </div>
-                      
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group col-md-6">
-                        <label htmlFor="simpleinput">Pozisyon bilgisi : </label>
-                            <select className="form-control" id="validationSelect2" 
-                              {...registerStaff("jobId",{required: "Pozisyon bilgisi gereklidir.",onChange: (e)=>{
-
-                                
-                                  setJob(e.target.value)
-                                  
-                                  
-                              }})}
-                              >
-                              <option value=""></option>
-                              <optgroup label="">
-                                {jobs?.data.map((j,index)=>(
-                                <option key={`${j.id}`} value={`${j.id}`}>{j.jobtitle}</option>
-                            ))}
-                              </optgroup>
-                                
-                              </select>
-                              <div className="invalid-feedback"> 
-                                {errorsStaff.jobId && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.jobId.message)}</p>
-                          
-                      )
-                      }
-                      </div>
-                      </div>
-                      <div className="form-group col-md-6">
-                        <label htmlFor="simpleinput">Ülke :</label>
-                          <input type="text" id="simpleinput" className="form-control"
-                          {...registerStaff("country",{required: "Ülke gereklidir.."})}
-                          
-                          />
-                          {errorsStaff.country && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.country.message)}</p>
-                            )}
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="address-wpalaceholder">Adres</label>
-                            <input type="text" id="address-wpalaceholder" className="form-control" placeholder="Adresinizi girin :"
-                            {...registerStaff("address",{required: "Adres gereklidir."})}
-                            />
-                            <div className="valid-feedback"> Looks good! </div>
-                            <div className="invalid-feedback"> 
-                              {errorsStaff.address && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.address.message)}</p>
-                                )
-                                }
-                    </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group col-md-6">
-                        <label htmlFor="simpleinput">Departman : </label>
-                            <select className="form-control" id="simple-select2"
-                          {...registerStaff("departmentId",{required: "Departman bilgisi gereklidir."})}
-                          >
-                            <optgroup label="">
-                              {departments1.map((dep,index)=>(
-                                <option key={index} value={`${dep.id}`}>{dep.name}</option>
-                              ))}  
-                              
-                
-                            </optgroup>
-                          
-                          </select>
-                              
-                              <div className="invalid-feedback"> 
-                                {errorsStaff.departmentId && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.departmentId.message)}</p>
-                          
-                      )
-                      }
-                      </div>
-                      </div>
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group col-md-4">
-                        <label htmlFor="validationSelect2">Yaşadığı Şehir</label>
-                              <select className="form-control" id="validationSelect2" 
-                              {...registerStaff("city",{required: "Şehir gereklidir.",onChange: (e)=>{
-
-                                
-                                  setCityPlate(Number(e.target.value))
-                                  
-                                  
-                              }})}
-                              >
-                              <option value=""></option>
-                              <optgroup label="">
-                                {cities.map((city,index)=>(
-                                <option key={`${city.plateCode}`} value={`${city.plateCode}`}>{city.name}</option>
-                            ))}
-                              </optgroup>
-                                
-                              </select>
-                              <div className="invalid-feedback"> 
-                                {errorsStaff.city && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.city.message)}</p>
-                      )
-                      }
-                      </div>
-                      </div>
-                      
-                      <div className="form-group col-md-4">
-                          <label htmlFor="validationCustom33">Yaşadığı İlçe</label>
-                              <select className="form-control" id="validationSelect2" 
-                              {...registerStaff("county",{required: "İlçe gereklidir."})}
-                              >
-                              <option value="">İlçe Seç</option>
-                              <optgroup label="">
-                                {counties.map((county,index)=>(
-                                <option  key={`${county.ilce_id}`} value={`${county.ilce_adi}`}>{county.ilce_adi}</option>
-                            ))}
-                              </optgroup>
-                                
-                              </select>
-                              <div className="invalid-feedback"> 
-                                {errorsStaff.county && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.county.message)}</p>
-                      )
-                      }
-                      </div>
-                      
-                      
-                    </div>
-
-                    <div className='form-group col-md-4'>
-                      <label htmlFor="custom-zip">Posta kodu</label>
-                              <input className="form-control input-zip" id="custom-zip" autoComplete="false" maxLength={9} 
-                              {...registerStaff("postcode",{required: "Posta kodu gereklidir."})}
-                              />
-                              <div className="invalid-feedback"> 
-                              {errorsStaff.postcode && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.postcode.message)}</p>
-                      )
-                      }
-                    </div>
-                    </div>
-
-                    </div>
-                    
-                    
-
-                    <div className="row mb-4">
-                      <div className="col-md-6">
-                        <div className="form-group mb-3">
-                            <label htmlFor="simpleinput">Github vb. Portfolyo Linki </label>
-                            <input type="text" id="simpleinput" className="form-control"
-                            {...registerStaff("githublink")}
-                            />
-                            {errorsStaff.githublink && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.githublink.message)}</p>
-                      )
-                      }
-                        </div>
-                      </div>
-                      
-                      <div className="col-md-6">
-                          <div className="form-group mb-3">
-                            <label htmlFor="simpleinput">Linkedin Linki </label>
-                            <input type="text" id="simpleinput" className="form-control" 
-                            {...registerStaff("linkedinlink")}
-                            />
-                            {errorsStaff.linkedinlink && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.linkedinlink.message)}</p>
-                      )
-                      }
-                        </div>
-                      </div>
-
-                      <div className="col-md-12">
-                        <label htmlFor="multi-select2">Yetenekler (Önce pozisyon bilgisi seçin ,sonra yetenekleri seçin) : </label>
-                              <div className="d-flex flex-wrap">
-                                {abilities.map((ability, index) => (
-                                  <label
-                                    key={ability}
-                                    htmlFor={`ability-${index}`}
-                                    className="border rounded px-4 py-3 mr-2 mb-2 d-flex align-items-center"
-                                    style={{ cursor: "pointer" }}
-                                  >
-                                    <input
-                                      id={`ability-${index}`}
-                                      type="checkbox"
-                                      className="form-check-input position-static mr-2"
-                                      value={ability}
-                                      {...registerStaff("abilities", {
-                                        required: "En az bir yetenek seçmelisiniz.",
-                                      })}
-                                    />
-
-                                    <span>{ability}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            {errorsStaff.abilities && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.abilities.message)}</p>
-                      )
-                      }
-                      </div>
-
-                    </div>
-
-
-                    <div className="row mb-4">
-
-                      <div className="col-md-12">
-                        <div className="form-group mb-3">
-                        
-                            <label htmlFor="simple-select2">Mezun olunan üniversite </label>
-                            <select className="form-control" id="simple-select2"
-                            {...registerStaff("university")}
-                            >
-                              <optgroup label="">
-                                {universities.map((uni,index)=>(
-                                <option key={`${uni.isim,index}`} value={`${uni.isim}`}>{uni.isim}</option>
-                            ))}
-                              </optgroup>
-                            </select>
-                            {errorsStaff.university && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.university.message)}</p>
-                            )}
-                      </div>
-                        <div className="form-group mb-3">
-                            <label htmlFor="simple-select">Bölümünüz </label>
-                            <select className="form-control" id="simple-select"
-                            {...registerStaff("unidepartment")}
-                            >
-                              <optgroup label="">
-                                {departments.map((dep,index)=>(
-                                <option key={`${dep}`} value={`${dep}`}>{dep}</option>
-                            ))}
-                              </optgroup>
-                            </select>
-                            {errorsStaff.unidepartment && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.unidepartment.message)}</p>
-                      )
-                      }
-                      </div>
-                        <div className="form-group mb-3">
-                          <label htmlFor="example-disable">Mezuniyet tarihi</label>
-                          <input className="form-control" id="example-date" type="date"
-                          {...registerStaff("graduatedate")}
-                          />
-                          {errorsStaff.graduatedate && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.graduatedate.message)}</p>
-                            )
-                            }
-                        </div>
-                      
-                      </div>
-                    </div>
-
-
-                    <div className='row mb-4'>
-                      <div className='col-md-12'>
-                      <label htmlFor="validationTextarea1">Biyografisi : </label>
-                            <textarea className="form-control" id="validationTextarea1" placeholder="Take a note here" required rows={3}
-                            {...registerStaff("selfbio")}
-                            ></textarea>
-                            <div className="invalid-feedback">
-                              {errorsStaff.selfbio && (
-                          <p className='text-red-500 text-sm'>{String(errorsStaff.selfbio.message)}</p>
-                              )
-                              }  
-                            </div>
-
-                        </div>
-                    </div>
-                    
-
-                  
-                    
-                    <button type="submit" className="btn btn-primary">Personel Ekle</button>
-                  </form></div>
                 ) : (
                 (stage == "userandstaff") ? (
                   <form onSubmit={handleSubmitUserAndStaff(onUserAndStaffSubmit)}>
@@ -1134,7 +712,7 @@ const Page = () => {
                       )
                     
                   )  )
-                ))}
+                )}
                 
 
 

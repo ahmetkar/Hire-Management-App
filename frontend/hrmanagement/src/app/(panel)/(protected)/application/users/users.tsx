@@ -141,7 +141,8 @@ const Users = () => {
                                 <span className="text-muted sr-only">Action</span>
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
-                                <a className="dropdown-item" href={u!.staffInfoOne!=undefined ?  `/application/users/view/${u!.staffInfoOne.id}` : `/application/users/view/${u!.id}`}>Güncelle</a>
+                                   <a className="dropdown-item" href={u!.staffInfoOne!=undefined ?  `/application/users/view/${u!.staffInfoOne.id}` : `/application/users/views/${u!.id}`}>Güncelle</a>
+                                
                                 <a onClick={()=>setShowDeleteModal(true)} className="dropdown-item" href='#'>Sil</a>
                               </div>
                             </td>
