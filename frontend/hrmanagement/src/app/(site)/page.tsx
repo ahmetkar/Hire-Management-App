@@ -3,7 +3,7 @@ import Site from "./site";
 
 
 
-export default function Home() {
+export default function Page() {
 
   return (
     <Suspense>
