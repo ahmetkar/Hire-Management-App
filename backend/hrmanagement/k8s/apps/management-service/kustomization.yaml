@@ -6,7 +6,7 @@ resources:
 - service.yaml
 - configmap.yaml
 - secret.yaml
-  
+- management-service-hpa.yaml
 images:
 - name: ghcr.io/ahmetkar/hrmanagement-management-service
   newTag: latest

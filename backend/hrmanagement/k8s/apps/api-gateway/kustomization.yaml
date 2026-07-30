@@ -6,7 +6,7 @@ resources:
 - service.yaml
 - configmap.yaml
 - secret.yaml
-
+- api-gateway-hpa.yaml
 images:
 - name: ghcr.io/ahmetkar/hrmanagement-api-gateway
   newTag: latest

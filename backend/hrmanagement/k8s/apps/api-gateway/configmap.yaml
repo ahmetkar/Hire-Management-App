@@ -17,7 +17,7 @@ data:
   PROCESS_NAME: "api-gateway"
   KAFKA_BROKER: "kafka-kafka-bootstrap.kafka:9092"
   DATABASE_URL: "mongodb://mongodb:27017/hrmanagement?replicaSet=rs0"
-  
+  TEST: "true"  
 
  
   
