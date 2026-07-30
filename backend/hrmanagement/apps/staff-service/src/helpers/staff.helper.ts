@@ -17,7 +17,7 @@ export const validateEmailData = (email: string) => {
 
 export const AddApprovedJobApplicationToStaff = async (jobAppId:string,jobId:string) => {
     
-        const jobApp = await prisma.jobapplication.findUnique({where:{id:jobAppId}})
+        const jobApp = await prisma.jobapplication.findUnique({where:{id:jobAppId},include:{appPrompts:true}})
 
         const job = await prisma.jobs.findUnique({where:{id:jobId}})
 
@@ -46,10 +46,11 @@ export const AddApprovedJobApplicationToStaff = async (jobAppId:string,jobId:str
                                         selfbio:jobApp.selfbio,
                                         birthdate:jobApp.birthdate,
                                         signupdate:signupdate,
-                                        departmentId:job.departmentId}
+                                        departmentId:job.departmentId
+                                        }
 
 
-                        const staffJob = await staffQueue.add("staff-create",{data:data})
+                        const staffJob = await staffQueue.add("staff-create",{data:data,isFromKafka:true,fromAppId:jobApp.id})
                                             
                         
                         if(staffJob.id){

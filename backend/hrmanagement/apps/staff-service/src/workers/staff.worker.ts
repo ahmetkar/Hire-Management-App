@@ -10,6 +10,7 @@ const worker = new Worker("staff-create",async(job)=>{
 
 
 const data = job.data.data
+const fromKafka = job.data.isFromKafka
 
 
      await job.updateProgress({progress:true})
@@ -21,6 +22,29 @@ const staff = await prisma.staff.create({data:{
                 })
 
                      if(staff){
+                        if(fromKafka){
+                                const staffId = staff.id
+                                const fromJobId = job.data.fromJobId
+                                const getOldJobApp = await prisma.jobapplication.findUnique({where:{id:fromJobId},include:{appPrompts:true}})
+                                if(getOldJobApp){
+                                    const staffPrompts = getOldJobApp.appPrompts.map((p)=>{
+                                        return {
+                                            kind:"staff",
+                                            staffId:staffId,
+                                            promptText:p.promptText,
+                                            responseText:p.responseText,
+                                            elasticId:p.elasticId
+                                        }
+                                    })
+                                    const addStaffPrormpts = await prisma.aIPrompts.createMany({data:staffPrompts})
+                                    if(addStaffPrormpts.count === 0){
+                                        await redis.set(`staffstatus:${job.id}`,"failed","EX",300) 
+                                        throw new Error("Personel ekleme başarısız oldu.")
+                                    }
+
+                                }
+                            
+                        }
                         await redis.set(`staffstatus:${job.id}`,"completed","EX",300)  
 
                         invalidateCacheTagKeys("cache-tag:staff")

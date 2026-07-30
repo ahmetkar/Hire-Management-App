@@ -568,7 +568,7 @@ export const createStaff= async (req:Request,res:Response,next:NextFunction) => 
                                 departmentId:departmentId
                  }
 
-                  const staffJob = await staffQueue.add("staff-create",{data:data})
+                  const staffJob = await staffQueue.add("staff-create",{data:data,isFromKafka:false,fromAppId:0})
                     
 
                    if(staffJob.id){

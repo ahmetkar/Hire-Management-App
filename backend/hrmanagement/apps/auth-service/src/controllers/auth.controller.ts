@@ -260,7 +260,7 @@ export const getLoggedInUser =  async (req:any,res:Response,next:NextFunction) =
                    
         
             }catch(error){
-            return next(new Error("Error : "+error))
+            return next(new ValidationError("Error : "+error))
             }
         
         
