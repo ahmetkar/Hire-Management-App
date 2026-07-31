@@ -25,6 +25,8 @@ sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçek
 
 # Video
 
+Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
+
 [Video için tıklayın.](https://drive.google.com/file/d/1lQ1js0N1czIKa0WGo90IjAaPIU2s2S8c/view?usp=sharing)
 
 # Ekran Görüntüleri
