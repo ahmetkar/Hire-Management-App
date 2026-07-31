@@ -139,7 +139,10 @@ kalmıştır.
 
 # Prometheus ve Grafana ile Ölçüm Sonuçları Değerlendirilmesi
 
+Prometheus ile toplanan ve grafana ile alınan veriler aşağıdaki gibidir.
+
 ## İş başvurusunun gönderilme,worker kuyruğunda işlenme ve kullanıcıya cevap döndürülme hızı
+
 
 Grafikte görüldüğü gibi 22 ms ve 1s aralığı dönüş hızları çoğunluktadır.
 
