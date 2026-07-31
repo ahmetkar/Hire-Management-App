@@ -70,12 +70,15 @@ birkaç dakika içinde 100 bin  isteğe dayanıklı olduğunu göstermektedir.
 
 1.Testte saniyede 50 sanal kullanıcının aynı anda istek göndermesi ve 200 saniye içinde toplam 10 bin istek atılması sağlanmıştır ve hepsi başarılı dönmüştür. 
 
+Threshoolds kısmında avg ile isteklerin ortalama dönüş süresini görüyoruz. İsteklerin %99 u 35 milisaniyeden az yüzde 95 die 16 ms den az sürede dönmüştür.
+http_reqs kısmında istek sayısı k6 grafanada kullanılan vus sayısı ile sanal kullanıcı sayısı
+
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20184803.png?raw=true)
 
 
 ### Cpu Kullanımı : 
 
-Görüldüğü gibi 10k istekte serverin cpu kullanımı sadece %21 olmuştur. 
+Görüldüğü gibi yerel saat ile 18:45 te 10k istekte serverin cpu kullanımı sadece %21 olmuştur. 
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20185119.png?raw=true)
 
@@ -85,13 +88,14 @@ Görüldüğü gibi 10k istekte serverin cpu kullanımı sadece %21 olmuştur.
 ### Test Sonuçları
 
 2.Testte saniyede 100 sanal kullanıcının aynı anda istek göndermesi ve 200 saniye içinde toplam 20 bin istek atılması sağlanmıştır ve hepsi başarılı dönmüştür. 
+İsteklerin %99 u 45 milisaniyeden az yüzde 95 i ise 22 ms den az sürede dönmüştür.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20190349.png?raw=true)
 
 
 ### Cpu Kullanımı : 
 
-Görüldüğü gibi 20k istekte serverin cpu kullanımı sadece %32 olmuştur. 
+Görüldüğü gibi yerel saat ile 19:00 da 20k istekte serverin cpu kullanımı sadece %32 olmuştur. 
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20190613.png?raw=true)
 
@@ -102,13 +106,14 @@ Görüldüğü gibi 20k istekte serverin cpu kullanımı sadece %32 olmuştur.
 ### Test Sonuçları
 
 3.Testte saniyede 250 sanal kullanıcının aynı anda istek göndermesi ve 200 saniye içinde toplam 50 bin istek atılması sağlanmıştır ve hepsi başarılı dönmüştür. 
+İsteklerin %99 u 65 milisaniyeden az yüzde 95 i ise 36 ms den az sürede dönmüştür.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20191508.png?raw=true)
 
 
 ### Cpu Kullanımı : 
 
-Görüldüğü gibi 50k istekte serverin cpu kullanımı sadece %42 olmuştur. 
+Görüldüğü gibi 50k isteğin yapıldığı UTC ile 16:10 da serverin cpu kullanımı sadece %42 olmuştur. 
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20191628.png?raw=true)
 
