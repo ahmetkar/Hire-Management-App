@@ -32,7 +32,7 @@ const Page = () => {
 
               <div className="row align-items-center mb-2">
                 <div className="col">
-                  <h2 className="h5 page-title">Welcome!</h2>
+                  <h1 className="h1 ml-2 page-title">Hoşgeldiniz</h1>
                 </div>
                 <div className="col-auto">
                   <form className="form-inline">
@@ -50,70 +50,7 @@ const Page = () => {
                 </div>
               </div>
 
-              <div className="card shadow my-4">
-                <div className="card-body">
-                  <div className="row align-items-center my-4">
-                    <div className="col-md-4">
-                      <div className="mx-4">
-                        <strong className="mb-0 text-uppercase text-muted">Bu ayki istatistikler</strong><br />
-                      
-                      </div>
-                      <div className="row align-items-center">
-                        <div className="col-6">
-                          <div className="p-4">
-                            <p className="small text-uppercase text-muted mb-0">İş Başvuru Sayısı</p>
-                            <span className="h2 mb-0">1.2K</span>
-                            <p className="small mb-0">
-                              <span className="fe fe-arrow-up text-success fe-12"></span>
-                              <span className="text-muted ml-1">+1.5%</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="col-6">
-                          <div className="p-4">
-                            <p className="small text-uppercase text-muted mb-0">İşe Alım Sayısı</p>
-                            <span className="h2 mb-0">1.2K</span>
-                            <p className="small mb-0">
-                              <span className="fe fe-arrow-up text-success fe-12"></span>
-                              <span className="text-muted ml-1">+1.5%</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="row align-items-center">
-                        <div className="col-6">
-                          <div className="p-4">
-                            <p className="small text-uppercase text-muted mb-0">Mülakat Sayısı</p>
-                            <span className="h2 mb-0">1.2K</span>
-                            <p className="small mb-0">
-                              <span className="fe fe-arrow-up text-success fe-12"></span>
-                              <span className="text-muted ml-1">+1.5%</span>
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="col-6">
-                          <div className="p-4">
-                           <p className="small text-uppercase text-muted mb-0">Reddedilen Başvuru Sayısı</p>
-                            <span className="h2 mb-0">1.2K</span>
-                            <p className="small mb-0">
-                              <span className="fe fe-arrow-up text-success fe-12"></span>
-                              <span className="text-muted ml-1">+1.5%</span>
-                            </p>
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                    <div className="col-md-8">
-                      <div className="mr-4">
-                        <div id="areaChart"></div>
-                      </div>
-                    </div> 
-                  </div> 
-                </div>
-              </div> 
-              
+           
               <div className="row">
                 <div className="col-md-4">
                   <div className="card shadow eq-card mb-4">

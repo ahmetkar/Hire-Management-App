@@ -43,7 +43,7 @@ export const getStaffAddStatus = async (jobId:string) : Promise<string> => {
 
             try {
 
-                 const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff-service/get-staff-created-status/${jobId}`);
+                 const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_SERVER_URI}/staff/get-staff-created-status/${jobId}`);
                 if(res.status == 200){
                     if (res.data.status === "completed") {
 
