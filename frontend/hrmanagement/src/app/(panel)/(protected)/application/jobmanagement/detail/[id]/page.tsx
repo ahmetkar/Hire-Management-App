@@ -2,11 +2,12 @@
 import { getJobApp,JobApp } from '@/app/lists/jobapplications'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { AIResponse, AnalysisResponse, approveJobApp, disapproveJobApp, saveAIAnswerRequest, sendAIPromptRequest, sendAnalyisRequest } from '@/app/actions/jobapplication';
+import { AIResponse, AnalysisResponse, approveJobApp, disapproveJobApp, getAnalysisStatus, getSaveStatus, getSendStatus, saveAIAnswerRequest, sendAIPromptRequest, sendAnalyisRequest } from '@/app/actions/jobapplication';
 import Modal from '@/app/components/Modal';
 import useUser from '@/app/utils/useUser';
-import { getMultipileStaff, getStaff } from '@/app/lists/datas/users';
-import { connectSocket, socket } from '@/app/utils/socket';
+
+import axios from 'axios';
+import { getMultipileStaff } from '@/app/lists/datas/users';
 
 
 const Page = () => {
@@ -34,10 +35,6 @@ const Page = () => {
   const [analysisKind,setAnalysisKind] = useState("oldest")
 
 
-  
-  const [analysisAgain,setAnalysisAgain] = useState(false)
-  const [sendAgain,setSendAgain] = useState(false)
-const [saveAgain,setSaveAgain] = useState(false)
   const [aiResponse,setAIResponse] = useState<AIResponse>({
     sendedId:"",
     airesponse:"",
@@ -100,17 +97,23 @@ const [saveAgain,setSaveAgain] = useState(false)
 
               const sendAIRequest = async (appId:string) => {
                     
-                    
                     setAnswerLoading(true)
                    
                     sendAIPromptRequest(appId).then(async (id)=>{
                       if(id){
                         const jobId = id
-                    
+                        const result = await getSendStatus(jobId)
+                        if(result.status == "completed"){
 
                         setAIAnswerSuccess(true)
                         setNewAnswerIsExist(true)
                         setAnswerLoading(false)
+                        setAIResponse(result.returnValue as AIResponse)
+                        }else {
+                           setAIAnswerSuccess(false)
+                          setNewAnswerIsExist(false)
+                          setAnswerLoading(false)
+                        }
                   
                       }
                     }).catch((err)=>{
@@ -129,8 +132,12 @@ const [saveAgain,setSaveAgain] = useState(false)
                   saveAIAnswerRequest(appId,aiResponse.airesponse).then(async (id)=>{
                       if(id){
                         const jobId = id
-                       
-                         setSaveLoading(false)
+                        const result = await getSaveStatus(jobId);
+                        if(result == "completed"){
+                          setSaveLoading(false)
+                        }else {
+                          setSaveLoading(false)
+                        }
                         
                       }
                    
@@ -145,61 +152,63 @@ const [saveAgain,setSaveAgain] = useState(false)
 
               const sendAnalysis = async (appId:string) => {
                
-                /* 
                 if(analysisKind!=""){
                   setAnalysisLoading(true)
                     sendAnalyisRequest(analysisKind,appId).then(async (id)=>{
 
                       if(id){
                         const jobId = id
-                        setAnalysisJobId(jobId)
-                          setAnalysisLoading(false)
-                       
+                        const result = await getAnalysisStatus(jobId)
+                        if(result.status == "completed"){
+                            
+              
+                              const data = result.returnValue
+                                console.log(analysisKind," => ",data)
+                                  if(data!=null  && data.length >0){
+                                    const ids = data.map((i)=>(i.sendedId))
 
-                        setAnalysisAgain(false)
-                    setAnalysisLoading(false)
-                     const data =null
-                       console.log(analysisKind," => ",data!.results)
-                        if(data!=null && data.results!=null && data.results.length >0){
-                          const ids = data.results.map((i)=>(i.sendedId))
+                                    getMultipileStaff(ids,1,10).then((datas)=>{
+                                      console.log(datas)
+                                      const analysisList : AnalysisType[] = []
+                                      datas.data.map((d)=>{
+                                          const anResultForId = data.find((x)=>x.sendedId == d.id)
+                                          if(anResultForId !=undefined){
+                                            const prompt = d.staffPrompts.at(-1)
+                                            if(prompt!=undefined){
+                                              analysisList.push({name:d.name,signupdate:d.signupdate.split("T")[0],score:anResultForId.score!,airesponse:prompt.responseText})
+                                            }
+                                          }
+                                      })
+                                    if(analysisList.length > 0){
+                                        setAnalysisExist(true)
+                                        setAnalysisLoading(false)
+                                        setAnalysisResponse(analysisList)
+                                    }else {
+                                      setAnalysisLoading(false)
+                                    }
+                                    setAnalysisKind("oldest") 
+                                    
+                                    }).catch((err)=>{
 
-                          getMultipileStaff(ids,1,10).then((datas)=>{
-                            console.log(datas)
-                            const analysisList : AnalysisType[] = []
-                            datas.data.map((d)=>{
-                                const anResultForId = data.results.find((x)=>x.sendedId == d.id)
-                                if(anResultForId !=undefined){
-                                  const prompt = d.staffPrompts.at(-1)
-                                  if(prompt!=undefined){
-                                    analysisList.push({name:d.name,signupdate:d.signupdate.split("T")[0],score:anResultForId.score!,airesponse:prompt.responseText})
+                                      console.log(err)
+                                      setAnalysisLoading(false)
+                                    })
                                   }
+                                  
                                 }
-                            })
-                           if(analysisList.length > 0){
-                              setAnalysisExist(true)
-                              setAnalysisLoading(false)
-                              setAnalysisResponse(analysisList)
-                           }else {
-                            setAnalysisLoading(false)
-                           }
-                           setAnalysisKind("oldest") 
-                          
-                          }).catch((err)=>{
 
+                          }
+
+                          }).catch((err)=>{
                             console.log(err)
                             setAnalysisLoading(false)
+                             setAnalysisExist(false)
                           })
-                        }
-                        
-                      }
-                        
-
-                    }).catch((err)=>{
-                      console.log(err)
-                      setAnalysisLoading(false)
-                    })
+                }else {
+                  setAnalysisLoading(false)
+                   setAnalysisExist(false)
                 }
-*/
+
               }
 
               

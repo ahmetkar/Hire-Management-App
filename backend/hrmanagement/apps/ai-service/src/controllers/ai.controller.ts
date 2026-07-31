@@ -10,7 +10,13 @@ export const getSaveStatus= async (req:Request,res:Response,next:NextFunction) =
 
  const jobId = req.params.id ? String(req.params.id) : undefined;
 
- const result = await redis.get(`savepromptstatus:${jobId}`)
+ if(!jobId){
+     return res.status(404).json({
+            success: false,
+            message: "Job Id yanlış."
+        });
+ }
+ const result = await aiSaveQueue.getJob(jobId)
 
   if (!result) {
         return res.status(404).json({
@@ -18,8 +24,9 @@ export const getSaveStatus= async (req:Request,res:Response,next:NextFunction) =
             message: "Job bulunamadı."
         });
  }
-
- return res.status(200).json({status:result})
+ const state = await result.getState()
+  
+ return res.status(200).json({status:state})
     
 }
 
@@ -27,7 +34,13 @@ export const getSendStatus= async (req:Request,res:Response,next:NextFunction) =
 
  const jobId = req.params.id ? String(req.params.id) : undefined;
 
- const result = await redis.get(`sendpromptstatus:${jobId}`)
+ if(!jobId){
+     return res.status(404).json({
+            success: false,
+            message: "Job Id yanlış."
+        });
+ }
+ const result = await aiPromptQueue.getJob(jobId)
 
   if (!result) {
         return res.status(404).json({
@@ -35,8 +48,13 @@ export const getSendStatus= async (req:Request,res:Response,next:NextFunction) =
             message: "Job bulunamadı."
         });
  }
+  const state = await result.getState()
+  if(state == "completed" && jobId!=null){
+    
+    return res.status(200).json({status:state,returnValue:result?.returnvalue.result})
+ }
+ return res.status(200).json({status:state})
 
- return res.status(200).json({status:result})
     
 }
 
@@ -44,7 +62,13 @@ export const getElasticStatus= async (req:Request,res:Response,next:NextFunction
 
  const jobId = req.params.id ? String(req.params.id) : undefined;
 
- const result = await redis.get(`elasticstatus:${jobId}`)
+ if(!jobId){
+     return res.status(404).json({
+            success: false,
+            message: "Job Id yanlış."
+        });
+ }
+ const result = await elasticSearchQueue.getJob(jobId)
 
   if (!result) {
         return res.status(404).json({
@@ -52,8 +76,12 @@ export const getElasticStatus= async (req:Request,res:Response,next:NextFunction
             message: "Job bulunamadı."
         });
  }
-
- return res.status(200).json({status:result})
+  const state = await result.getState()
+  if(state == "completed" && jobId!=null){
+    
+    return res.status(200).json({status:state,returnValue:result?.returnvalue.results})
+ }
+ return res.status(200).json({status:state})
     
 }
 

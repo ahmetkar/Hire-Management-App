@@ -10,9 +10,10 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
-import { connectSocket, socket } from '@/app/utils/socket';
+
 import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
 import { useAuth } from '@/app/components/AuthProvider';
+import { getStaffAddStatus } from '@/app/actions/users';
 
 const Page = () => {
 
@@ -139,9 +140,12 @@ const Page = () => {
       onSuccess:async (data)=>{
            if(data){
                         const jobId = data.id
-                        await connectSocket(jobId,"staffQueue",()=>{
-                          setStage("normal")
-                        })
+                        const result = await getStaffAddStatus(jobId)
+                        if(result == "completed"){
+                          setStage("success")
+                        }else {
+                          setStage("fail")
+                        }
                         
                     } 
                  setServerError(null);
@@ -159,48 +163,7 @@ const Page = () => {
     })
 
 
-      useEffect(() => {
-    
-        socket.on("connect", () => {
-      console.log("CONNECTED", socket.id);
-        });
-    
-        socket.on("disconnect", (reason) => {
-          console.log("DISCONNECTED", reason);
-        });
-    
-        socket.on("connect_error", (err) => {
-          console.log("CONNECT ERROR", err);
-        });
-    
-        socket.onAny((event,...args)=>{
-          console.log("Socket event : ",event,args)
-        })
-    
-        const completedHandler = (payload:{jobId:string,result:unknown}) => {
-            setProgress("completed");
-        };
-    
-        const progressHandler = (payload:{jobId:string,data:unknown}) => {
-            setProgress("progress");
-        };
-    
-        const failedHandler = (payload:{jobId:string,errorr:string}) => {
-            setProgress("failed");
-        };
-    
-        socket.on("staff-completed", completedHandler);
-        socket.on("staff-progress", progressHandler);
-        socket.on("staff-failed", failedHandler);
-
-        return () => {
-                socket.off("staff-completed", completedHandler);
-                socket.off("staff-progress", progressHandler);
-                socket.off("staff-failed", failedHandler);
-            };
-        
-        }, []);
-
+     
 
 
   return (

@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react'
 import Pagination from '../../../../utils/pagination';
 import {ArrowDown, ArrowUp, Router} from "lucide-react"
 import Modal from '@/app/components/Modal';
-import {AIResponse, AIResponseElement, AIResponseResults, AIResponses, approveJobApp, disapproveJobApp, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
-import { connectSocket, socket } from '@/app/utils/socket';
+import {AIResponse, AIResponseElement, AIResponseResults, AIResponses, approveJobApp, disapproveJobApp, getSaveStatus, getSendStatus, saveMultipileAIAnswerRequest, SaveRequest, sendMultipileAIPromptRequest } from '@/app/actions/jobapplication';
+
 
 
 const JobManagement = () => {
@@ -204,119 +204,7 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
         }
 
         
-            useEffect(() => {
-
-               socket.on("connect", () => {
-                      console.log("CONNECTED", socket.id);
-                });
-                          
-              socket.on("disconnect", (reason) => {
-                    console.log("DISCONNECTED", reason);
-              });
-                          
-              socket.on("connect_error", (err) => {
-                    console.log("CONNECT ERROR", err);
-               });
-                          
-              socket.onAny((event,...args)=>{
-                    console.log("Socket event : ",event,args)
-              });
-
-
-               const sendCompletedHandler = (payload : {jobId:string,result:unknown}) => {
-                                
-                
-                      const data = payload.result as AIResponseResults
-                      console.log(data)
-                      if(data.resultarr!=undefined){
-                      const idList : string[]  = []
-                      data.resultarr.map((i)=>{
-                        idList.push(i.sendedId)
-                      })
-                      
-                      getMultipileJobApps(idList,apage,aiJobLimit).then((jobappdata)=>{
-                        console.log("jobappdata",jobappdata)
-                        setAIJobResponses(jobappdata)
-                        setAIJobIdList(idList)
-                          setAIResponses(data.resultarr)
-                          setAIPromptsExist(true)
-                          setAIPromptsFail(false)
-                          setAIPromptsLoading(false)
-                      }).catch((err)=>{
-                        console.log("jobapperr",err)
-                         setAIPromptsLoading(false)
-                      })
-                    
-               }
-              }
-                          
-                             
-                          
-              const sendFailedHandler = (payload : {jobId:string,error:string}) => {
-                  
-                  console.log(payload.error)
-                  setAIPromptsExist(false)
-                  setAIPromptsFail(true)
-                  setTimeout(() => {
-                    setAIPromptsFail(false);
-                  }, 3000);
-                  setAIPromptsLoading(false)
-
-              };
-              
-              
-              const saveCompletedHandler = (payload : {jobId:string,result:unknown}) => {
-                 
-                const data = payload.result as unknown
-                  if(data){
-                    setSaveAIPromptSuccess(true)
-                    setSaveAIPromptFail(false)
-                     setTimeout(() => {
-                      setSaveAIPromptSuccess(false);
-                  }, 3000);
-                  }else {
-                    setSaveAIPromptFail(true)
-                    setSaveAIPromptSuccess(false)
-                    setTimeout(() => {
-                      setSaveAIPromptFail(false);
-                  }, 3000);
-                  }
-                  setSaveAIPromptsLoading(false)
-                            
-                                 
-              };
-                          
-              const saveFailedHandler = (payload : {jobId:string,error:string}) => {
-                 setSaveAIPromptFail(true)
-                 setTimeout(() => {
-                      setSaveAIPromptFail(false);
-                  }, 3000);
-                setSaveAIPromptSuccess(false)
-                setSaveAIPromptsLoading(false)
-                console.log(payload.error)              
-                                  
-              };
-
-                socket.on("sendprompt-completed", sendCompletedHandler);
-                socket.on("sendprompt-failed", sendFailedHandler);
-              
-              
-                socket.on("saveprompt-completed", saveCompletedHandler);
-                socket.on("saveprompt-failed", saveFailedHandler);
-              
-
-               return () => {
-                        socket.off("sendprompt-completed", sendCompletedHandler);
-                        socket.off("sendprompt-failed", sendFailedHandler);
-              
-                                  
-                        socket.off("saveprompt-completed", saveCompletedHandler);
-                        socket.off("saveprompt-failed", saveFailedHandler);
-
-               }
-
-                              
-            },[]);
+           
 
          const sendMultipilePrompt = ()=>{
           if(checkedIds.length == 0){
@@ -333,12 +221,38 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
           sendMultipileAIPromptRequest(checkedIds).then(async (id)=>{
                 if(id){
                   const jobId = id
-                  await connectSocket(jobId,"aiSendQueue",()=>{
-                                setAIPromptsLoading(false);
-                    })
-                  //websocket işlemleri
+                  const result = await getSendStatus(jobId)
+                  if(result.status == "completed"){
+                    const data = result.returnValue as AIResponseElement[]
+                      console.log(data)
+                      if(data!=undefined){
+                      const idList : string[]  = []
+                      data.map((i)=>{
+                        idList.push(i.sendedId)
+                      })
+                      
+                      getMultipileJobApps(idList,apage,aiJobLimit).then((jobappdata)=>{
+                        console.log("jobappdata",jobappdata)
+                        setAIJobResponses(jobappdata)
+                        setAIJobIdList(idList)
+                          setAIResponses(data)
+                          setAIPromptsExist(true)
+                          setAIPromptsFail(false)
+                          setAIPromptsLoading(false)
+                      }).catch((err)=>{
+                        console.log("jobapperr",err)
+                         setAIPromptsLoading(false)
+                      })
+                    
+               }
+                
                       
                 }
+              }else {
+                setAIPromptsExist(false)
+                setAIPromptsFail(true)
+                setAIPromptsLoading(false)
+              }
                  
                 }).catch((err)=>{
                   console.log(err)
@@ -376,11 +290,21 @@ const [saveAIPromptFail,setSaveAIPromptFail] = useState(false)
               saveMultipileAIAnswerRequest(reqs,page,limit,type).then(async (id)=>{
                 if(id){
                   const jobId = id
-                  await connectSocket(jobId,"aiSaveQueue",()=>{
-                                setAIPromptsLoading(false);
-                    })
-                  //webssocket işlemleri ona gröe true false
-                 
+                  const result = await getSaveStatus(jobId)
+                  if(result == "completed"){
+                    setSaveAIPromptSuccess(true)
+                    setSaveAIPromptFail(false)
+                     setTimeout(() => {
+                      setSaveAIPromptSuccess(false);
+                  }, 3000);
+                  }else {
+                    setSaveAIPromptFail(true)
+                    setSaveAIPromptSuccess(false)
+                    setTimeout(() => {
+                      setSaveAIPromptFail(false);
+                  }, 3000);
+                  }
+                  setSaveAIPromptsLoading(false)
                 }
               }).catch((err)=>{
                 setSaveAIPromptFail(true)

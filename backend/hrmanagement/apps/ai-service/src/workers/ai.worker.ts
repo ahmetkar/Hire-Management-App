@@ -85,7 +85,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                                 await redis.set(`jobapp:${data.id}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
                                 await redis.set(`jobapp:${data.id}:prompt`,prompt,"EX",300)  
                                 await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-                                return {success:true,sendedId:data.id,airesponse:responseText,message:"Başarılı."}
+                                 return {result:{sendedId:data.id,airesponse:responseText}}
                             }else {
                                 await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                                  return handleError("Hata response alınamadı.");
@@ -156,7 +156,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                     await redis.set(`staff:${data.id}:embedding`,JSON.stringify(embeddingResponse),"EX",300)  
                     await redis.set(`staff:${data.id}:prompt`,prompt,"EX",300)  
                     await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-                    return {success:true,sendedId:data.id,airesponse:responseText,message:""}
+                    return {result:{sendedId:data.id,airesponse:responseText}}
                  }else {
                      await redis.set(`sendpromptstatus:${job.id}`,"failed","EX",300)  
                     return handleError("Gelen responseda bir sorun var.");
@@ -283,7 +283,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                   
              }
             await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-            return {success:true,resultarr:resultarr,message:"Başarılı."}
+            return {result:resultarr};
             }
         case "staff-multi-prompt":
             {
@@ -401,7 +401,7 @@ const worker1 = new Worker("send-prompt",async(job)=>{
                   return handleError(`Gelen responseda bir sorun var. ${errorList.join(",")}`);
             }
             await redis.set(`sendpromptstatus:${job.id}`,"completed","EX",300)  
-            return {success:true,resultarr:resultarr,message:"Başarılı."}
+            return {result:resultarr};
 
         }
     }

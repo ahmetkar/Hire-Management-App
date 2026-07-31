@@ -9,7 +9,7 @@ import {getCities,City} from '../../../lists/cities';
 import {getCounties,County} from '../../../lists/counties';
 import { getDepartments } from '../../../lists/unidepartments';
 import { getJobInfos } from '../../../lists/jobs';
-import { connectSocket, socket } from '@/app/utils/socket';
+import { getJobAppAddStatus } from '@/app/actions/jobapplication';
 
 
 
@@ -66,57 +66,6 @@ const Page = () => {
 }, []);
 
 
-
-useEffect(() => {
-
-    socket.on("connect", () => {
-  console.log("CONNECTED", socket.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("DISCONNECTED", reason);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.log("CONNECT ERROR", err);
-    });
-
-    socket.onAny((event,...args)=>{
-      console.log("Socket event : ",event,args)
-    })
-
-    const completedHandler = (payload:{jobId:string,returnValue:unknown}) => {
-      console.log("completed")
-        setProgress("completed");
-        reset({university:getValues("university")})
-    };
-
-    const progressHandler = (payload:{jobId:string,data:unknown}) => {
-      console.log("progress")
-        setProgress("progress");
-    };
-
-    const failedHandler = (payload:{jobId:string,failedReason:unknown}) => {
-        setProgress("failed");
-         setTimeout(() => {
-        
-          setProgress("none");
-        
-    }, 3000);
-
-    };
-
-    socket.on("job-completed", completedHandler);
-    socket.on("job-progress", progressHandler);
-    socket.on("job-failed", failedHandler);
-
-  return () => {
-        socket.off("job-completed", completedHandler);
-        socket.off("job-progress", progressHandler);
-        socket.off("job-failed", failedHandler);
-    };
-
-}, []);
 
 
   useEffect(() => { 
@@ -199,9 +148,12 @@ useEffect(() => {
     onSuccess:async (data)=>{
         if(data){
               const jobId = data.id
-              await connectSocket(jobId,"jobappQueue",()=>{
-                  setProgress("none")
-              })
+              const result = await getJobAppAddStatus(jobId)
+              if(result === "completed"){
+                setProgress("completed")
+              }else {
+                setProgress("failed")
+              }
               setServerError(null);
               
           } 

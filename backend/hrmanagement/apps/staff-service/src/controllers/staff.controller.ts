@@ -189,7 +189,13 @@ export const getStaffCreatedStatus = async (req:Request,res:Response,next:NextFu
 
  const jobId = req.params.id ? String(req.params.id) : undefined;
 
- const result = await redis.get(`staffstatus:${jobId}`)
+ if(!jobId){
+     return res.status(404).json({
+            success: false,
+            message: "Job Id yanlış."
+        });
+ }
+ const result = await staffQueue.getJob(jobId)
 
   if (!result) {
         return res.status(404).json({
@@ -197,8 +203,9 @@ export const getStaffCreatedStatus = async (req:Request,res:Response,next:NextFu
             message: "Job bulunamadı."
         });
  }
-
- return res.status(200).json({status:result})
+ const state = await result.getState()
+  
+ return res.status(200).json({status:state})
     
 }
 

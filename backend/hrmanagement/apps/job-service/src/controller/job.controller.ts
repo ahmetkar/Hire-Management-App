@@ -43,9 +43,15 @@ enum JobAppStatus {
 
 export const getJobAppCreatedStatus = async (req:Request,res:Response,next:NextFunction) => { 
 
- const jobId = req.params.id ? String(req.params.id) : undefined;
+const jobId = req.params.id ? String(req.params.id) : undefined;
 
- const result = await redis.get(`jobapp-status:${jobId}`)
+ if(!jobId){
+     return res.status(404).json({
+            success: false,
+            message: "Job Id yanlış."
+        });
+ }
+ const result = await jobAppQueue.getJob(jobId)
 
   if (!result) {
         return res.status(404).json({
@@ -53,8 +59,9 @@ export const getJobAppCreatedStatus = async (req:Request,res:Response,next:NextF
             message: "Job bulunamadı."
         });
  }
-
- return res.status(200).json({status:result})
+ const state = await result.getState()
+  
+ return res.status(200).json({status:state})
     
 }
 
