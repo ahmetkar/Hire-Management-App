@@ -1,5 +1,9 @@
 # Hiring Management App
 
+<p align="center">
+<img src="https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/6da40ed7-fe7c-4a48-bdc3-71154135ffa9.png?raw=true" width="768" height="624" alt="Açıklama">
+</p>
+
 Bu express.js ve next.js ile oluşuturulmuş uygulamanın amacı iş başvurularının  alınıp uygulama panelinde ai agent aracılığıyla incelenmesi onaylanıp,reddedilmesine karar verilmesi ve personellere eklenip eklenmemesine karar verilmesini 
 sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçekli olması planlanarak programlanmıştır. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
 
