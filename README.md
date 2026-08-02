@@ -81,7 +81,7 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 # HTTPS/TLS altyapısının açıklanması
 
-- cert-manager servisini kubernetese kurduk. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
+- cert-manager servisini kubernetese kurdum. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
 
 
 # Grafana K6 ile yük testi değerlendirilmesi
