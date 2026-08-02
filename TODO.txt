@@ -1,1 +1,4 @@
 1-Approve da problem var.
+2-Service,Repository,Dto eklenecek her servis için
+3-Logger eklenecek,Frontend Validation kısımları düzenlenecek
+4-Circuit Braker ve Retry mekanizmaları eklenecek
