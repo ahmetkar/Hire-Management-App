@@ -72,11 +72,16 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 ## Kubernetes altyapısı açıklaması
 
-- EC2 üzerine kubernetes kurulmuş tüm mikroservisler ve kullanılan uygulamalar redis,kafka,prometheus,grafana,elasticsearch gibi containarize edilmiş ve bu sunucuda ayağa kaldırılmıştır.
+- EC2 üzerine k3s ile kubernetes kurulmuş tüm mikroservisler ve kullanılan uygulamalar redis,kafka,prometheus,grafana,elasticsearch gibi containarize edilmiş ve bu sunucuda ayağa kaldırılmıştır.
 - Kafka için  kafka.strimzi.io/v1 versiyonu internetten çekilip ayrı namespace ile kurulmuştur. 
 - Yine tüm istekleri karşılayıp api-gateway servisine gönderen ingress-nginx networking.k8s.io/v1 versiyonu internetten çekilip ayrı namespace e kurulmuştur. Redis ,prometheus,grafana için b ilinen image isimleri verilmiş otomatik çekilip kurulmuştur.
 - Mikroservisler dockerfile ile derlenmiş ve github container registry e yüklenip oradan çekilip kurulmuştur.
 - Kubernetes e Horizontal Pod Autoscaler entegre edilmiştir. Bu cpu kullanımı %70 i aştığında mikroservislerin pod(container) örneklerini artırarak uygulamanın istek karşılama hızını artırmaktadır.
+- Her servis için deployment.yaml içinde request ve yapılan işler için cpu ve ram kullanımı sınırları getirilmiştir.
+
+# HTTPS/TLS altyapısının açıklanması
+
+- cert-manager servisini kubernetese kurduk. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
 
 
 # Grafana K6 ile yük testi değerlendirilmesi
