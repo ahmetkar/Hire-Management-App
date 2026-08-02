@@ -7,6 +7,8 @@
 Bu express.js ve next.js ile oluşuturulmuş uygulamanın amacı iş başvurularının  alınıp uygulama panelinde ai agent aracılığıyla incelenmesi onaylanıp,reddedilmesine karar verilmesi ve personellere eklenip eklenmemesine karar verilmesini 
 sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçekli olması planlanarak programlanmıştır. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
 
+Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp canlıyı test etme isteğinizi bildrebilirsiniz.
+
 # Kullanılan Stack
 
 - Express.js Backend için kullanılmıştır
@@ -60,6 +62,21 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-31%20050419.png?raw=true)
 
+
+# Altyapının Açıklanması
+
+## Deployment için kullanılan AMAZON EC2 açıklaması
+
+- Amazon üzerinden oluşturduğum EC2 bulut sunucusu c5.2xlarge türündedir.
+-  16GB RAM ve 8 vCPU kullanmaktadır.
+
+## Kubernetes altyapısı açıklaması
+
+- EC2 üzerine kubernetes kurulmuş tüm mikroservisler ve kullanılan uygulamalar redis,kafka,prometheus,grafana,elasticsearch gibi containarize edilmiş ve bu sunucuda ayağa kaldırılmıştır.
+- Kafka için  kafka.strimzi.io/v1 versiyonu internetten çekilip ayrı namespace ile kurulmuştur. 
+- Yine tüm istekleri karşılayıp api-gateway servisine gönderen ingress-nginx networking.k8s.io/v1 versiyonu internetten çekilip ayrı namespace e kurulmuştur. Redis ,prometheus,grafana için b ilinen image isimleri verilmiş otomatik çekilip kurulmuştur.
+- Mikroservisler dockerfile ile derlenmiş ve github container registry e yüklenip oradan çekilip kurulmuştur.
+- Kubernetes e Horizontal Pod Autoscaler entegre edilmiştir. Bu cpu kullanımı %70 i aştığında mikroservislerin pod(container) örneklerini artırarak uygulamanın istek karşılama hızını artırmaktadır.
 
 
 # Grafana K6 ile yük testi değerlendirilmesi
