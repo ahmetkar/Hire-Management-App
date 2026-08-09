@@ -90,6 +90,16 @@ Grafana K6 oluşturduğu sanal kullanıcılarla verilen api istek kodlarını ç
 Bu testlerde job application create api endpointine eşzamanlı istekler gönderilmiş 10bin,20bin ve 50 bin istek kümeleri tamamen başarılı olmuştur. Bunlar sistemin berirli aralıklarla
 birkaç dakika içinde 100 bin  isteğe dayanıklı olduğunu göstermektedir.
 
+## Test Kodu Örneği
+
+Aşağıda test kodu örneği görülmektedir. Bu load testinin ayarlarının oluşturulduğu kısmıdır.
+2 saniyelik time unitte 800 istek gönderilmiş 200 s içinde 80.000 istek gönderilmiştir.
+Sonuçlarla ilgili metriklerin berirlediği threholds kısmında ilk şartın failed sayılması için toplam request başarısı miktarının %20 den az olması koşulu konulmuştur.
+ayrıca tüm isteklerin ortalama 1 er sn den az bitmesi,isteklerinin %95 inin 2 şer sn den az bitmesi,%99 unun 5 şer sn den az bitmesi şartı konulmuştur.
+Bu kod en son yapılmış olan stres testine aittir.
+
+![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20200626.png?raw=true)
+
 
 ## 1.Test 
 
