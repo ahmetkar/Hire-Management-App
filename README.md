@@ -96,6 +96,8 @@ Aşağıda test kodu örneği görülmektedir. Bu load testinin ayarlarının ol
 2 saniyelik time unitte 800 istek gönderilmiş 200 s içinde 80.000 istek gönderilmiştir.
 Sonuçlarla ilgili metriklerin berirlediği threholds kısmında ilk şartın failed sayılması için toplam request başarısı miktarının %20 den az olması koşulu konulmuştur.
 ayrıca tüm isteklerin ortalama 1 er sn den az bitmesi,isteklerinin %95 inin 2 şer sn den az bitmesi,%99 unun 5 şer sn den az bitmesi şartı konulmuştur.
+Test için ayarlanan VU(Virtual User) minimum 2000  ve maximum 3500 olacak şekilde ayarlanmıştır.
+Bu testi çalıştırmak içinde t3.xlarge türünde Amazon EC2 sunucusu kullanılmıştır.
 Bu kod en son yapılmış olan stres testine aittir.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20200626.png?raw=true)
