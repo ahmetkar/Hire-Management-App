@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import axiosInstance from '@/app/utils/axiosInstance';
-import { connectSocket, socket } from '@/app/utils/socket';
 import { Department,getDepartments as getDepartments1 } from '@/app/lists/department';
 import { useAuth } from '@/app/components/AuthProvider';
 
