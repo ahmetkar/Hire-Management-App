@@ -58,8 +58,6 @@ export default function RootLayout({
         <Providers>
         {children}
         </Providers>
-    </body>
-  
 
     <Script src="/js/jquery.min.js" strategy="afterInteractive"></Script>
     <Script src="/js/popper.min.js" strategy="afterInteractive"></Script>
@@ -95,6 +93,10 @@ export default function RootLayout({
 
     <Script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1" strategy="afterInteractive"></Script>
     <Script src="/js/gtaghelper.js" strategy="afterInteractive"></Script>
+    </body>
+  
+
+ 
   </html>
   
   );
