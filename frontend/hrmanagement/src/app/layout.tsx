@@ -54,7 +54,7 @@ export default function RootLayout({
    
   </head>
     
-    <Body children={children}></Body>
+    <Body>{children}</Body>
   
 
     <Script src="/js/jquery.min.js" strategy="afterInteractive"></Script>

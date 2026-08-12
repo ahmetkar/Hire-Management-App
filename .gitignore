@@ -1,5 +1,7 @@
 # Node.js dependencies
 node_modules/
+frontend/hrmanagement/node_modules/
+backend/hrmanagement/node_modules/
 
 # Build outputs
 dist/
@@ -29,3 +31,6 @@ dbyedek.zip
 tls.crt
 load500.js
 load1000.js
+
+
+frontend/hrmnagement/structure.txt
