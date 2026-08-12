@@ -1,4 +1,8 @@
 1-Caching mekanizmalarında iyileştirmeler
 1-Service,Repository,Dto eklenecek her servis için
+1-CV yükleme ve parsing işlemi,CV değerlendirmesi sonucu skor çıkarma
+1-Skora göre sıralama özelliği
+1-Teşekkür maili,onay maili,red maili
+1-Openrouter gibi bir api üzerinden chat güncellenecek ve elasticsearch kaldırılacak
 2-Logger eklenecek,Frontend Validation kısımları düzenlenecek
 3-Circuit Braker ve Retry mekanizmaları eklenecek
