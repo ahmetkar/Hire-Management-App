@@ -2,6 +2,7 @@
 
 
 import { AuthProvider } from "../components/AuthProvider";
+import BodyClass from "../components/BodyClass";
 
 export default function ProtectedLayout({
   children,
@@ -10,6 +11,7 @@ export default function ProtectedLayout({
 }) {
   
   return <>
+  <BodyClass className="vertical light" />
   <AuthProvider>
   {children}
   </AuthProvider>

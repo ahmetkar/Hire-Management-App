@@ -4,7 +4,7 @@ import "./globals.css";
 
 
 import Script from "next/script";
-import Body from "./components/Body";
+import Providers from "./components/providers";
 
 
 const geistSans = Geist({
@@ -54,7 +54,11 @@ export default function RootLayout({
    
   </head>
     
-    <Body>{children}</Body>
+    <body suppressHydrationWarning>
+        <Providers>
+        {children}
+        </Providers>
+    </body>
   
 
     <Script src="/js/jquery.min.js" strategy="afterInteractive"></Script>

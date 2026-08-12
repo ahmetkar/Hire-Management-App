@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import BodyClass from "../components/BodyClass";
 
 
 export default function SiteLayout({
@@ -9,8 +10,8 @@ export default function SiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-<>
- 
+ <>
+ <BodyClass className="horizontal light" />
   <div>
     <div className="wrapper">
       <nav className="navbar navbar-expand-lg navbar-light bg-white flex-row border-bottom shadow">
@@ -64,6 +65,7 @@ export default function SiteLayout({
 
   
   </div>
-</>
+  </>
+
   );
 }
