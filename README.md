@@ -9,6 +9,8 @@ sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçek
 
 Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp canlıyı test etme isteğinizi bildrebilirsiniz.
 
+Canlı linki : https://hiringapp.ahmetkar.com/ (backendi aktif değildir aktif edilip test edilmesi için benimle iletişmie geçin) 
+
 Not : Yakında tüm ai özellikleri güncellenecek ve yeni ai özellikleri eklenecek,mail gönderme desteğide eklenecektir.
 # Kullanılan Stack
 
