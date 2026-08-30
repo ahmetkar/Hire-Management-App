@@ -77,19 +77,19 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 - EC2 üzerine k3s ile kubernetes kurulmuş tüm mikroservisler ve kullanılan uygulamalar redis,kafka,prometheus,grafana,elasticsearch gibi containarize edilmiş ve bu sunucuda ayağa kaldırılmıştır.
 - Kafka için  kafka.strimzi.io/v1 versiyonu internetten çekilip ayrı namespace ile kurulmuştur. 
-- Yine tüm istekleri karşılayıp api-gateway servisine gönderen ingress-nginx networking.k8s.io/v1 versiyonu internetten çekilip ayrı namespace e kurulmuştur. Redis ,prometheus,grafana için b ilinen image isimleri verilmiş otomatik çekilip kurulmuştur.
+- Yine tüm istekleri karşılayıp api-gateway servisine gönderen ingress-nginx networking.k8s.io/v1 versiyonu internetten çekilip ayrı namespace e kurulmuştur. Redis ,prometheus,grafana için güncel image isimleri verilmiş otomatik çekilip kurulmuştur.
 - Mikroservisler dockerfile ile derlenmiş ve github container registry e yüklenip oradan çekilip kurulmuştur.
-- Kubernetes e Horizontal Pod Autoscaler entegre edilmiştir. Bu cpu kullanımı %70 i aştığında mikroservislerin pod(container) örneklerini artırarak uygulamanın istek karşılama hızını artırmaktadır.
+- Kubernetes e Horizontal Pod Autoscaler entegre edilmiştir. Bu cpu kullanımı %70 i aştığında mikroservislerin pod(container) örneklerini artırarak uygulamanın istek karşılama ve işlem yapma hızını artırmıştır.
 - Her servis için deployment.yaml içinde request ve yapılan işler için cpu ve ram kullanımı sınırları getirilmiştir.
 
 # HTTPS/TLS altyapısının açıklanması
 
-- cert-manager servisini kubernetese kurdum. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
+- cert-manager servisini kubernetese kuruldu. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
 
 
 # Grafana K6 ile yük testi değerlendirilmesi
 
-Grafana K6 oluşturduğu sanal kullanıcılarla verilen api istek kodlarını çalıştıran bir yük testi aracıdır. Aşağıda 4 tane teste ait görüntüler ve açıklamalarr görünmektedir.
+Grafana K6 oluşturduğu sanal kullanıcılarla verilen api istek kodlarını çalıştıran bir yük testi aracıdır. Aşağıda 4 tane teste ait görüntüler ve açıklamalar görünmektedir.
 Bu testlerde job application create api endpointine eşzamanlı istekler gönderilmiş 10bin,20bin ve 50 bin istek kümeleri tamamen başarılı olmuştur. Bunlar sistemin berirli aralıklarla
 birkaç dakika içinde 100 bin  isteğe dayanıklı olduğunu göstermektedir.
 
