@@ -37,7 +37,9 @@ Not : Yakında tüm ai özellikleri güncellenecek ve yeni ai özellikleri eklen
 
 Kafka Publish/Subscribe Design Pattern'ı uygulanmıştır.
 
-Kafkanın iş başvurusu geldiğinde ve job service de  başarıyla eklendiğinde JobAppCreated eventi yayınlaması sağlanmış management service in bu eventi consume edip Staff ve Manager rolündeki kullanıcılara bildirim göndermesi sağlanmıştır. İş başvurusu job service de onaylandığında jobappapproved eventi yayımlanmış bunlar management ve staff service de consume edilmiştir. Management service de yine staff ve Manager rolündeki kullanıcılara bildirim gönderilmiş staff service de consume edilen ,onaylanan iş başvurusunun veritabanına eklenmesi sağlanmıştır.Reddedildiğinde management service yine staff ve manager rolündeki kullanıcılara bildirim gönderilmiştir.
+- Kafkanın iş başvurusu geldiğinde ve job service de  başarıyla eklendiğinde JobAppCreated eventi yayınlaması sağlanmış management service in bu eventi consume edip Staff ve Manager rolündeki kullanıcılara bildirim göndermesi sağlanmıştır. 
+- İş başvurusu job service de onaylandığında jobappapproved eventi yayımlanmış bunlar management ve staff service de consume edilmiştir. Management service de yine staff ve Manager rolündeki kullanıcılara bildirim gönderilmiş staff service de consume edilen ,onaylanan iş başvurusunun veritabanına eklenmesi sağlanmıştır.
+- Reddedildiğinde management service yine staff ve manager rolündeki kullanıcılara bildirim gönderilmiştir.
 
 # Redis Altyapısı açıklanması
 
@@ -45,7 +47,8 @@ Kafkanın iş başvurusu geldiğinde ve job service de  başarıyla eklendiğind
 - Redis Cache Invalidation Pattern
  uygulanmıştır.
 
-Redis veritabanından çekilen verilerin get isteğiyle alındığı endpointlerde lazy loading pattern ile kullanılmıştır. Veri eğer rediste varsa direk redisten alınıp gönderilmiş yoksa veritabanından alınıp redise kaydedilip sonra kullanıcıya gönderilmiştir. Bu eklenen veriler cache tag verilerek eklenmiştir. Bundan sonra örneğin iş başvurusu ekleme,güncelleme,silme endpointlerindede etkilenen verilerin redise hangi cache tag lar altınnda kaydedilmişse o cache taglar invalidate edilmiş böylece ilgili verilerin güncel kalması sağlanmıştır.
+- Redis veritabanından çekilen verilerin get isteğiyle alındığı endpointlerde lazy loading pattern ile kullanılmıştır. Veri eğer rediste varsa direk redisten alınıp gönderilmiş yoksa veritabanından alınıp redise kaydedilip sonra kullanıcıya gönderilmiştir. 
+- Bu eklenen veriler cache tag verilerek eklenmiştir. Bundan sonra örneğin iş başvurusu ekleme,güncelleme,silme endpointlerindede etkilenen verilerin redise hangi cache tag lar altınnda kaydedilmişse o cache taglar invalidate edilmiş böylece ilgili verilerin güncel kalması sağlanmıştır.
 
 # Video
 
