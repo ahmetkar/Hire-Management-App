@@ -6,4 +6,3 @@
 
 
 3-Logger eklenecek,Frontend Validation kısımları düzenlenecek
-3-Circuit Braker ve Retry mekanizmaları eklenecek
