@@ -15,8 +15,9 @@ Not : Yakında tüm ai özellikleri güncellenecek ve yeni ai özellikleri eklen
 # Kullanılan Stack
 
 - Express.js Backend için kullanılmıştır
-- MongoDb veritabanı olarak Redis cache veritabanı olarak kullanılmıştır.
-- Kafka mikroservisler arası haberleşme için kullanılmıştır
+- MongoDb veritabanı olarak kullanılmıştır.
+- Redis caching amacıyla kullanılmıştır.
+- Kafka mikroservisler arası kuyruk mesajlaşma teknolojisi olarak kullanılmıştır
 - Next.js frontend için kullanılmıştır
 - Prisma orm teknolojisi olarak kullanılmıştır.
 - EC2 + Kubernetes deployment için kullanılmıştır.
