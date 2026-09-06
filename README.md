@@ -205,13 +205,10 @@ Prometheus ile toplanan ve grafana ile alınan veriler aşağıdaki gibidir.
 ## İş başvurusunun gönderilme,worker kuyruğunda işlenme ve kullanıcıya cevap döndürülme hızı
 
 
-Grafikte görüldüğü gibi 22 ms ve 1s aralığı dönüş hızları çoğunluktadır.
+Grafikte görüldüğü gibi 22 ms ve 1s aralığı dönüş hızları çoğunluktadır. İşlem başına ortalama latency 22 ms-1s aralığında olduğu söylenebilir. Bu demektir ki iş başvurusu ve onaylama gibi işlemler çok kısa bir sürede halledilmekte saniyeler içinde onbinlerce iş başvurusu işlenebilmektedir.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20202621.png?raw=true)
 
-## Saniye saniye bitirilen iş başvurusu sayısı
-
-![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20203128.png?raw=true)
 
 ## Veritabanına eklenen toplam iş başvurusu sayısı (80k başarılı istek olduğu göz önüne alınırsa)
 
