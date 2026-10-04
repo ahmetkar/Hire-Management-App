@@ -4,14 +4,14 @@
 <img src="https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/6da40ed7-fe7c-4a48-bdc3-71154135ffa9.png?raw=true" width="768" height="624" alt="Açıklama">
 </p>
 
-Bu express.js ve next.js ile oluşuturulmuş uygulamanın amacı iş başvurularının  alınıp uygulama panelinde ai agent aracılığıyla incelenmesi onaylanıp,reddedilmesine karar verilmesi ve personellere eklenip eklenmemesine karar verilmesini 
-sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçekli olması planlanarak programlanmıştır. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
+Bu express.js ve next.js ile oluşuturulmuş bu uygulamanın amacı iş başvurularının  alınıp  ai agent aracılığıyla incelenmesi onaylanıp,reddedilmesine karar verilmesi ve personel veritabanına eklenip eklenmemesine karar verilmesini 
+sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçekli işletmelerin ihtiyaç duyduğu 100k trafiğe dayanabilmesi planlarak tasarlanmıştır.. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
 
-Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp canlıyı test etme isteğinizi bildrebilirsiniz.
+Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp backendi aktif etmemi sağlayıp canlıyı test etme isteğinizi bildrebilirsiniz.
 
 Canlı linki : https://hiringapp.ahmetkar.com/ (backendi aktif değildir aktif edilip test edilmesi için benimle iletişmie geçin) 
 
-Not : Yakında tüm ai özellikleri güncellenecek ve yeni ai özellikleri eklenecek,mail gönderme desteğide eklenecektir.
+Not : Yakın zamanda eklenenenler TODO.txt dosyasında bulunmaktadır. Güncellemeler yapılıp production-ready hale getirilecektir.
 # Kullanılan Stack
 
 - Express.js Backend için kullanılmıştır
@@ -178,24 +178,6 @@ Görüldüğü gibi yerel saat ile 19:00 da 20k istekte serverin cpu kullanımı
 Görüldüğü gibi 50k isteğin yapıldığı UTC ile 16:10 da serverin cpu kullanımı sadece %42 olmuştur. 
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20191628.png?raw=true)
-
-
-## 4.Test (Stres Testi) 
-
-### Test Sonuçları
-
-4.Testte sınırlar zorlanıp saniyede 400 sanal kullanıcının aynı anda istek göndermesi ve 200 saniye içinde toplam 80 bin istek atılması sağlanmıştır. Sistem dayananamış sadece
-küçük bir kısmı çökmüştür. Buda sistemin sınırlarını berirleyen eşik noktası olmuştur.
-
-![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20200544.png?raw=true)
-
-
-### Cpu Kullanımı : 
-Sistem ekstra 80k isteğe dayanamaz hale geldiği için çünkü bundan önce zaten 10+20+50 yani toplam 80k istek gönderilmiştir.Server çökmemiş yine azda olsa bir kısmını işleyebilir halde
-kalmıştır.
-
-![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20200731.png?raw=true)
-
 
 
 
