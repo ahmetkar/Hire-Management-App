@@ -11,7 +11,7 @@ Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp backendi akti
 
 Canlı linki : https://hiringapp.ahmetkar.com/ (backendi aktif değildir aktif edilip test edilmesi için benimle iletişmie geçin) 
 
-Not : Yakın zamanda eklenenenler TODO.txt dosyasında bulunmaktadır. Güncellemeler yapılıp production-ready hale getirilecektir.
+Not : Yakın zamanda eklenecek özellikler TODO.txt dosyasında bulunmaktadır. Yakında gerekli tüm güncellemeler yapılıp production-ready hale getirilecektir.
 # Kullanılan Stack
 
 - Express.js Backend için kullanılmıştır
