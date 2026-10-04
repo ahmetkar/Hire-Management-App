@@ -1,13 +1,14 @@
 1-Her mikroservis için ayrı veritabanı / veritabanı containerı kullanılması
-1-Redis cachingde iyileştirmeler,optimizasyonlar,distributed locking eklemesi, Kafka için batching,partition,consumer optimizasyonları
-1-Bunların test edilip throughtput değerleri sağlannması
+1-Mistral AI yerine Gemini ve Amazon Bedrock ile Personel ve İş başvurusu için ayrı değerlendirmre ,CV değerlendirmesi sonucu skor çıkarma,Skora göre sıralama özelliği ve elasticsearch knn yerine gemini üzerinden rag ile karşılaştırma yapma gelecek.
 
-2-Mistral AI yerine Gemini ve Amazon Bedrock ile Personel ve İş başvurusu için ayrı değerlendirmre ,CV değerlendirmesi sonucu skor çıkarma,Skora göre sıralama özelliği ve elasticsearch knn yerine gemini üzerinden rag ile karşılaştırma yapma gelecek.
 2-Elasticsearch ile arama ve filtreleme özellikleri getirelecek (örneğin bir cümle ile arama yapılacak mongodb araması yerine) 
+2-Redis cachingde iyileştirmeler,optimizasyonlar,distributed locking eklemesi, Kafka için batching,partition,consumer optimizasyonları
+2-Bunların test edilip throughtput değerleri sağlannması
 
 3-Test oluşturma ve iş ilanlarına test ataması yapma testleri işe başvuran,iş ilanı ile ilişkilendirme
 4-Test puanlarına göre iş başvuruları sıralama desteği
 
+5-Ayarları düzenleme
 5-Personel ve yöneticilerin linkedin hesaplarını entegre edebilmesi
 
 3-Logger eklenecek,Frontend Validation kısımları düzenlenecek
