@@ -1,3 +1,4 @@
+1-Her mikroservis için ayrı veritabanı / veritabanı containerı kullanılması
 1-Redis cachingde iyileştirmeler,optimizasyonlar,distributed locking eklemesi, Kafka için batching,partition,consumer optimizasyonları
 1-Bunların test edilip throughtput değerleri sağlannması
 
