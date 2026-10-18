@@ -5,12 +5,15 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "generatePackageJson": true,
         "outputPath": "libs/metrics/dist",
         "main": "libs/metrics/src/index.ts",
-        "tsConfig": "libs/metrics/tsconfig.lib.json"
+        "tsConfig": "libs/metrics/tsconfig.lib.json",
+        "rootDir": "libs/metrics/src"
       }
     }
   }

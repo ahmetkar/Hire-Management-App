@@ -1,8 +1,47 @@
+import { readFileSync } from "node:fs";
 import { Client } from "@elastic/elasticsearch";
 
-export const elastic = new Client({
-    node: process.env.ELASTIC_URL
-});
+const elasticUrl = process.env.ELASTIC_URL;
+
+if (!elasticUrl) {
+  throw new Error("ELASTIC_URL is required");
+}
+
+const elasticUsername = process.env.ELASTIC_USERNAME;
+const elasticPassword = process.env.ELASTIC_PASSWORD;
+const elasticCaPath = process.env.ELASTIC_CA_PATH;
+
+const elasticOptions: ConstructorParameters<typeof Client>[0] = {
+  node: elasticUrl,
+};
+
+const hasElasticsearchSecuritySettings = Boolean(
+  elasticUsername || elasticPassword || elasticCaPath
+);
+
+if (
+  process.env.NODE_ENV === "production" ||
+  hasElasticsearchSecuritySettings
+) {
+  if (!elasticUsername || !elasticPassword || !elasticCaPath) {
+    throw new Error(
+      "Elasticsearch TLS/auth requires ELASTIC_USERNAME, " +
+      "ELASTIC_PASSWORD and ELASTIC_CA_PATH"
+    );
+  }
+
+  elasticOptions.auth = {
+    username: elasticUsername,
+    password: elasticPassword,
+  };
+
+  elasticOptions.tls = {
+    ca: readFileSync(elasticCaPath),
+    rejectUnauthorized: true,
+  };
+}
+
+export const elastic = new Client(elasticOptions);
 
 
 

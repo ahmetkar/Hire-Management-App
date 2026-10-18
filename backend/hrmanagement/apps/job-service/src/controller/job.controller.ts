@@ -1,14 +1,12 @@
 import { Request,Response,NextFunction } from "express";
 import {prisma}  from "@hrmanagement/prisma"
 import { ValidationError } from "@hrmanagement/error-handler";
-import { publishJobAppCreated } from "../events/producers/jobAppCreated.producers";
 import { publishJobAppDenied } from "../events/producers/jobAppDenied.producers";
 import { publishJobAppApproved } from "../events/producers/jobAppApproved.producers";
 import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.helper";
 import crypto from "crypto"
 import { jobAppQueue } from "../queues/job.queue";
-import { jobapplication,jobs,AIPrompts, Prisma } from "@prisma/client";
-import redis from "../configs/redis";
+import { jobapplication, jobs, Prisma } from "@prisma/client";
 
 
 type JobWithDepartment = Prisma.jobsGetPayload<{

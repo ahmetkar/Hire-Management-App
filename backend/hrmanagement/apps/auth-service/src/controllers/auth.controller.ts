@@ -1,6 +1,6 @@
 
 import { Request,Response,NextFunction } from "express";
-import { validateEmailData, validateRegistirationData } from "../helpers/auth.helper";
+import { validateRegistirationData } from "../helpers/auth.helper";
 import { AuthError, JsonWebTokenError, ValidationError } from "@hrmanagement/error-handler";
 import bcrypt  from "bcryptjs"
 import {prisma}  from "@hrmanagement/prisma"

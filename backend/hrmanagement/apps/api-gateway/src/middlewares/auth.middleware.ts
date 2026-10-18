@@ -1,4 +1,4 @@
-import { Request,Response,NextFunction } from "express";
+import { NextFunction } from "express";
 import jwt,{JwtPayload} from "jsonwebtoken"
 import redis from "../config/redis"
 
@@ -11,14 +11,6 @@ interface TokenPayload extends JwtPayload {
   sessionId: string;
 }
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: Role;
-    sessionId: string;
-  };
-  token?: string;
-}
 
 export const verifyToken = async (req:any,res:any,next:NextFunction) => {
 

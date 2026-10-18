@@ -2,8 +2,6 @@ import {Worker} from "bullmq"
 import redis from "../configs/redis"
 import {prisma}  from "@hrmanagement/prisma"
 import { generatePrompt, getEmbedding, PromptInput, sendPromptToAgent } from "../helpers/ai.helpers"
-import { randomUUID } from "crypto"
-import { CreateEmbedIndex, CreateIndex } from "../helpers/elastic.helpers"
 
 
 

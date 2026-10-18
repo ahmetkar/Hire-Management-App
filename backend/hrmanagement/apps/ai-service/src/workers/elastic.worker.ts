@@ -271,6 +271,17 @@ const worker = new Worker(
                     return handleError("Arama başarısız.");
                 }
             }
+            default: {
+                await redis.set(
+                    `elasticstatus:${job.id}`,
+                    "failed",
+                    "EX",
+                    300
+                );
+                return handleError(
+                    `Bilinmeyen Elasticsearch işi: ${job.name}`
+                );
+            }
         }
     },
     {

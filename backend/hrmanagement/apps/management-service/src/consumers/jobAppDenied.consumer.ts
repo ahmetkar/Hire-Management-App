@@ -1,16 +1,52 @@
-import { Kafka } from 'kafkajs';
+import { readFileSync } from 'node:fs';
+import { Kafka, type KafkaConfig } from 'kafkajs';
 import { SendJobMailToUser, SendJobNotificationToManager } from '../helpers/notification.helper';
 import {kafkaConnectionGauge} from "@hrmanagement/metrics"
 
 
-const kafka = new Kafka({
+const kafkaBroker = process.env.KAFKA_BROKER;
+const kafkaSaslUsername = process.env.KAFKA_SASL_USERNAME;
+const kafkaSaslPassword = process.env.KAFKA_SASL_PASSWORD;
+const kafkaCaPath = process.env.KAFKA_CA_PATH;
+
+if (!kafkaBroker) {
+  throw new Error("KAFKA_BROKER is required");
+}
+
+const kafkaConfig: KafkaConfig = {
   clientId: process.env.SERVICE_NAME,
-  brokers: [process.env.KAFKA_BROKER as string],
-  retry:{
-    initialRetryTime:300,
-    retries:8
+  brokers: [kafkaBroker],
+  retry: {
+    initialRetryTime: 300,
+    retries: 8,
+  },
+};
+
+const hasKafkaSecuritySettings = Boolean(
+  kafkaSaslUsername || kafkaSaslPassword || kafkaCaPath
+);
+
+if (process.env.NODE_ENV === "production" || hasKafkaSecuritySettings) {
+  if (!kafkaSaslUsername || !kafkaSaslPassword || !kafkaCaPath) {
+    throw new Error(
+      "Kafka TLS/SCRAM requires KAFKA_SASL_USERNAME, " +
+      "KAFKA_SASL_PASSWORD and KAFKA_CA_PATH"
+    );
   }
-});
+
+  kafkaConfig.ssl = {
+    ca: [readFileSync(kafkaCaPath, "utf8")],
+    rejectUnauthorized: true,
+  };
+
+  kafkaConfig.sasl = {
+    mechanism: "scram-sha-512",
+    username: kafkaSaslUsername,
+    password: kafkaSaslPassword,
+  };
+}
+
+const kafka = new Kafka(kafkaConfig);
 
 export const consumer = kafka.consumer({
     groupId:"management-service-job-app-denied-group"

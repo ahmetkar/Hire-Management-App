@@ -3,7 +3,6 @@ import { redisCacheConnectionGauge } from '@hrmanagement/metrics';
 
 class RedisClient {
   private static instance: Redis;
-  private static subscriber: Redis;
   private static isConnected = false;
 
   private constructor() {}

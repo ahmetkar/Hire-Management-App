@@ -7,15 +7,7 @@ import { getOrSetRedisCache, invalidateCacheTagKeys } from "../helpers/redis.hel
 import crypto from "crypto"
 import { staffQueue } from "../queue/staff.queue";
 
-import { Prisma, staff} from "@prisma/client";
-import redis from "../configs/redis";
-
-
-type StaffWithDepartment = Prisma.staffGetPayload<{
-    include: {
-        department: true;
-    };
-}>;
+import { Prisma } from "@prisma/client";
 
 
 type StaffWithDepartmentPositionPrompts = Prisma.staffGetPayload<{

@@ -5,12 +5,15 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "generatePackageJson": true,
         "outputPath": "libs/error-handler/dist",
         "main": "libs/error-handler/src/index.ts",
-        "tsConfig": "libs/error-handler/tsconfig.lib.json"
+        "tsConfig": "libs/error-handler/tsconfig.lib.json",
+        "rootDir": "libs/error-handler/src"
       }
     }
   }

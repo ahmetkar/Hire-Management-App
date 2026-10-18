@@ -2,7 +2,6 @@ import { Request,Response,NextFunction } from "express";
 import { aiPromptQueue } from "../queue/aiprompt.queue";
 import { elasticSearchQueue } from "../queue/elasticsearch.queue";
 import { aiSaveQueue } from "../queue/aisave.queue";
-import redis from "../configs/redis";
 
 
 
@@ -112,7 +111,7 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
        const aiJob = await aiSaveQueue.add("app-multi-save",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -125,7 +124,7 @@ export const SaveMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         const aiJob = await aiSaveQueue.add("staff-multi-save",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -163,7 +162,7 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
        const aiJob = await aiSaveQueue.add("app-one-save",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -176,7 +175,7 @@ export const SaveAIPrompt = async (req:Request,res:Response,next:NextFunction) =
         const aiJob = await aiSaveQueue.add("staff-one-save",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -212,7 +211,7 @@ export const SearchForOldestStaff = async (req:Request,res:Response,next:NextFun
 
        
     if(elasticJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:elasticJob.id                        
                         });
@@ -242,7 +241,7 @@ export const SearchForNewestStaff = async (req:Request,res:Response,next:NextFun
 
        
         if(elasticJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                         status:"waiting",
                         id:elasticJob.id                        
                 });
@@ -277,7 +276,7 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
        const aiJob = await aiPromptQueue.add("app-one-prompt",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -290,7 +289,7 @@ export const SendAIPrompt = async (req:Request,res:Response,next:NextFunction) =
         const aiJob = await aiPromptQueue.add("staff-one-prompt",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -334,7 +333,7 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
        const aiJob = await aiPromptQueue.add("app-multi-prompt",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
@@ -347,7 +346,7 @@ export const SendMultipileAIPrompt = async (req:Request,res:Response,next:NextFu
         const aiJob = await aiPromptQueue.add("staff-multi-prompt",{data:data})
 
        if(aiJob.id){
-              res.status(201).json({
+              return res.status(201).json({
                             status:"waiting",
                             id:aiJob.id                        
                         });
