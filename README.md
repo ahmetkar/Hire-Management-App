@@ -26,9 +26,9 @@ Not : Yakın zamanda eklenecek özellikler TODO.txt dosyasında bulunmaktadır. 
 # Kullanılan Teknolojiler
 
 - Kafka : Kullanıcı iş başvurusu ekler kafka ile JobAppCreated olayı yayınlanır. Bunu tüketen management servisi ilgili kişiler için bildirimler oluşturur.Yönetici veya Personel onaylarsa veya redderse JobAppCreated veya JobAppDenied olayı yayımlanır bunları tüketen staff servisi yeni personel oluşturur ve management servisi ilgili kişilere bildirimler gönderir.
-- Redis : Veritabanından çekilen iş başvuruları,personel,bildirimler için cache mekanizması olarak ve bullmq aracılığıyla kuyruğa eklenen iş başvurusu oluşturmma vs. gibi işlemlerde cache meknizması olarak kullanılmıştır.
+- Redis : Veritabanından çekilen iş başvuruları,personel,bildirimler için cache mekanizması olarak ve BullMQ yardımıylada iş başvurusu ekleme,personel ekleme,yapay zeka istekleri gönderme gibi fonksiyonların paralelizasyonunda kullanılmıştır.
 - BullMQ : İş başvurusu ekleme,personel ekleme,ai servisinde tekli,çoklu prompt gönderme ve mongodb ve elastic searche prompt ve embedding bilgilerini kaydetme,elastic searche kaydedilen embeddingler üzerinden personeller ve başvurular arasında karşılaştırma yapma işlemleri bullmq ile iş kuyruklarına eklenip parelelize edilmiştir.
-- ElasticSearch ile prompt ve embedding kaydı olan iş başvuruları ve personeller arası knn ile karşılaştırma yapılması sağlanmıştır. Yine ölçeklenebilir şekilde redis+bullmq ile yönetilmektedir.
+- ElasticSearch ile prompt ve embedding kaydı olan iş başvuruları ve personellerin değerlendirmelerinin embedding verilerinin knn algortması altyapısı ile karşılaştırılması sağlanmıştır. Yine ölçeklenebilir şekilde redis+bullmq ile yönetilmektedir.
 - Mongodb : Tüm veriler tek mongodb containerında tutuluyor.
 - Prometheus : prom-client aracılığıyla istek sayısı,istek süresi,iş başvurusu süreleri,kafka,redis,prisma bağlantı gibi metrikler,durumlar ölçülmüştür.
 - Grafana : Grafana ile prometheus ile ölçülen veriler alınıp incelenmiştir.
