@@ -124,8 +124,6 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 - cert-manager ile TLS sertifika yönetimini yapılandırdım. cert-manager v1.20.4 kurulumunu yaptıktan sonra letsencrypt-staging ClusterIssuer ile HTTP-01 doğrulamasını test ettim. NGINX'in HTTP isteklerini HTTPS'e yönlendirmesi nedeniyle doğrulama sorunu yaşadım; Ingress ayarlarını düzelterek staging sertifikasının oluşturulmasını sağladım. Ardından letsencrypt-prod issuer'ına geçerek üretim sertifikasını kullandım.
 
-- DNS, HTTPS ve HTTP yönlendirmesini test ettim. api.ahmetkar.com alan adını EC2 public IP adresine bağladım. Ayrıca https://api.ahmetkar.com/api-health endpoint'inden HTTP 200 OK yanıtı aldım. Böylece API Gateway'in dışarıdan HTTPS üzerinden erişilebilir olduğunu doğruladım.
-
 # Grafana K6 ile yük testi değerlendirilmesi
 
 Grafana K6 oluşturduğu sanal kullanıcıları ile verilen API test kodlarını çalıştıran bir yük testi aracıdır. Aşağıda gerçekleştirdiğim 4 adet teste ait görüntüler ve açıklamalar görünmektedir.
