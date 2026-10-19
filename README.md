@@ -4,8 +4,9 @@
 <img src="https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/6da40ed7-fe7c-4a48-bdc3-71154135ffa9.png?raw=true" width="768" height="624" alt="Açıklama">
 </p>
 
-Bu express.js ve next.js ile oluşuturulmuş bu uygulamanın amacı iş başvurularının  alınıp  ai agent aracılığıyla incelenmesi onaylanıp,reddedilmesine karar verilmesi ve personel veritabanına eklenip eklenmemesine karar verilmesini 
-sağlayan iş mantığını ve arayüzü sağlamaktır. Bu uygulama orta ölçekli işletmelerin ihtiyaç duyduğu 100k trafiğe dayanabilmesi planlarak tasarlanmıştır.. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
+Bu Express.js ve Next.js ile tasarlanmış uygulamanın amacı iş başvurularının alınıp  AI Agent,ElasticSearch gibi yardımcı araçlarla değerlendirilip, değerlendirme pipeline i içerisinde işe alınıp alınmamasına karar verilmesi için arayüz sağlamaktır.
+
+Bu uygulama günlük 100 bin isteği 5 bin eş zamanlı istek üst sınırıda göz önüne alındığında rahatlıkla kaldırabilecek,işleyebilecek şekilde tasarlanmıştır. Otomatik ölçenen kubernetes containerları ile yaklaşık 6 mikroservis  ve mongodb,redis,kafka,prometheus,grafana,elastic search kullanmaktadır. Bunlar sayesinde iş başvuruları isteklerinin 200 saniyede 50.000 tanesini rahatça karşılayabildiği test edilmiştir. 
 
 Proje canlıda test edilmiştir. İstendiği durumda bana ulaşıp backendi aktif etmemi sağlayıp canlıyı test etme isteğinizi bildrebilirsiniz.
 
@@ -29,9 +30,9 @@ Not : Yakın zamanda eklenecek özellikler TODO.txt dosyasında bulunmaktadır. 
 - BullMQ : İş başvurusu ekleme,personel ekleme,ai servisinde tekli,çoklu prompt gönderme ve mongodb ve elastic searche prompt ve embedding bilgilerini kaydetme,elastic searche kaydedilen embeddingler üzerinden personeller ve başvurular arasında karşılaştırma yapma işlemleri bullmq ile iş kuyruklarına eklenip parelelize edilmiştir.
 - ElasticSearch ile prompt ve embedding kaydı olan iş başvuruları ve personeller arası knn ile karşılaştırma yapılması sağlanmıştır. Yine ölçeklenebilir şekilde redis+bullmq ile yönetilmektedir.
 - Mongodb : Tüm veriler tek mongodb containerında tutuluyor.
-- Prometheus : prom-client aracılığıyla istek sayısı,istek süresi,iş başvurusu süreleri,kafka,redis,prisma bağlantı durumları ölçülmüştür.
-- Grafana : Grafana ile prometheusun ölçtüğü veriler alınıp incelenmiştir.
-- Frontendde tinydash teması themevagondan ücretsiz alınarak kullanılmıştır.
+- Prometheus : prom-client aracılığıyla istek sayısı,istek süresi,iş başvurusu süreleri,kafka,redis,prisma bağlantı gibi metrikler,durumlar ölçülmüştür.
+- Grafana : Grafana ile prometheus ile ölçülen veriler alınıp incelenmiştir.
+- Frontendde tinydash teması ThemeVagon dan ücretsiz alınarak kullanılmıştır.
 
 
 # Kafka Altyapısı açıklaması
@@ -89,35 +90,53 @@ Uygulamanın özelliklerinin gösterildiği video aşağıdaki gibidir.
 
 ## Deployment için kullanılan AMAZON EC2 açıklaması
 
-- Amazon üzerinden oluşturduğum EC2 bulut sunucusu c5.2xlarge türündedir.
--  16GB RAM ve 8 vCPU kullanmaktadır.
+- Amazon üzerinden oluşturduğum 2 tane t3x.large türündeki EC2 sunucusunun birine tüm mikroservisleri,redisi ve kafkayı kurdum diğerinede veritabanını ve elasticsearchi kurdum.
+- Her biri 16GB RAM ve 4 vCPU ve 25GB alan kullanmaktadır.
 
 ## Kubernetes altyapısı açıklaması
 
-- EC2 üzerine k3s ile kubernetes kurulmuş tüm mikroservisler ve kullanılan uygulamalar redis,kafka,prometheus,grafana,elasticsearch gibi containarize edilmiş ve bu sunucuda ayağa kaldırılmıştır.
-- Kafka için  kafka.strimzi.io/v1 versiyonu internetten çekilip ayrı namespace ile kurulmuştur. 
-- Yine tüm istekleri karşılayıp api-gateway servisine gönderen ingress-nginx networking.k8s.io/v1 versiyonu internetten çekilip ayrı namespace e kurulmuştur. Redis ,prometheus,grafana için güncel image isimleri verilmiş otomatik çekilip kurulmuştur.
-- Mikroservisler dockerfile ile derlenmiş ve github container registry e yüklenip oradan çekilip kurulmuştur.
-- Kubernetes e Horizontal Pod Autoscaler entegre edilmiştir. Bu cpu kullanımı %70 i aştığında mikroservislerin pod(container) örneklerini artırarak uygulamanın istek karşılama ve işlem yapma hızını artırmıştır.
-- Her servis için deployment.yaml içinde request ve yapılan işler için cpu ve ram kullanımı sınırları getirilmiştir.
+- EC2 sunucularını oluşturdum ve görevlerini ayırdım. AWS üzerinde Ubuntu Server 24.04 kullanan iki sanal sunucu hazırladım. hm-app-1 sunucusunu uygulama katmanı ve Kubernetes control plane için, hm-data-1 sunucusunu ise veri tabanları ve arama altyapısı için konumlandırdım.
 
-# HTTPS/TLS altyapısının açıklanması
+- AWS ağ ve güvenlik kurallarını yapılandırdım. Sunucular arasındaki özel ağ iletişimini ve Kubernetes pod ağı için gerekli Flannel VXLAN trafiğini düzenledim. Düğümler arası UDP 8472 erişimini açarak Flannel bağlantı sorununu giderdim. İnternet erişiminde SSH 22, HTTP 80 ve HTTPS 443 portlarını kullanım amaçlarına göre ele aldım; MongoDB, Redis ve Kafka gibi altyapı servislerini doğrudan internete açmak yerine özel ağ üzerinden erişilecek şekilde ayarladım.
 
-- cert-manager servisini kubernetese kuruldu. Bu sayede lets encrypt api si ile haberleşiyor,sertifika istiyor,sertifikayı yeniliyor,secret oluşturuyor bunlar kubernetes aracılığıyla saklanıyor. İngress nginx https trafiğini karşılayıp bu sertifikayla güvenli bağlantının gerçekleştirilmesini sağlıyor.
+- Kubernetes kaynaklarını namespace'lere ayırdım. Uygulamalar için app, MongoDB ve Elasticsearch için data, Redis için infra, Kafka için kafka, Ingress için nginx-ingress, sertifikalar için cert-manager ve Elasticsearch operatörü için elastic-system namespace'lerini kullandım. 
 
+- MongoDB veritabanını kurdum ve yerel yedeği geri yükledim. hm-data-1 üzerinde MongoDB Community Operator aracılığıyla MongoDB 8.0.32 kurulumunu gerçekleştirdim.  Ardından hm-mongodb replica set'ini, hm-app veritabanı kullanıcısını ve depolama kaynaklarını yapılandırdım.
+  
+- Redis altyapısını kurdum. Redis'i infra namespace'inde StatefulSet ve kalıcı depolama yapılandırmasıyla çalıştırdım. Mikroservislerin Redis'e Kubernetes Service üzerinden erişmesini sağladım.
+
+  
+- Kafka altyapısını Strimzi ile kurdum. Strimzi Kafka operatörünü kullanarak kafka namespace'inde hm-kafka kümesini oluşturdum. Kafka istemcilerinin broker'a kimlik doğrulamalı ve şifreli bağlantı kurabilmesi için TLS ve SCRAM-SHA-512 yapılandırmasını yaptım. hm-backend adlı Kafka kullanıcısını oluşturarak uygulamaların gerekli bağlantı kimlik bilgilerini Kubernetes Secret üzerinden kullanmasını sağladım.
+
+- Mikroservisler arasındaki Kafka topic'lerini tanımladım. job.application.created, job.application.approved ve job.application.denied topic'leri için KafkaTopic kaynakları oluşturdum. Başlangıçta eksik topic'lerden kaynaklanan tüketici hatalarını giderdim ve ilgili mikroservisleri yeniden başlattım. Böylece iş başvurularının oluşturulması, onaylanması ve reddedilmesi gibi olayların asenkron iletişimine yönelik altyapıyı hazırladım.
+
+- Elasticsearch ve ECK operatörünü kurdum. ECK 3.5.0 operatörünü elastic-system namespace'inde çalıştırdım. data namespace'inde Elasticsearch 9.2.8 kümesini oluşturup kalıcı depolama ve kimlik doğrulama yapılandırmalarını tamamladım. AI servisinin Elasticsearch'e TLS doğrulaması ve kimlik bilgileriyle bağlanabilmesi için uygulama tarafındaki bağlantı kodunu da düzenledim.
+
+- Backend mikroservislerini derledim ve dağıtıma hazırladım. Nx monoreposunda bulunan auth-service, job-service, management-service, staff-service, ai-service ve api-gateway uygulamalarını Node.js 22 ortamında derledim. TypeScript kontrolleri ve build süreçlerinde karşılaştığım hataları giderdim. Ayrıca Kafka bağlantılarını TLS ve SCRAM-SHA-512 ile, AI servisinin Elasticsearch bağlantısını ise kimlik doğrulama ve CA sertifikası doğrulamasıyla çalışacak şekilde düzenledim.
+
+- Docker imajlarını GitHub Actions ile otomatik oluşturdum. .github/workflows/backend-images.yml iş akışıyla altı backend servisinin Docker imajlarını oluşturup GitHub Container Registry'ye (GHCR) gönderen CI sürecini kullandım. İmajların Kubernetes tarafından çekilebilmesi için ghcr-pull Secret'ını hazırladım. Böylece kodun build edilmesi ve container imajlarının dağıtıma hazırlanması sürecini otomatikleştirdim.
+
+- Backend servislerini Kubernetes'e deploy ettim. deploy/k8s/base altındaki Kustomize manifestlerini kullanarak app namespace'inde altı servis için Deployment ve Service kaynaklarını oluşturdum. Uygulamaları kendi portlarıyla çalıştırıp API Gateway'i 4000, auth-service'i 3330, job-service'i 3331, management-service'i 3332, staff-service'i 3333 ve ai-service'i 3334 portlarıyla yapılandırdım. Servisler arası iletişim için Kubernetes Service adreslerini kullandım.
+
+- Uygulama konfigürasyonlarını ve gizli bilgileri yönettim. ConfigMap ve Secret kaynaklarını kullanarak uygulama ayarlarını, MongoDB bağlantısını, JWT anahtarlarını, iç API anahtarını, Redis bilgilerini, Kafka kimlik bilgilerini, Elasticsearch erişimini ve AI API anahtarını ayrı tuttum. deploy/k8s/base/app-config.yaml dosyasını genel konfigürasyon, deploy/k8s/base/workloads.yaml dosyasını ise uygulama iş yükleri için kullandım. Böylece hassas bilgileri uygulama koduna sabitlemek yerine Kubernetes yapılandırması üzerinden yönetilebilir hâle getirdim.
+
+- NGINX Ingress Controller kurdum. Kubernetes'e gelen web trafiğini uygulama servislerine yönlendirmek için NGINX Ingress Controller'ı nginx-ingress namespace'inde çalıştırdım. api.ahmetkar.com host'u için api isimli Ingress kaynağını oluşturarak istekleri api-gateway servisine ve 4000 portuna yönlendirdim. Böylece backend mikroservislerini ayrı ayrı internete açmak yerine API Gateway'i dış erişim noktası olarak kullandım.
+
+- cert-manager ile TLS sertifika yönetimini yapılandırdım. cert-manager v1.20.4 kurulumunu yaptıktan sonra letsencrypt-staging ClusterIssuer ile HTTP-01 doğrulamasını test ettim. NGINX'in HTTP isteklerini HTTPS'e yönlendirmesi nedeniyle doğrulama sorunu yaşadım; Ingress ayarlarını düzelterek staging sertifikasının oluşturulmasını sağladım. Ardından letsencrypt-prod issuer'ına geçerek üretim sertifikasını kullandım.
+
+- DNS, HTTPS ve HTTP yönlendirmesini test ettim. api.ahmetkar.com alan adını EC2 public IP adresine bağladım. Ayrıca https://api.ahmetkar.com/api-health endpoint'inden HTTP 200 OK yanıtı aldım. Böylece API Gateway'in dışarıdan HTTPS üzerinden erişilebilir olduğunu doğruladım.
 
 # Grafana K6 ile yük testi değerlendirilmesi
 
-Grafana K6 oluşturduğu sanal kullanıcılarla verilen api istek kodlarını çalıştıran bir yük testi aracıdır. Aşağıda 4 tane teste ait görüntüler ve açıklamalar görünmektedir.
-Bu testlerde job application create api endpointine eşzamanlı istekler gönderilmiş 10bin,20bin ve 50 bin istek kümeleri tamamen başarılı olmuştur. Bunlar sistemin berirli aralıklarla
-birkaç dakika içinde 100 bin  isteğe dayanıklı olduğunu göstermektedir.
+Grafana K6 oluşturduğu sanal kullanıcıları ile verilen API test kodlarını çalıştıran bir yük testi aracıdır. Aşağıda gerçekleştirdiğim 4 adet teste ait görüntüler ve açıklamalar görünmektedir.
+Bu testlerde Job Application oluşturan endpointe eşzamanlı istekler gönderilmiş 10bin,20bin ve 50 bin istek kümeleri tamamen başarılı olmuştur.
 
 ## Test Kodu Örneği
 
 Aşağıda test kodu örneği görülmektedir. Bu load testinin ayarlarının oluşturulduğu kısmıdır.
 2 saniyelik time unitte 800 istek gönderilmiş 200 s içinde 80.000 istek gönderilmiştir.
 Sonuçlarla ilgili metriklerin berirlediği threholds kısmında ilk şartın failed sayılması için toplam request başarısı miktarının %20 den az olması koşulu konulmuştur.
-ayrıca tüm isteklerin ortalama 1 er sn den az bitmesi,isteklerinin %95 inin 2 şer sn den az bitmesi,%99 unun 5 şer sn den az bitmesi şartı konulmuştur.
+Ayrıca tüm isteklerin ortalama 1 er sn den az bitmesi,isteklerinin %95 inin 2 şer sn den az bitmesi,%99 unun 5 şer sn den az bitmesi şartı konulmuştur.
 Test için ayarlanan VU(Virtual User) minimum 2000  ve maximum 3500 olacak şekilde ayarlanmıştır.
 Bu testi çalıştırmak içinde t3.xlarge türünde Amazon EC2 sunucusu kullanılmıştır.
 Bu kod en son yapılmış olan stres testine aittir.
@@ -188,7 +207,7 @@ Prometheus ile toplanan ve grafana ile alınan veriler aşağıdaki gibidir.
 ## İş başvurusunun gönderilme,worker kuyruğunda işlenme ve kullanıcıya cevap döndürülme hızı
 
 
-Grafikte görüldüğü gibi iş başvurusunun kullanıcı tarafından gönderilmesi,redis bullmq tarafıdan kuyruğa eklenip veritabanı işlemlerinin yapılıp cevabın dönmesi 22 ms ve 100ms aralığı dönüş hızları çoğunluktadır. İşlem başına ortalama latency 22 ms-100ms aralığındadır. Bu demektir ki iş başvurusu ve onaylama gibi işlemler çok kısa bir sürede halledilmekte saniyeler içinde onbinlerce iş başvurusu işlenebilmektedir.
+Grafikte görüldüğü gibi iş başvurusunun kullanıcı tarafından gönderilmesi,redis bullmq tarafıdan kuyruğa eklenip veritabanı işlemlerinin yapılıp cevabın dönmesi 22 ms ve 100ms aralığı dönüş hızları çoğunluktadır. İşlem başına ortalama latency 22 ms-100ms aralığındadır. Bu iş başvurusu ve onaylama gibi işlemler çok kısa bir sürede halledildiği, saniyeler içinde onbinlerce iş başvurusu işlenebildiği anlamına gelmektedir.
 
 ![](https://github.com/ahmetkar/Hire-Management-App/blob/main/screenshoots/Screenshot%202026-07-30%20202621.png?raw=true)
 
